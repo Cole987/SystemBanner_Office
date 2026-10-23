@@ -1,0 +1,2 @@
+# SystemBanner keeps its binaries in the repository, for the old Windows that cannot build them
+*.pdb

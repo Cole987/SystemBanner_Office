@@ -1,0 +1,18 @@
+REGEDIT4
+
+; loads the SystemBanner add-in in Word, Excel and PowerPoint for every user (LoadBehavior 3: at startup)
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\Word\Addins\SystemBannerOffice.Connect]
+"FriendlyName"="SystemBanner"
+"Description"="Classification markings from the SystemBanner settings"
+"LoadBehavior"=dword:00000003
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\Excel\Addins\SystemBannerOffice.Connect]
+"FriendlyName"="SystemBanner"
+"Description"="Classification markings from the SystemBanner settings"
+"LoadBehavior"=dword:00000003
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Office\PowerPoint\Addins\SystemBannerOffice.Connect]
+"FriendlyName"="SystemBanner"
+"Description"="Classification markings from the SystemBanner settings"
+"LoadBehavior"=dword:00000003
