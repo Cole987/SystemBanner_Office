@@ -26,6 +26,13 @@ namespace SystemBannerOffice.Check
             {
                 return Diag.Run();
             }
+            if (args.Length > 0 && args[0] == "load")
+            {
+                //OfficeCheck.exe load [word|excel|powerpoint]: Office itself loads the installed add-in, as the COM add-ins dialog does
+                Run((args.Length > 1 ? args[1] : "word") == "excel" ? "Excel.Application" : (args.Length > 1 && args[1] == "powerpoint" ? "PowerPoint.Application" : "Word.Application"), LoadAddIn);
+                Console.WriteLine(failures == 0 ? "add-in loaded" : "add-in did not load");
+                return failures == 0 ? 0 : 1;
+            }
             List<string> apps = new List<string>(args.Length > 0 ? args : new string[] { "word", "excel", "powerpoint" });
             if (apps.Contains("word")) Run("Word.Application", Word);
             if (apps.Contains("excel")) Run("Excel.Application", Excel);
@@ -84,6 +91,37 @@ namespace SystemBannerOffice.Check
             public int Saves;
             public void WorkbookBeforeSave(object workbook, bool saveAsUi, ref bool cancel) { Saves++; cancel = true; }
             public void WorkbookBeforePrint(object workbook, ref bool cancel) { }
+        }
+
+        private static void LoadAddIn(object application)
+        {
+            object addIns = Late.Get(application, "COMAddIns");
+            object addIn;
+            try
+            {
+                addIn = Late.Item(addIns, "SystemBannerOffice.Connect");
+            }
+            catch (Exception)
+            {
+                Check(false, "the add-in is registered in Office (COMAddIns)");
+                return;
+            }
+            Console.WriteLine("     LoadBehavior seen by Office, connected: " + Late.Get(addIn, "Connect"));
+            if (!Convert.ToBoolean(Late.Get(addIn, "Connect")))
+            {
+                Late.Set(addIn, "Connect", true);
+            }
+            Check(Convert.ToBoolean(Late.Get(addIn, "Connect")), "the add-in is connected");
+            Console.WriteLine("     log: " + Log.FilePath);
+            if (System.IO.File.Exists(Log.FilePath))
+            {
+                string[] lines = System.IO.File.ReadAllLines(Log.FilePath);
+                for (int i = Math.Max(0, lines.Length - 12); i < lines.Length; i++)
+                {
+                    Console.WriteLine("     " + lines[i]);
+                }
+            }
+            Late.Set(addIn, "Connect", false);
         }
 
         private static void Word(object word)

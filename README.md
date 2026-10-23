@@ -56,6 +56,7 @@ The add-in reads the SystemBanner key, `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Sys
 | `OfficeRequireClassification` | DWORD | 1: a document with no classification cannot be saved or printed. |
 | `OfficeSpellOut` | DWORD | 1: banner lines spell control markings out (`TALENT KEYHOLE`) instead of using their abbreviations (`TK`). |
 | `OfficeAnalyticProducts` | DWORD | 1: documents are disseminated analytic products, every classified portion must carry an FD&R marking (ICD 710 E.5). |
+| `OfficeToolbar` | DWORD | 1: the SystemBanner toolbar in Office 2007 and later too (Add-ins tab), besides the ribbon. A user may also set it in `HKEY_CURRENT_USER\Software\SystemBanner`. |
 
 ---
 USE
@@ -86,7 +87,7 @@ LIMITS
 - **Appendices A, B and C** of the Manual (non-US, NATO and UN values) and the Register annexes of trigraph and tetragraph codes are not published with it: country codes are checked for their form (3 or 4 letters), not against a list, and only the NAC activity of the Manual's own example (ISAF, `NIS`) has a portion mark.
 - Where the Manual leaves room or contradicts itself, the roll-up reports its choice in its message: unclassified caveated portions in a classified document are handled as RELIDO (the Manual's `(U//FISA)` example), JOINT co-owners are added to the FGI list of a US banner (the rule, where the Manual's example leaves GBR out), foreign RESTRICTED rolls up to a US banner as CONFIDENTIAL.
 - Portion marks are read at the start of paragraphs of the Word body and of PowerPoint text boxes; footnotes, text boxes in Word, PowerPoint notes and table cells in PowerPoint are not read. Excel workbooks are marked as a whole.
-- Tested with Office 2016 through automation (see below). The Office 2000 to 2003 toolbar and the loading of the add-in by Office itself still have to be tested on those versions.
+- Loaded by Word, Excel and PowerPoint 2016 (64 bit), ribbon and toolbar included, and driven through automation (see below). Office 2000 to 2010 still have to be tested on their own versions, see `TESTING.md`.
 
 -------------------
 BUILDING AND TESTING
@@ -98,6 +99,10 @@ BUILDING AND TESTING
 - `SystemBannerOffice.dll`: the add-in, every Office call late bound, so it needs no primary interop assembly.
 - `SystemBannerOffice.Tests.exe`: the tests of the engine, built on the examples of the Manual (section J and the notional pages of the marking templates).
 - `OfficeCheck.exe [word] [excel] [powerpoint]`: drives the installed Office through automation with the add-in's document code, without installing the add-in: banners, portion marks, roll-up, authority block, document properties, save events.
+- `OfficeCheck.exe load [word|excel|powerpoint]`: Office itself loads the installed add-in, as the COM add-ins dialog does, and shows the end of its log.
+- `OfficeCheck.exe diag`: what Windows and Office see of the installation, written to `SystemBannerOffice_diag.txt` on the Desktop.
+
+The add-in logs each start and every error to `%TEMP%\SystemBannerOffice.log`.
 
 -------
 CREDITS

@@ -61,8 +61,9 @@ When Office does not start, or the add-in does not show
 -------------------------------------------------------
 
 1. Get Office back: start it in safe mode, which loads no add-in (`winword /safe`, `excel /safe`, `powerpnt /safe`; Office 2000 and XP have no safe mode switch, hold Ctrl while starting). If it still does not start, run `Install\RemoveSystemBannerOffice.bat` as an administrator.
-2. Run `build\OfficeCheck.exe diag` as the user who started Office. It writes `SystemBannerOffice_diag.txt` on the Desktop: Office versions, the add-in's registration in Office and in COM, the add-ins Office disabled, a test creation of the add-in outside Office, and the end of the add-in's log.
-3. The add-in's log is `%TEMP%\SystemBannerOffice.log`: one line per start (Office version, .NET version), toolbar or ribbon creation, and every error with its stack trace. No log at all means Office never started the add-in.
+2. Run `build\OfficeCheck.exe load word` (or `excel`, `powerpoint`): Office loads the installed add-in as the COM add-ins dialog does, and the end of the log shows how far it went.
+3. Run `build\OfficeCheck.exe diag` as the user who started Office. It writes `SystemBannerOffice_diag.txt` on the Desktop: Office versions, the add-in's registration in Office and in COM, the add-ins Office disabled, a test creation of the add-in outside Office, and the end of the add-in's log.
+4. The add-in's log is `%TEMP%\SystemBannerOffice.log`: one line per start (Office version, .NET version), toolbar or ribbon creation, and every error with its stack trace. No log at all means Office never started the add-in.
 
 Send the diag file with the report.
 

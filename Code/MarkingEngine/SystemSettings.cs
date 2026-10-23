@@ -15,6 +15,7 @@ namespace SystemBannerOffice.Markings
         public bool RequireClassification; //OfficeRequireClassification = 1: no saving or printing of a document with no classification
         public bool SpellOut;              //OfficeSpellOut = 1: banner lines spell out control markings (TALENT KEYHOLE) instead of abbreviating them (TK)
         public bool AnalyticProducts;      //OfficeAnalyticProducts = 1: documents are disseminated analytic products, every classified portion needs FD&R
+        public bool Toolbar;               //OfficeToolbar = 1: the Office 2000-2003 toolbar in Office 2007 and later too (Add-ins tab), besides the ribbon
 
         public bool IsUnitedStates
         {
@@ -40,12 +41,27 @@ namespace SystemBannerOffice.Markings
                         settings.RequireClassification = IsOne(key.GetValue("OfficeRequireClassification"));
                         settings.SpellOut = IsOne(key.GetValue("OfficeSpellOut"));
                         settings.AnalyticProducts = IsOne(key.GetValue("OfficeAnalyticProducts"));
+                        settings.Toolbar = IsOne(key.GetValue("OfficeToolbar"));
                     }
                 }
             }
             catch (Exception)
             {
                 //no access to the key: same as no setting, the add-in still marks documents, with no ceiling
+            }
+            try
+            {
+                //the toolbar is a display preference, a user may turn it on; the ceiling and the save check stay with the administrator
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\SystemBanner", false))
+                {
+                    if (key != null && IsOne(key.GetValue("OfficeToolbar")))
+                    {
+                        settings.Toolbar = true;
+                    }
+                }
+            }
+            catch (Exception)
+            {
             }
             return settings;
         }

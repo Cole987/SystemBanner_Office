@@ -7,21 +7,36 @@ namespace SystemBannerOffice
 {
     //the COM interfaces Office uses to load add-ins, declared here so the add-in needs no primary interop assembly:
     //Office 2000 has none, and one build must load in every version from Office 2000 to 2010
+    //same declaration as Extensibility.dll (AddInDesignerObjects): enums and SAFEARRAY(VARIANT) spelled out
+    public enum ext_ConnectMode
+    {
+        ext_cm_AfterStartup = 0,
+        ext_cm_Startup = 1,
+        ext_cm_External = 2,
+        ext_cm_CommandLine = 3
+    }
+
+    public enum ext_DisconnectMode
+    {
+        ext_dm_HostShutdown = 0,
+        ext_dm_UserClosed = 1
+    }
+
     [ComImport, Guid("B65AD801-ABAF-11D0-BB8B-00A0C90F2744"), InterfaceType(ComInterfaceType.InterfaceIsDual)]
     public interface IDTExtensibility2
     {
-        [DispId(1)] void OnConnection([MarshalAs(UnmanagedType.IDispatch)] object application, int connectMode, [MarshalAs(UnmanagedType.IDispatch)] object addInInst, ref Array custom);
-        [DispId(2)] void OnDisconnection(int removeMode, ref Array custom);
-        [DispId(3)] void OnAddInsUpdate(ref Array custom);
-        [DispId(4)] void OnStartupComplete(ref Array custom);
-        [DispId(5)] void OnBeginShutdown(ref Array custom);
+        [DispId(1)] void OnConnection([In, MarshalAs(UnmanagedType.IDispatch)] object application, [In] ext_ConnectMode connectMode, [In, MarshalAs(UnmanagedType.IDispatch)] object addInInst, [In, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_VARIANT)] ref Array custom);
+        [DispId(2)] void OnDisconnection([In] ext_DisconnectMode removeMode, [In, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_VARIANT)] ref Array custom);
+        [DispId(3)] void OnAddInsUpdate([In, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_VARIANT)] ref Array custom);
+        [DispId(4)] void OnStartupComplete([In, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_VARIANT)] ref Array custom);
+        [DispId(5)] void OnBeginShutdown([In, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_VARIANT)] ref Array custom);
     }
 
     //Office 2007 and later ask the add-in for its ribbon through this interface
     [ComImport, Guid("000C0396-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsDual)]
     public interface IRibbonExtensibility
     {
-        [DispId(1)] string GetCustomUI(string ribbonId);
+        [DispId(1)] [return: MarshalAs(UnmanagedType.BStr)] string GetCustomUI([In, MarshalAs(UnmanagedType.BStr)] string ribbonId);
     }
 
     //Office 2000 to 2003 toolbar buttons raise their Click event through this dispinterface

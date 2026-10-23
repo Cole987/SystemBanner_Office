@@ -79,7 +79,7 @@ namespace SystemBannerOffice
         }
 
         //every method Office calls catches its errors: an exception thrown back into Office can stop it from starting
-        public void OnConnection(object application, int connectMode, object addInInst, ref Array custom)
+        public void OnConnection(object application, ext_ConnectMode connectMode, object addInInst, ref Array custom)
         {
             try
             {
@@ -106,7 +106,7 @@ namespace SystemBannerOffice
             {
                 Log.Error("OnConnection", ex); //no save and print check rather than no add-in
             }
-            if (connectMode == 0)
+            if (connectMode == ext_ConnectMode.ext_cm_AfterStartup)
             {
                 //ext_cm_AfterStartup: loaded from the COM add-ins dialog, Office will not call OnStartupComplete
                 Array none = new object[0];
@@ -120,7 +120,7 @@ namespace SystemBannerOffice
             {
                 int version = MajorVersion();
                 Log.Write("OnStartupComplete: Office major version " + version);
-                if (version < 12)
+                if (version < 12 || Markings.SystemSettings.Read().Toolbar)
                 {
                     CreateToolbar(); //Office 2007 and later ask for the ribbon instead, see GetCustomUI
                 }
@@ -218,7 +218,7 @@ namespace SystemBannerOffice
             }
         }
 
-        public void OnDisconnection(int removeMode, ref Array custom)
+        public void OnDisconnection(ext_DisconnectMode removeMode, ref Array custom)
         {
             Log.Write("OnDisconnection, mode " + removeMode);
             foreach (ComEventLink link in links)
