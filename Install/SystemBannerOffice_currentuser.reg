@@ -1,0 +1,19 @@
+REGEDIT4
+
+; loads the SystemBanner add-in for the current user only (HKCU), for Office versions that do not read the HKLM registration;
+; never use it together with SystemBannerOffice.reg on Office 2007 and later, the add-in would be declared twice
+
+[HKEY_CURRENT_USER\Software\Microsoft\Office\Word\Addins\SystemBannerOffice.Connect]
+"FriendlyName"="SystemBanner"
+"Description"="Classification markings from the SystemBanner settings"
+"LoadBehavior"=dword:00000003
+
+[HKEY_CURRENT_USER\Software\Microsoft\Office\Excel\Addins\SystemBannerOffice.Connect]
+"FriendlyName"="SystemBanner"
+"Description"="Classification markings from the SystemBanner settings"
+"LoadBehavior"=dword:00000003
+
+[HKEY_CURRENT_USER\Software\Microsoft\Office\PowerPoint\Addins\SystemBannerOffice.Connect]
+"FriendlyName"="SystemBanner"
+"Description"="Classification markings from the SystemBanner settings"
+"LoadBehavior"=dword:00000003

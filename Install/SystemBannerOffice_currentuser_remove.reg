@@ -1,0 +1,8 @@
+REGEDIT4
+
+[-HKEY_CURRENT_USER\Software\Microsoft\Office\Word\Addins\SystemBannerOffice.Connect]
+
+[-HKEY_CURRENT_USER\Software\Microsoft\Office\Excel\Addins\SystemBannerOffice.Connect]
+
+[-HKEY_CURRENT_USER\Software\Microsoft\Office\PowerPoint\Addins\SystemBannerOffice.Connect]
+
