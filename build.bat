@@ -13,7 +13,7 @@ cd /d "%~dp0"
 set OUT=build
 if not "%~1"=="" set OUT=%~1
 if not exist "%OUT%" mkdir "%OUT%"
-set REFS=/nostdlib+ /r:"%NET2%\mscorlib.dll" /r:"%NET2%\System.dll"
+set REFS=/codepage:65001 /nostdlib+ /r:"%NET2%\mscorlib.dll" /r:"%NET2%\System.dll"
 
 "%CSC%" /nologo /target:library /out:"%OUT%\SystemBannerOffice.Markings.dll" %REFS% Code\MarkingEngine\*.cs
 if errorlevel 1 exit /b 1

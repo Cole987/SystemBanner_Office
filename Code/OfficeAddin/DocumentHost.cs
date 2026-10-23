@@ -1,6 +1,7 @@
 //Office add-in: Copyright (c) 2026, Cole. MIT License Applies.
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using SystemBannerOffice.Markings;
 
@@ -9,9 +10,84 @@ namespace SystemBannerOffice
     //the text of the document split in portions: those that start with a portion mark, and how many have none
     public class PortionScan
     {
-        public List<Marking> Marks = new List<Marking>();
+        public List<Marking> Marks = new List<Marking>();               //IC portion marks, "(S//NF)"
+        public List<FrenchMarking> FrenchMarks = new List<FrenchMarking>(); //IGI 1300 paragraph marks, "[S SF]"
         public List<string> Errors = new List<string>();
         public int Unmarked;
+    }
+
+    //one line of a stamp at the top or bottom of the pages
+    public class StampLine
+    {
+        public string Text;
+        public int Color;        //BGR text color
+        public int Size;         //points, 0 to keep the document's size
+        public float Frame;      //frame width in points, 0 for none
+        public StampLine(string text, int color, int size, float frame)
+        {
+            Text = text;
+            Color = color;
+            Size = size;
+            Frame = frame;
+        }
+    }
+
+    //what goes at the top and bottom of every page: the IC banner line on a colored background,
+    //or the IGI 1300 stamps, framed text in red, Spécial France in blue
+    public class StampSet
+    {
+        public List<StampLine> Top = new List<StampLine>();
+        public List<StampLine> Bottom = new List<StampLine>();
+        public List<StampLine> Cover;    //bound documents: bottom of the first page instead of Bottom, null otherwise
+        public int Background = -1;      //BGR background of the lines, -1 for none (IGI stamps are on the page itself)
+        public bool PageNumbers;         //"page X / Y" under the bottom stamp
+        public string Reference;         //TRÈS SECRET: the document reference on every page, before the page number
+
+        public static readonly int Red = Late.Rgb(200, 16, 46);
+        public static readonly int Blue = Late.Rgb(0, 51, 160);
+        public const float PageFrame = 2.5f;   //annexe 37 § 2
+        public const float CoverFrame = 3f;    //annexe 37 § 1
+
+        public static StampSet Banner(string text, int background, int foreground)
+        {
+            StampSet stamps = new StampSet();
+            stamps.Top.Add(new StampLine(text, foreground, 0, 0));
+            stamps.Bottom.Add(new StampLine(text, foreground, 0, 0));
+            stamps.Background = background;
+            return stamps;
+        }
+
+        //IGI 1300, 7.1.2.3 and annexes 1 and 37
+        public static StampSet French(FrenchMarking m, FrenchIdentification id, bool bound)
+        {
+            StampSet stamps = new StampSet();
+            if (m.Level == FrenchLevel.NonProtege)
+            {
+                return stamps; //no stamp: whatever stamps were there are removed
+            }
+            stamps.Top.Add(new StampLine(FrenchFormatter.Stamp(m), Red, 18, PageFrame));
+            if (m.SpecialFrance)
+            {
+                stamps.Top.Add(new StampLine(FrenchFormatter.SpecialFranceStamp, Blue, 18, PageFrame)); //at the top only, under the stamp
+            }
+            string bottom = FrenchFormatter.BottomStamp(m);
+            if (bottom.Length > 0)
+            {
+                stamps.Bottom.Add(new StampLine(bottom, Red, 18, PageFrame));
+                stamps.PageNumbers = true; //7.1.2.3 c): every page of a classified document is numbered
+            }
+            if (m.Level == FrenchLevel.TresSecret && id != null && !string.IsNullOrEmpty(id.Reference))
+            {
+                stamps.Reference = id.Reference;
+            }
+            if (bound && m.IsClassified)
+            {
+                stamps.Cover = new List<StampLine>();
+                stamps.Cover.Add(new StampLine(FrenchFormatter.Stamp(m), Red, 18, CoverFrame));
+                stamps.Cover.Add(new StampLine(FrenchFormatter.CoverWarning, Red, 6, 0));
+            }
+            return stamps;
+        }
     }
 
     //what the add-in does in a document, the same way in Word, Excel and PowerPoint; every call is late bound
@@ -19,6 +95,7 @@ namespace SystemBannerOffice
     {
         //document properties, the classification metadata other tools (mail guards, file servers) can read
         public const string ClassificationProperty = "Classification";
+        public const string SystemProperty = "SystemBanner.System";   //"IC" or "France"
         public const string BannerProperty = "SystemBanner.Banner";
         public const string ClassifiedByProperty = "SystemBanner.ClassifiedBy";
         public const string AgencyProperty = "SystemBanner.Agency";
@@ -28,9 +105,14 @@ namespace SystemBannerOffice
         public const string DateOfOriginProperty = "SystemBanner.DateOfOrigin";
         public const string OriginalProperty = "SystemBanner.Original";
         public const string SourcesProperty = "SystemBanner.Sources";
+        private const string Fr = "SystemBanner.FR.";
 
-        //a portion mark at the start of a paragraph: "(S//NF) text"
+        public const string IcSystem = "IC";
+        public const string FrenchSystem = "France";
+
+        //a portion mark at the start of a paragraph: "(S//NF) text" or "[S SF] text"
         private static readonly Regex PortionStart = new Regex(@"^\s*\(([^()\r\n]{1,300})\)");
+        private static readonly Regex FrenchStart = new Regex(@"^\s*\[([A-Z ]{1,12})\]");
 
         public object Application;
         public object Document;
@@ -121,6 +203,17 @@ namespace SystemBannerOffice
             }
         }
 
+        //"IC" or "France" once the document is classified, null before
+        public string StoredSystem()
+        {
+            string system = GetProperty(SystemProperty);
+            if (string.IsNullOrEmpty(system) && !string.IsNullOrEmpty(GetProperty(BannerProperty)))
+            {
+                return IcSystem; //documents marked before French markings existed
+            }
+            return string.IsNullOrEmpty(system) ? null : system;
+        }
+
         //the banner stored in the document, null when it is not classified yet
         public Marking StoredBanner()
         {
@@ -143,7 +236,7 @@ namespace SystemBannerOffice
             block.DeclassifyOn = GetProperty(DeclassifyOnProperty);
             block.Original = GetProperty(OriginalProperty) == "1";
             DateTime origin;
-            if (DateTime.TryParseExact(GetProperty(DateOfOriginProperty) ?? "", "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out origin))
+            if (DateTime.TryParseExact(GetProperty(DateOfOriginProperty) ?? "", "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out origin))
             {
                 block.DateOfOrigin = origin;
             }
@@ -171,18 +264,103 @@ namespace SystemBannerOffice
         public void Mark(Marking banner)
         {
             string text = MarkingFormatter.Banner(banner);
+            SetProperty(SystemProperty, IcSystem);
             SetProperty(BannerProperty, text);
             SetProperty(ClassificationProperty, MarkingFormatter.LevelTitle(banner.Level == Level.Restricted ? Level.Confidential : banner.Level));
             int[] colors = Presets.ColorsFor(banner);
-            WriteBanner(text, Late.Rgb(colors[0], colors[1], colors[2]), Late.Rgb(colors[3], colors[4], colors[5]));
+            WriteStamps(StampSet.Banner(text, Late.Rgb(colors[0], colors[1], colors[2]), Late.Rgb(colors[3], colors[4], colors[5])));
         }
 
-        //a national banner of SystemBanner, on computers set to the French, German, British, NATO or UN systems
+        //a national banner of SystemBanner, on computers set to the German, British, NATO or UN systems
         public void Mark(Preset preset)
         {
+            SetProperty(SystemProperty, preset.ClassificationSystem);
             SetProperty(BannerProperty, null);
             SetProperty(ClassificationProperty, preset.Text);
-            WriteBanner(preset.Text, Late.Rgb(preset.Colors[0], preset.Colors[1], preset.Colors[2]), Late.Rgb(preset.Colors[3], preset.Colors[4], preset.Colors[5]));
+            WriteStamps(StampSet.Banner(preset.Text, Late.Rgb(preset.Colors[0], preset.Colors[1], preset.Colors[2]), Late.Rgb(preset.Colors[3], preset.Colors[4], preset.Colors[5])));
+        }
+
+        //the IGI 1300 stamps, and the French marking in the document properties
+        public void Mark(FrenchMarking marking, FrenchIdentification id, bool bound)
+        {
+            SetProperty(SystemProperty, FrenchSystem);
+            SetProperty(BannerProperty, null);
+            SetProperty(ClassificationProperty, marking.Level == FrenchLevel.NonProtege ? null : marking.ToString());
+            SetProperty(Fr + "Niveau", FrenchFormatter.Abbreviation(marking.Level));
+            SetProperty(Fr + "SpecialFrance", marking.SpecialFrance ? "1" : null);
+            SetProperty(Fr + "Mention", marking.MentionParticuliere);
+            SetProperty(Fr + "Relie", bound ? "1" : null);
+            WriteStamps(StampSet.French(marking, id, bound && SupportsCover));
+        }
+
+        public FrenchMarking StoredFrenchMarking()
+        {
+            string level = GetProperty(Fr + "Niveau");
+            if (string.IsNullOrEmpty(level))
+            {
+                return null;
+            }
+            FrenchMarking m = FrenchParser.ParsePortion("[" + level + "]") ?? new FrenchMarking();
+            m.SpecialFrance = GetProperty(Fr + "SpecialFrance") == "1";
+            m.MentionParticuliere = GetProperty(Fr + "Mention");
+            return m;
+        }
+
+        public bool StoredBound()
+        {
+            return GetProperty(Fr + "Relie") == "1";
+        }
+
+        //the date the document was declassified (annexe 38), null when it is not
+        public string StoredDeclassification()
+        {
+            return GetProperty(Fr + "Declassifie");
+        }
+
+        public void StoreDeclassification(string text)
+        {
+            SetProperty(Fr + "Declassifie", text);
+        }
+
+        public FrenchIdentification StoredFrenchIdentification()
+        {
+            FrenchIdentification id = new FrenchIdentification();
+            id.Lieu = GetProperty(Fr + "Lieu");
+            id.NumeroEnregistrement = GetProperty(Fr + "Enregistrement");
+            id.AutoriteEmettrice = GetProperty(Fr + "Autorite");
+            id.Auteur = GetProperty(Fr + "Auteur");
+            id.Reference = GetProperty(Fr + "Reference");
+            id.Annexes = GetProperty(Fr + "Annexes");
+            DateTime date;
+            if (TryDate(GetProperty(Fr + "DateEmission"), out date)) id.DateEmission = date;
+            if (TryDate(GetProperty(Fr + "Echeance"), out date)) id.Echeance = date;
+            if (TryDate(GetProperty(Fr + "Reevaluation"), out date)) id.Reevaluation = date;
+            id.SansEcheance = GetProperty(Fr + "SansEcheance") == "1";
+            int number;
+            if (int.TryParse(GetProperty(Fr + "Exemplaire"), out number)) id.Exemplaire = number;
+            if (int.TryParse(GetProperty(Fr + "NombreExemplaires"), out number)) id.NombreExemplaires = number;
+            return id;
+        }
+
+        public void StoreFrenchIdentification(FrenchIdentification id)
+        {
+            SetProperty(Fr + "Lieu", id.Lieu);
+            SetProperty(Fr + "Enregistrement", id.NumeroEnregistrement);
+            SetProperty(Fr + "Autorite", id.AutoriteEmettrice);
+            SetProperty(Fr + "Auteur", id.Auteur);
+            SetProperty(Fr + "Reference", id.Reference);
+            SetProperty(Fr + "Annexes", id.Annexes);
+            SetProperty(Fr + "DateEmission", id.DateEmission.ToString("yyyyMMdd"));
+            SetProperty(Fr + "Echeance", id.Echeance.HasValue ? id.Echeance.Value.ToString("yyyyMMdd") : null);
+            SetProperty(Fr + "Reevaluation", id.Reevaluation.HasValue ? id.Reevaluation.Value.ToString("yyyyMMdd") : null);
+            SetProperty(Fr + "SansEcheance", id.SansEcheance ? "1" : null);
+            SetProperty(Fr + "Exemplaire", id.Exemplaire > 0 ? id.Exemplaire.ToString() : null);
+            SetProperty(Fr + "NombreExemplaires", id.NombreExemplaires > 0 ? id.NombreExemplaires.ToString() : null);
+        }
+
+        private static bool TryDate(string text, out DateTime date)
+        {
+            return DateTime.TryParseExact(text ?? "", "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out date);
         }
 
         public string StoredClassification()
@@ -190,7 +368,13 @@ namespace SystemBannerOffice
             return GetProperty(ClassificationProperty);
         }
 
-        protected abstract void WriteBanner(string text, int background, int foreground);
+        protected abstract void WriteStamps(StampSet stamps);
+
+        //only Word has a first page that can carry the cover stamp of bound documents
+        public virtual bool SupportsCover
+        {
+            get { return false; }
+        }
 
         public virtual bool SupportsPortions
         {
@@ -211,6 +395,24 @@ namespace SystemBannerOffice
                 string text = paragraph.Trim('\a', '\v', '\f', ' ', '\t', '\r', '\n', '\u0007');
                 if (text.Length == 0)
                 {
+                    continue;
+                }
+                Match french = FrenchStart.Match(text);
+                if (french.Success)
+                {
+                    FrenchMarking mark = FrenchParser.ParsePortion("[" + french.Groups[1].Value + "]");
+                    if (mark != null)
+                    {
+                        scan.FrenchMarks.Add(mark);
+                    }
+                    else if (Regex.IsMatch(french.Groups[1].Value, @"^(NP|DR|S|TS|CD|SD|TSD)\b"))
+                    {
+                        scan.Errors.Add("[" + french.Groups[1].Value + "] : marque de paragraphe non valide, les marques sont [NP], [DR], [S] et [TS], suivies de SF pour Spécial France (Confidentiel Défense n'existe plus depuis le 1er juillet 2021).");
+                    }
+                    else
+                    {
+                        scan.Unmarked++;
+                    }
                     continue;
                 }
                 Match match = PortionStart.Match(text);
@@ -241,22 +443,34 @@ namespace SystemBannerOffice
             return text.StartsWith("//") || Regex.IsMatch(text, @"^(TS|S|C|U|TOP SECRET|SECRET|CONFIDENTIAL|UNCLASSIFIED)(//|$)");
         }
 
-        //puts the portion mark at the start of the paragraph of the cursor, replacing the one already there
+        //puts the mark ("(S//NF)" or "[S SF]") at the start of the paragraph of the cursor, replacing the one already there
         public virtual void InsertPortionMark(string mark)
         {
             throw new NotSupportedException();
         }
 
-        public virtual void WriteAuthorityBlock(string[] lines)
+        //writes lines at the cursor, or in place of the block written before under the same bookmark (Word only);
+        //"{NUMPAGES}" in a line becomes the page count field
+        public virtual void WriteBlock(string bookmark, string[] lines)
         {
             throw new NotSupportedException();
         }
 
-        //replaces a portion mark at the start of a paragraph's text, or adds one
+        public const string AuthorityBookmark = "SystemBannerAuthority";
+        public const string IdentificationBookmark = "SystemBannerIdentification";
+        public const string ChangeBookmark = "SystemBannerDeclassement";
+
+        //length of the portion mark at the start of a paragraph's text, with the space after it, 0 when there is none
         protected static int ExistingMarkLength(string paragraphText)
         {
             Match match = PortionStart.Match(paragraphText);
-            if (!match.Success || !MarkingParser.Parse(match.Groups[1].Value).Success)
+            bool found = match.Success && MarkingParser.Parse(match.Groups[1].Value).Success;
+            if (!found)
+            {
+                match = FrenchStart.Match(paragraphText);
+                found = match.Success && FrenchParser.ParsePortion("[" + match.Groups[1].Value + "]") != null;
+            }
+            if (!found)
             {
                 return 0;
             }
@@ -272,73 +486,193 @@ namespace SystemBannerOffice
     public class WordHost : DocumentHost
     {
         private const int HeaderFooterPrimary = 1, HeaderFooterFirstPage = 2, HeaderFooterEvenPages = 3;
-        private const string AuthorityBookmark = "SystemBannerAuthority";
+        private const int FieldPage = 33, FieldNumPages = 26;
+        private const int ColorAutomatic = -16777216;
 
         public override bool SupportsPortions
         {
             get { return true; }
         }
 
-        protected override void WriteBanner(string text, int background, int foreground)
+        public override bool SupportsCover
+        {
+            get { return true; }
+        }
+
+        protected override void WriteStamps(StampSet stamps)
         {
             object sections = Late.Get(Document, "Sections");
             int count = Late.Count(sections);
+            if (stamps.Cover != null)
+            {
+                //the cover stamp goes on the first page only: its own footer
+                Late.TrySet(Late.Get(Late.Item(sections, 1), "PageSetup"), "DifferentFirstPageHeaderFooter", -1);
+            }
             for (int s = 1; s <= count; s++)
             {
                 object section = Late.Item(sections, s);
                 foreach (int kind in new int[] { HeaderFooterPrimary, HeaderFooterFirstPage, HeaderFooterEvenPages })
                 {
-                    WriteHeaderFooter(Late.Item(Late.Get(section, "Headers"), kind), "SystemBannerTop" + s + "_" + kind, true, text, background, foreground);
-                    WriteHeaderFooter(Late.Item(Late.Get(section, "Footers"), kind), "SystemBannerBottom" + s + "_" + kind, false, text, background, foreground);
+                    bool cover = stamps.Cover != null && s == 1 && kind == HeaderFooterFirstPage;
+                    object footer = Late.Item(Late.Get(section, "Footers"), kind);
+                    WriteHeaderFooter(Late.Item(Late.Get(section, "Headers"), kind), "SystemBannerTop" + s + "_" + kind, true, stamps.Top, stamps.Background);
+                    WriteHeaderFooter(footer, "SystemBannerBottom" + s + "_" + kind, false, cover ? stamps.Cover : stamps.Bottom, stamps.Background);
+                    WritePageNumbers(footer, "SystemBannerPages" + s + "_" + kind, stamps.PageNumbers, stamps.Reference);
                 }
             }
         }
 
-        //the banner is its own paragraph, first in the header and last in the footer, kept in a bookmark so the user's header content stays
-        private void WriteHeaderFooter(object headerFooter, string bookmark, bool top, string text, int background, int foreground)
+        //the stamps are their own paragraphs, first in the header and last in the footer, kept in a bookmark so the user's content stays
+        private void WriteHeaderFooter(object headerFooter, string bookmark, bool top, List<StampLine> lines, int background)
         {
             if (Convert.ToBoolean(Late.TryGet(headerFooter, "LinkToPrevious") ?? false))
             {
                 return; //the previous section's header already shows it
             }
             object bookmarks = Late.Get(Document, "Bookmarks");
-            object range;
-            if (Convert.ToBoolean(Late.Call(bookmarks, "Exists", bookmark)))
+            bool exists = Convert.ToBoolean(Late.Call(bookmarks, "Exists", bookmark));
+            if (lines.Count == 0)
             {
-                range = Late.Get(Late.Item(bookmarks, bookmark), "Range");
-            }
-            else
-            {
-                object whole = Late.Get(headerFooter, "Range");
-                string existing = Convert.ToString(Late.Get(whole, "Text")).Trim('\r', '\n', ' ');
-                if (existing.Length > 0)
+                if (exists)
                 {
-                    Late.Call(whole, top ? "InsertParagraphBefore" : "InsertParagraphAfter");
+                    RemoveBlock(headerFooter, Late.Get(Late.Item(bookmarks, bookmark), "Range"));
                 }
-                object paragraphs = Late.Get(Late.Get(headerFooter, "Range"), "Paragraphs");
-                object paragraph = top ? Late.Get(paragraphs, "First") : Late.Get(paragraphs, "Last");
-                range = Late.Get(paragraph, "Range");
-                int start = Convert.ToInt32(Late.Get(range, "Start"));
-                int end = Convert.ToInt32(Late.Get(range, "End"));
-                string paragraphText = Convert.ToString(Late.Get(range, "Text"));
-                if (paragraphText.EndsWith("\r"))
-                {
-                    end--; //keep the paragraph mark out of the bookmark
-                }
-                range = Late.Get(Late.Get(headerFooter, "Range"), "Duplicate");
-                Late.Call(range, "SetRange", start, end);
+                return;
             }
-            Late.Set(range, "Text", text);
-            object font = Late.Get(range, "Font");
-            Late.TrySet(font, "Bold", true);
-            if (!Late.TrySet(font, "Color", foreground))
+            object range = exists ? Late.Get(Late.Item(bookmarks, bookmark), "Range") : NewParagraph(headerFooter, top);
+            List<string> texts = new List<string>();
+            foreach (StampLine line in lines)
             {
-                Late.TrySet(font, "ColorIndex", foreground == 0 ? 1 : 8); //Word 2000 has no RGB font color: black or white
+                texts.Add(line.Text);
             }
-            object format = Late.Get(range, "ParagraphFormat");
-            Late.TrySet(format, "Alignment", 1); //wdAlignParagraphCenter
-            Late.TrySet(Late.Get(format, "Shading"), "BackgroundPatternColor", background);
+            Late.Set(range, "Text", string.Join("\r", texts.ToArray()));
+            object paragraphs = Late.Get(range, "Paragraphs");
+            int paragraphCount = Late.Count(paragraphs);
+            for (int i = 1; i <= paragraphCount && i <= lines.Count; i++)
+            {
+                object paragraphRange = Late.Get(Late.Item(paragraphs, i), "Range");
+                int start = Convert.ToInt32(Late.Get(paragraphRange, "Start"));
+                int end = Convert.ToInt32(Late.Get(paragraphRange, "End"));
+                if (Convert.ToString(Late.Get(paragraphRange, "Text")).EndsWith("\r")) end--;
+                FormatLine(StoryRange(headerFooter, start, end), paragraphRange, lines[i - 1], background);
+            }
             Late.Call(bookmarks, "Add", bookmark, range);
+        }
+
+        private void FormatLine(object text, object paragraph, StampLine line, int background)
+        {
+            object font = Late.Get(text, "Font");
+            Late.TrySet(font, "Bold", true);
+            if (line.Size > 0)
+            {
+                Late.TrySet(font, "Name", "Arial");
+                Late.TrySet(font, "Size", line.Size);
+            }
+            if (!Late.TrySet(font, "Color", line.Color))
+            {
+                Late.TrySet(font, "ColorIndex", line.Color == 0 ? 1 : (line.Color == Late.Rgb(255, 255, 255) ? 8 : 6)); //Word 2000: black, white or red
+            }
+            //the IGI frame is drawn around the text itself, a character border; the IC banner has none
+            object borders = Late.TryGet(font, "Borders");
+            if (borders != null)
+            {
+                if (line.Frame > 0)
+                {
+                    Late.TrySet(borders, "OutsideLineStyle", 1); //wdLineStyleSingle
+                    Late.TrySet(borders, "OutsideLineWidth", line.Frame >= 3 ? 24 : 18); //wdLineWidth300pt, wdLineWidth225pt: the nearest widths Word has
+                    Late.TrySet(borders, "OutsideColor", line.Color);
+                }
+                else
+                {
+                    Late.TrySet(borders, "Enable", 0);
+                }
+            }
+            object format = Late.Get(paragraph, "ParagraphFormat");
+            Late.TrySet(format, "Alignment", 1); //wdAlignParagraphCenter
+            Late.TrySet(Late.Get(format, "Shading"), "BackgroundPatternColor", background >= 0 ? background : ColorAutomatic);
+        }
+
+        //a new empty paragraph first in the header or last in the footer, as a range without its paragraph mark
+        private object NewParagraph(object headerFooter, bool top)
+        {
+            object whole = Late.Get(headerFooter, "Range");
+            string existing = Convert.ToString(Late.Get(whole, "Text")).Trim('\r', '\n', ' ');
+            if (existing.Length > 0)
+            {
+                Late.Call(whole, top ? "InsertParagraphBefore" : "InsertParagraphAfter");
+            }
+            object paragraphs = Late.Get(Late.Get(headerFooter, "Range"), "Paragraphs");
+            object paragraph = top ? Late.Get(paragraphs, "First") : Late.Get(paragraphs, "Last");
+            object range = Late.Get(paragraph, "Range");
+            int start = Convert.ToInt32(Late.Get(range, "Start"));
+            int end = Convert.ToInt32(Late.Get(range, "End"));
+            if (Convert.ToString(Late.Get(range, "Text")).EndsWith("\r"))
+            {
+                end--; //keep the paragraph mark out of the bookmark
+            }
+            object result = Late.Get(Late.Get(headerFooter, "Range"), "Duplicate");
+            Late.Call(result, "SetRange", start, end);
+            return result;
+        }
+
+        //removes a block written before, with its paragraph unless it is the only one of the header or footer
+        private void RemoveBlock(object headerFooter, object range)
+        {
+            Late.Set(range, "Text", "");
+            object paragraph = Late.Get(Late.Item(Late.Get(range, "Paragraphs"), 1), "Range");
+            if (Late.Count(Late.Get(Late.Get(headerFooter, "Range"), "Paragraphs")) > 1 && Convert.ToString(Late.Get(paragraph, "Text")) == "\r")
+            {
+                Late.Call(paragraph, "Delete");
+            }
+            object borders = Late.TryGet(Late.Get(paragraph, "Font"), "Borders");
+            if (borders != null) Late.TrySet(borders, "Enable", 0);
+            Late.TrySet(Late.Get(Late.Get(paragraph, "ParagraphFormat"), "Shading"), "BackgroundPatternColor", ColorAutomatic);
+        }
+
+        //"page X / Y", with the reference before it at the TRÈS SECRET level, as page and page count fields
+        private void WritePageNumbers(object footer, string bookmark, bool show, string reference)
+        {
+            if (Convert.ToBoolean(Late.TryGet(footer, "LinkToPrevious") ?? false))
+            {
+                return;
+            }
+            object bookmarks = Late.Get(Document, "Bookmarks");
+            bool exists = Convert.ToBoolean(Late.Call(bookmarks, "Exists", bookmark));
+            if (!show)
+            {
+                if (exists) RemoveBlock(footer, Late.Get(Late.Item(bookmarks, bookmark), "Range"));
+                return;
+            }
+            object range = exists ? Late.Get(Late.Item(bookmarks, bookmark), "Range") : NewParagraph(footer, false);
+            int start = Convert.ToInt32(Late.Get(range, "Start"));
+            string text = (string.IsNullOrEmpty(reference) ? "" : reference + " - ") + "page \u0001 / \u0002";
+            Late.Set(range, "Text", text);
+            object borders = Late.TryGet(Late.Get(range, "Font"), "Borders");
+            if (borders != null) Late.TrySet(borders, "Enable", 0);
+            //the fields replace the placeholders, the last one first so the position of the other stays right
+            InsertField(footer, start + text.IndexOf('\u0002'), FieldNumPages);
+            InsertField(footer, start + text.IndexOf('\u0001'), FieldPage);
+            object paragraph = Late.Get(Late.Item(Late.Get(StoryRange(footer, start, start), "Paragraphs"), 1), "Range");
+            int end = Convert.ToInt32(Late.Get(paragraph, "End")) - 1;
+            object block = Late.Get(Late.Get(footer, "Range"), "Duplicate");
+            Late.Call(block, "SetRange", start, end);
+            Late.TrySet(Late.Get(paragraph, "ParagraphFormat"), "Alignment", 1);
+            Late.Call(bookmarks, "Add", bookmark, block);
+        }
+
+        //a range of a header or footer: Document.Range would point at the same positions in the body of the document
+        private static object StoryRange(object storyItem, int start, int end)
+        {
+            object range = Late.Get(Late.Get(storyItem, "Range"), "Duplicate");
+            Late.Call(range, "SetRange", start, end);
+            return range;
+        }
+
+        private void InsertField(object storyItem, int position, int type)
+        {
+            object placeholder = Late.Get(Late.Get(storyItem, "Range"), "Duplicate");
+            Late.Call(placeholder, "SetRange", position, position + 1);
+            Late.Call(Late.Get(Document, "Fields"), "Add", placeholder, type);
         }
 
         protected override IEnumerable<string> Paragraphs()
@@ -357,61 +691,103 @@ namespace SystemBannerOffice
             int leading = text.Length - text.TrimStart(' ', '\t').Length;
             int existing = ExistingMarkLength(text.Substring(leading));
             object range = Late.Call(Document, "Range", start + leading, start + leading + existing);
-            Late.Set(range, "Text", "(" + mark + ") ");
+            Late.Set(range, "Text", mark + " ");
         }
 
-        public override void WriteAuthorityBlock(string[] lines)
+        public override void WriteBlock(string bookmark, string[] lines)
         {
             object bookmarks = Late.Get(Document, "Bookmarks");
             object range;
-            if (Convert.ToBoolean(Late.Call(bookmarks, "Exists", AuthorityBookmark)))
+            if (Convert.ToBoolean(Late.Call(bookmarks, "Exists", bookmark)))
             {
-                range = Late.Get(Late.Item(bookmarks, AuthorityBookmark), "Range");
+                range = Late.Get(Late.Item(bookmarks, bookmark), "Range");
             }
             else
             {
+                //a new block is its own paragraph, so the portion mark of the paragraph at the cursor stays at its start
                 range = Late.Get(Late.Get(Application, "Selection"), "Range");
+                Late.Call(range, "Collapse", 1); //wdCollapseStart
+                Late.Call(range, "InsertParagraphBefore");
+                Late.Call(range, "Collapse", 1);
             }
-            Late.Set(range, "Text", string.Join("\v", lines)); //line breaks keep the block in one paragraph
-            Late.Call(bookmarks, "Add", AuthorityBookmark, range);
+            int start = Convert.ToInt32(Late.Get(range, "Start"));
+            string text = string.Join("\v", lines); //line breaks keep the block in one paragraph
+            int field = text.IndexOf("{NUMPAGES}");
+            if (field >= 0)
+            {
+                text = text.Replace("{NUMPAGES}", "\u0002");
+            }
+            Late.Set(range, "Text", text);
+            if (field >= 0)
+            {
+                object placeholder = Late.Call(Document, "Range", start + field, start + field + 1);
+                Late.Call(Late.Get(Document, "Fields"), "Add", placeholder, FieldNumPages);
+                range = Late.Call(Document, "Range", start, Convert.ToInt32(Late.Get(range, "End")));
+            }
+            Late.Call(bookmarks, "Add", bookmark, range);
         }
     }
 
     public class ExcelHost : DocumentHost
     {
-        protected override void WriteBanner(string text, int background, int foreground)
+        protected override void WriteStamps(StampSet stamps)
         {
-            //Excel headers and footers only take text; colors exist from Excel 2007 (&K), an escaped "&" is "&&"
-            string escaped = text.Replace("&", "&&");
-            string color = "";
-            if (Version >= 12)
+            //Excel headers and footers only take text, no frame; colors exist from Excel 2007 (&K), an escaped "&" is "&&"
+            string header = Lines(stamps.Top, stamps.Background);
+            string footer = Lines(stamps.Bottom, stamps.Background);
+            if (stamps.PageNumbers)
             {
-                int red = background & 0xFF, green = (background >> 8) & 0xFF, blue = (background >> 16) & 0xFF;
-                color = "&K" + red.ToString("X2") + green.ToString("X2") + blue.ToString("X2");
+                footer += (footer.Length > 0 ? "\n" : "") + "&\"Arial,Regular\"&10" + Color(0) + (string.IsNullOrEmpty(stamps.Reference) ? "" : Escape(stamps.Reference) + " - ") + "page &P / &N";
             }
-            string header = "&\"Arial,Bold\"&12" + color + escaped;
             object sheets = Late.Get(Document, "Worksheets");
             int count = Late.Count(sheets);
             for (int i = 1; i <= count; i++)
             {
                 object setup = Late.Get(Late.Item(sheets, i), "PageSetup");
                 Late.Set(setup, "CenterHeader", header);
-                Late.Set(setup, "CenterFooter", header);
+                Late.Set(setup, "CenterFooter", footer);
             }
+        }
+
+        private string Lines(List<StampLine> lines, int background)
+        {
+            List<string> parts = new List<string>();
+            foreach (StampLine line in lines)
+            {
+                //the IC banner shows the color of its background, IGI stamps their own color
+                int color = background >= 0 ? background : line.Color;
+                parts.Add("&\"Arial,Bold\"&" + (line.Size > 0 ? line.Size : 12) + Color(color) + Escape(line.Text));
+            }
+            return string.Join("\n", parts.ToArray());
+        }
+
+        private string Color(int bgr)
+        {
+            if (Version < 12)
+            {
+                return "";
+            }
+            int red = bgr & 0xFF, green = (bgr >> 8) & 0xFF, blue = (bgr >> 16) & 0xFF;
+            return "&K" + red.ToString("X2") + green.ToString("X2") + blue.ToString("X2");
+        }
+
+        private static string Escape(string text)
+        {
+            return text.Replace("&", "&&");
         }
     }
 
     public class PowerPointHost : DocumentHost
     {
-        private const string TopShape = "SystemBannerTop", BottomShape = "SystemBannerBottom";
-        private const float BannerHeight = 20;
+        private const string ShapePrefix = "SystemBanner";
+        private const float LineHeight = 20;
 
         public override bool SupportsPortions
         {
             get { return true; }
         }
 
-        protected override void WriteBanner(string text, int background, int foreground)
+        protected override void WriteStamps(StampSet stamps)
         {
             List<object> masters = new List<object>();
             masters.Add(Late.Get(Document, "SlideMaster"));
@@ -425,42 +801,73 @@ namespace SystemBannerOffice
             foreach (object master in masters)
             {
                 object shapes = Late.Get(master, "Shapes");
-                RemoveShape(shapes, TopShape);
-                RemoveShape(shapes, BottomShape);
-                AddBanner(shapes, TopShape, 0, width, text, background, foreground);
-                AddBanner(shapes, BottomShape, height - BannerHeight, width, text, background, foreground);
+                RemoveShapes(shapes);
+                float top = 0;
+                for (int i = 0; i < stamps.Top.Count; i++)
+                {
+                    top += AddLine(shapes, ShapePrefix + "Top" + (i == 0 ? "" : (i + 1).ToString()), top, width, stamps.Top[i], stamps.Background);
+                }
+                float bottom = height;
+                for (int i = stamps.Bottom.Count - 1; i >= 0; i--)
+                {
+                    bottom -= Height(stamps.Bottom[i]);
+                    AddLine(shapes, ShapePrefix + "Bottom" + (i == 0 ? "" : (i + 1).ToString()), bottom, width, stamps.Bottom[i], stamps.Background);
+                }
             }
         }
 
-        private static void RemoveShape(object shapes, string name)
+        private static float Height(StampLine line)
+        {
+            return line.Size > 12 ? line.Size + 12 : LineHeight;
+        }
+
+        private static void RemoveShapes(object shapes)
         {
             for (int i = Late.Count(shapes); i >= 1; i--)
             {
                 object shape = Late.Item(shapes, i);
-                if (Convert.ToString(Late.Get(shape, "Name")) == name)
+                if (Convert.ToString(Late.Get(shape, "Name")).StartsWith(ShapePrefix))
                 {
                     Late.Call(shape, "Delete");
                 }
             }
         }
 
-        private static void AddBanner(object shapes, string name, float top, float width, string text, int background, int foreground)
+        //an IC banner line across the slide, or an IGI stamp: framed, sized to its text and centered
+        private static float AddLine(object shapes, string name, float top, float width, StampLine line, int background)
         {
-            object shape = Late.Call(shapes, "AddTextbox", 1, 0f, top, width, BannerHeight); //msoTextOrientationHorizontal
+            float height = Height(line);
+            object shape = Late.Call(shapes, "AddTextbox", 1, 0f, top, width, height); //msoTextOrientationHorizontal
             Late.Set(shape, "Name", name);
             object fill = Late.Get(shape, "Fill");
             Late.Set(fill, "Visible", -1);
-            Late.Set(Late.Get(fill, "ForeColor"), "RGB", background);
+            Late.Set(Late.Get(fill, "ForeColor"), "RGB", background >= 0 ? background : Late.Rgb(255, 255, 255));
             object frame = Late.Get(shape, "TextFrame");
-            Late.TrySet(frame, "WordWrap", -1);
-            Late.TrySet(frame, "AutoSize", 0);
             object range = Late.Get(frame, "TextRange");
-            Late.Set(range, "Text", text);
+            Late.Set(range, "Text", line.Text);
             object font = Late.Get(range, "Font");
             Late.Set(font, "Bold", -1);
-            Late.Set(font, "Size", 12);
-            Late.Set(Late.Get(font, "Color"), "RGB", foreground);
+            Late.Set(font, "Size", line.Size > 0 ? line.Size : 12);
+            Late.TrySet(font, "Name", "Arial");
+            Late.Set(Late.Get(font, "Color"), "RGB", line.Color);
             Late.Set(Late.Get(range, "ParagraphFormat"), "Alignment", 2); //ppAlignCenter
+            if (line.Frame > 0)
+            {
+                Late.TrySet(frame, "WordWrap", 0);
+                Late.TrySet(frame, "AutoSize", 1); //ppAutoSizeShapeToFitText
+                object border = Late.Get(shape, "Line");
+                Late.Set(border, "Visible", -1);
+                Late.Set(Late.Get(border, "ForeColor"), "RGB", line.Color);
+                Late.Set(border, "Weight", line.Frame);
+                float shapeWidth = Convert.ToSingle(Late.Get(shape, "Width"));
+                Late.Set(shape, "Left", (width - shapeWidth) / 2);
+            }
+            else
+            {
+                Late.TrySet(frame, "WordWrap", -1);
+                Late.TrySet(frame, "AutoSize", 0);
+            }
+            return height;
         }
 
         protected override IEnumerable<string> Paragraphs()
@@ -504,7 +911,7 @@ namespace SystemBannerOffice
             {
                 Late.Call(Late.Call(paragraph, "Characters", 1, existing), "Delete");
             }
-            Late.Call(paragraph, "InsertBefore", "(" + mark + ") ");
+            Late.Call(paragraph, "InsertBefore", mark + " ");
         }
     }
 }

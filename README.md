@@ -3,7 +3,7 @@ SystemBanner Office
 
 A Microsoft Office add-in that marks documents with their classification, from the same settings as [SystemBanner](https://github.com/Cole987/SystemBanner_XP): banner lines at the top and bottom of every page, portion marks, roll-up of the portion marks into the banner line, and the classification authority block. One build loads in Office 2000 to 2010 (Word, Excel, PowerPoint), like the Windows versions of SystemBanner.
 
-It follows the *Intelligence Community Markings System Register and Manual* (ODNI, effective 31 December 2016, released under FOIA in 2021) for United States markings, and the stock classifications of SystemBanner for France, Germany, the United Kingdom, NATO and the United Nations.
+It follows the *Intelligence Community Markings System Register and Manual* (ODNI, effective 31 December 2016, released under FOIA in 2021) for United States markings, the *Instruction générale interministérielle n° 1300* (SGDSN, 9 August 2021) for French markings, and the stock classifications of SystemBanner for Germany, the United Kingdom, NATO and the United Nations.
 
 Like SystemBanner, this is a retro computing and preservation project, shared as is. It has not been evaluated or certified for computers that handle real classified or sensitive information.
 
@@ -12,6 +12,7 @@ Like SystemBanner, this is a retro computing and preservation project, shared as
 - [Installation](#installation)
 - [Settings](#settings)
 - [Use](#use)
+- [French markings](#french-markings)
 - [What the add-in checks](#what-the-add-in-checks)
 - [Limits](#limits)
 - [Building and testing](#building-and-testing)
@@ -26,7 +27,8 @@ FEATURES
 - **Roll-up.** The banner line is rebuilt from the portion marks: highest classification, every unique SCI, SAP and AEA value, FGI sources, the 27 FD&R precedence rules of Table 3 (NOFORN, REL TO list intersections with FVEY, ACGU and TEYE expansion, RELIDO, EYES ONLY, DISPLAY ONLY), and the supersession rules of each marking template (RD over FRD and TFNI, ORCON over ORCON-USGOV, NODIS over EXDIS, FOUO dropped from classified banners, SBU NOFORN and LES NOFORN...).
 - **Classification authority block.** Classified By, Reason or Derived From, Declassify On, checked as it is typed: date format and 25 year limit, exemptions (`25X#`, `50X1-HUM`, `50X2-WMD`, `75X#`), retired values (OADR, MR, X1 to X8, `25X1-human`) with what to write instead, and the `N/A to RD/FRD/TFNI and NATO portions` line. The most restrictive Declassify On of several sources follows the hierarchy of section E.3.
 - **Metadata.** The classification is stored in the document properties (`Classification`, `SystemBanner.Banner`, the authority block), for mail guards and file servers.
-- **The computer's classification is the ceiling.** A document cannot be marked above the `Simple` level of the computer; SCI needs a TOP SECRET//SCI computer. On a computer set to the French, German, British, NATO or UN system, the add-in offers that system's levels instead of IC markings.
+- **French markings (IGI 1300).** SECRET, TRÈS SECRET and DIFFUSION RESTREINTE stamps, Spécial France, paragraph marks `[S]`, first page identification, declassification, see [French markings](#french-markings).
+- **The computer's classification is the ceiling.** A document cannot be marked above the `Simple` level of the computer; SCI needs a TOP SECRET//SCI computer. With no `Simple` value, the classifier chooses IC or French markings for each document; a computer set to the United States offers IC markings only, a computer set to France French markings only, and a computer set to the German, British, NATO or UN system that system's levels.
 - **No saving or printing unclassified documents**, when the administrator asks for it (Word and Excel).
 
 ------------
@@ -62,12 +64,32 @@ The add-in reads the SystemBanner key, `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Sys
 USE
 ---
 
-The **Classification** tab (Office 2007 and later) or the **SystemBanner** toolbar (Office 2000 to 2003) has four buttons:
+The **Classification** tab (Office 2007 and later) or the **SystemBanner** toolbar (Office 2000 to 2003) has five buttons:
 
 - **Classify**: picks the classification of a document with no portion marks, or of an Excel workbook. The dialog shows the banner line and the portion mark as they are typed, and the reasons a combination is refused.
 - **Portion mark**: marks the paragraph at the cursor, then rolls up the banner line.
 - **Roll up**: rebuilds the banner line from every portion mark of the document, and reports unmarked paragraphs and the choices it made.
-- **Authority block**: writes the classification authority block at the cursor in Word, and stores it in the document properties.
+- **Authority block**: writes the classification authority block at the cursor in Word, and stores it in the document properties; for a French document, the first page identification.
+- **Downgrade**: for a French document, lowers, raises or lifts the classification (IGI 1300, annexe 38).
+
+---------------
+FRENCH MARKINGS
+---------------
+
+French markings follow the IGI 1300 of 9 August 2021 (section 7.1, annexes 1, 36, 37 and 38). Since 1 July 2021, France has two classification levels, SECRET and TRÈS SECRET; DIFFUSION RESTREINTE is a protection mention, not a classification.
+
+| Element | What the add-in writes | IGI 1300 |
+|---|---|---|
+| Stamps | SECRET or TRÈS SECRET in red, Arial bold 18, framed, in the middle of the top and bottom of every page | 7.1.2.3 a), annexe 37 |
+| Spécial France | In blue, framed, at the top of every page only, under the stamp | 7.1.1.3 a), annexe 37 |
+| Diffusion Restreinte | DIFFUSION RESTREINTE at the top of every page only | annexe 1 § 2 |
+| Paragraph marks | `[NP]`, `[DR]`, `[S]`, `[TS]` at the start of the paragraph; the document takes the level of its highest paragraph | 7.1.1.2 a), 7.1.2.1, annexe 36 |
+| First page | Place and date, registration number, issuing authority, author, "Déclassifié le" or "Classification à réévaluer le" (20 years at most), copy number and reference for TRÈS SECRET, page count | 7.1.2.3 b) and c), 7.6.1 |
+| Page numbers | "page X / Y" under the bottom stamp, with the reference first for TRÈS SECRET | 7.1.2.3 b) and c) |
+| Bound documents | A cover stamp at the bottom of the first page, framed 3 pt, with the penal code warning | annexe 37 § 1 |
+| Declassification | Lowering, raising and lifting stamps, with the decision number and date | annexe 38 |
+
+The IGI gives no paragraph mark for Spécial France: the add-in writes `[S SF]`, a choice of this project. IC and French markings are never mixed in one document, and the add-in claims no equivalence between their levels. EU and NATO classified information in French documents is not handled. The special classifications and their application directives are not public: the "mention particulière" is free text the add-in cannot check. Excel headers take no frame: the stamps are red text.
 
 ------------------------
 WHAT THE ADD-IN CHECKS

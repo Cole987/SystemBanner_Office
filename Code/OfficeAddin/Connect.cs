@@ -65,7 +65,8 @@ namespace SystemBannerOffice
             new string[] { "Classify", "Classify", "Set the classification of the document" },
             new string[] { "PortionMark", "Portion mark", "Mark the paragraph at the cursor" },
             new string[] { "RollUp", "Roll up", "Build the banner line from the portion marks" },
-            new string[] { "AuthorityBlock", "Authority block", "Classified By, Derived From, Declassify On" }
+            new string[] { "AuthorityBlock", "Authority block", "Classified By, Derived From, Declassify On; for French documents, the first page identification" },
+            new string[] { "Downgrade", "Downgrade", "French documents: lower, raise or lift the classification (IGI 1300, annexe 38)" }
         };
 
         private object application;
@@ -201,6 +202,7 @@ namespace SystemBannerOffice
                 case "Classify": return "Lock";
                 case "PortionMark": return "ParagraphMarks";
                 case "RollUp": return "RefreshAll";
+                case "Downgrade": return "SetPertCalculationsAutomatic";
                 default: return "SignatureLineInsert";
             }
         }

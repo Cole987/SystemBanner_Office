@@ -33,7 +33,9 @@ Loading
 Settings (`HKLM\SOFTWARE\Policies\SystemBanner`, or the SystemBanner Group Policy)
 - [ ] `Simple` = 4 (SECRET): Classify refuses TOP SECRET, with the reason in the dialog.
 - [ ] `Simple` = 6: SCI accepted. `Simple` = 5: SCI refused.
-- [ ] `Simple` = 12 (France): Classify offers DIFFUSION RESTREINTE and SECRET only, and writes them in the banner.
+- [ ] `Simple` = 12 (France SECRET): Classify goes straight to the French dialog, offers Diffusion Restreinte and Secret, refuses Très Secret with the reason.
+- [ ] `Simple` = 4 (United States): Classify goes straight to the IC dialog, no French markings.
+- [ ] No `Simple` value: Classify asks for the system, France or IC.
 - [ ] `OfficeSpellOut` = 1: banner lines spell control markings out.
 - [ ] `OfficeRequireClassification` = 1: saving and printing an unclassified document asks to classify it first, in Word and Excel.
 
@@ -46,6 +48,17 @@ Word
 - [ ] Authority block: written at the cursor, written again in place when changed.
 - [ ] File > Properties > Custom: Classification and SystemBanner.* values are there.
 - [ ] Save as .doc and reopen: banner, marks and properties are still there.
+
+French markings (Word)
+- [ ] Classify as Secret, Spécial France: SECRET in red, framed, at the top and bottom of every page, SPÉCIAL FRANCE in blue at the top only, "page X / Y" under the bottom stamp.
+- [ ] The identification dialog opens: with a deadline more than 50 years away, or a re-evaluation more than 20 years away, Write stays greyed with the reason.
+- [ ] Portion mark on three paragraphs: [NP], [S SF], [DR]. Roll up: the document is SECRET SPÉCIAL FRANCE.
+- [ ] Diffusion Restreinte: stamp at the top only, no bottom stamp and no page numbers.
+- [ ] Très Secret: copy number and reference required; the reference shows before the page number on every page.
+- [ ] Bound document: the cover stamp with the penal code warning at the bottom of the first page only.
+- [ ] Downgrade: Très Secret to Secret changes the stamps and writes the annexe 38 stamp; Declassify removes the stamps.
+- [ ] Switching the same document to IC markings replaces the stamps with the banner line, with no frame left.
+- [ ] Word 2000: the stamps are red (or the nearest Word 2000 color) and framed.
 
 Excel
 - [ ] Classify: the banner is in the header and footer of every sheet (print preview). Excel 2007 and later: colored text.

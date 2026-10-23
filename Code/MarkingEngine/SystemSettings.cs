@@ -17,9 +17,44 @@ namespace SystemBannerOffice.Markings
         public bool AnalyticProducts;      //OfficeAnalyticProducts = 1: documents are disseminated analytic products, every classified portion needs FD&R
         public bool Toolbar;               //OfficeToolbar = 1: the Office 2000-2003 toolbar in Office 2007 and later too (Add-ins tab), besides the ribbon
 
+        public const string France = "France";
+
         public bool IsUnitedStates
         {
             get { return Ceiling == null || Ceiling.IsUnitedStates; }
+        }
+
+        //IC markings: no Simple value, or a United States one
+        public bool IcAvailable
+        {
+            get { return Ceiling == null || Ceiling.IsUnitedStates; }
+        }
+
+        //French markings (IGI 1300): no Simple value, or a French one; never on a computer set to another system,
+        //the levels of two systems are not equivalent
+        public bool FrenchAvailable
+        {
+            get { return Ceiling == null || Ceiling.ClassificationSystem == France; }
+        }
+
+        //null when the French marking fits on this computer, else the reason it does not
+        public string CheckCeiling(FrenchMarking marking)
+        {
+            if (!FrenchAvailable)
+            {
+                return "Ce poste est réglé sur le système " + Ceiling.ClassificationSystem + " (" + Ceiling.Text + ") : les marquages français n'y sont pas proposés.";
+            }
+            if (Ceiling == null || marking.Level == FrenchLevel.NonProtege)
+            {
+                return null;
+            }
+            //presets 11 to 13: DIFFUSION RESTREINTE rank 0, SECRET rank 1, TRÈS SECRET rank 2
+            int rank = (int)marking.Level - 1;
+            if (rank > Ceiling.Rank)
+            {
+                return "Ce poste est réglé au niveau " + Ceiling.Text + " : un document " + FrenchFormatter.Stamp(marking) + " ne peut pas y être rédigé.";
+            }
+            return null;
         }
 
         public static SystemSettings Read()
