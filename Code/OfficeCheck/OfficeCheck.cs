@@ -9,7 +9,7 @@ using SystemBannerOffice.Markings;
 namespace SystemBannerOffice.Check
 {
     //drives the installed Word, Excel and PowerPoint through automation with the document code of the add-in,
-    //without installing the add-in: OfficeCheck.exe [word] [excel] [powerpoint]
+    //without installing the add-in: OfficeCheck.exe [word] [excel] [powerpoint]; OfficeCheck.exe diag reports the installation
     public static class OfficeCheck
     {
         private static int failures;
@@ -22,6 +22,10 @@ namespace SystemBannerOffice.Check
 
         public static int Main(string[] args)
         {
+            if (args.Length > 0 && args[0] == "diag")
+            {
+                return Diag.Run();
+            }
             List<string> apps = new List<string>(args.Length > 0 ? args : new string[] { "word", "excel", "powerpoint" });
             if (apps.Contains("word")) Run("Word.Application", Word);
             if (apps.Contains("excel")) Run("Excel.Application", Excel);

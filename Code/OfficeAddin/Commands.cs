@@ -64,7 +64,8 @@ namespace SystemBannerOffice
             catch (Exception ex)
             {
                 Exception inner = ex is System.Reflection.TargetInvocationException && ex.InnerException != null ? ex.InnerException : ex;
-                Show("The command failed: " + inner.Message, MessageBoxIcon.Error);
+                Log.Error(command, ex);
+                Show("The command failed: " + inner.Message + Environment.NewLine + Environment.NewLine + "Details are in " + Log.FilePath, MessageBoxIcon.Error);
             }
         }
 
@@ -243,8 +244,9 @@ namespace SystemBannerOffice
                 }
                 return string.IsNullOrEmpty(host.StoredClassification());
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Log.Error("save and print check", ex);
                 return false; //never lose the user's work because the check itself failed
             }
         }

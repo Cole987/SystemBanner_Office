@@ -73,13 +73,25 @@ namespace SystemBannerOffice
         private object toolbar;
         private readonly List<ComEventLink> links = new List<ComEventLink>();
 
+        public Connect()
+        {
+            Log.Write("add-in created, .NET " + Environment.Version + ", " + IntPtr.Size * 8 + " bit, " + Environment.OSVersion);
+        }
+
+        //every method Office calls catches its errors: an exception thrown back into Office can stop it from starting
         public void OnConnection(object application, int connectMode, object addInInst, ref Array custom)
         {
-            this.application = application;
-            commands = new Commands(application);
-            string name = Convert.ToString(Late.Get(application, "Name"));
             try
             {
+                this.application = application;
+                commands = new Commands(application);
+                string name = Convert.ToString(Late.Get(application, "Name"));
+                Log.Write("OnConnection: " + name + " " + Late.Get(application, "Version") + ", connect mode " + connectMode);
+                //the save and print check is only wired when the administrator asks for it, one less hook in Office otherwise
+                if (!Markings.SystemSettings.Read().RequireClassification)
+                {
+                    return;
+                }
                 if (name.IndexOf("Word") >= 0)
                 {
                     links.Add(new ComEventLink(application, typeof(WordApplicationEvents).GUID, new WordEventSink(commands)));
@@ -88,18 +100,34 @@ namespace SystemBannerOffice
                 {
                     links.Add(new ComEventLink(application, typeof(ExcelApplicationEvents).GUID, new ExcelEventSink(commands)));
                 }
+                Log.Write("save and print check wired");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //no save and print check rather than no add-in
+                Log.Error("OnConnection", ex); //no save and print check rather than no add-in
+            }
+            if (connectMode == 0)
+            {
+                //ext_cm_AfterStartup: loaded from the COM add-ins dialog, Office will not call OnStartupComplete
+                Array none = new object[0];
+                OnStartupComplete(ref none);
             }
         }
 
         public void OnStartupComplete(ref Array custom)
         {
-            if (MajorVersion() < 12)
+            try
             {
-                CreateToolbar(); //Office 2007 and later ask for the ribbon instead, see GetCustomUI
+                int version = MajorVersion();
+                Log.Write("OnStartupComplete: Office major version " + version);
+                if (version < 12)
+                {
+                    CreateToolbar(); //Office 2007 and later ask for the ribbon instead, see GetCustomUI
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("OnStartupComplete", ex);
             }
         }
 
@@ -114,38 +142,46 @@ namespace SystemBannerOffice
         //a temporary toolbar, rebuilt at each start so nothing stays behind in Normal.dot when the add-in is removed
         private void CreateToolbar()
         {
+            string step = "CommandBars";
             try
             {
                 object bars = Late.Get(application, "CommandBars");
                 try
                 {
                     Late.Call(Late.Item(bars, Commands.Title), "Delete");
+                    Log.Write("toolbar left from a previous session deleted");
                 }
                 catch (Exception)
                 {
                     //no toolbar left from a previous session
                 }
+                step = "CommandBars.Add";
                 toolbar = Late.Call(bars, "Add", Commands.Title, 1, Missing.Value, true); //msoBarTop, temporary
                 object controls = Late.Get(toolbar, "Controls");
                 foreach (string[] button in Buttons)
                 {
+                    step = "button " + button[0];
                     object control = Late.Call(controls, "Add", 1, Missing.Value, Missing.Value, Missing.Value, true); //msoControlButton
                     Late.Set(control, "Caption", button[1]);
                     Late.Set(control, "Style", 2); //msoButtonCaption
                     Late.Set(control, "TooltipText", button[2]);
                     Late.Set(control, "Tag", "SystemBanner." + button[0]);
+                    step = "Click event of " + button[0];
                     links.Add(new ComEventLink(control, typeof(CommandBarButtonEvents).GUID, new ButtonSink(commands, button[0])));
                 }
+                step = "Visible";
                 Late.Set(toolbar, "Visible", true);
+                Log.Write("toolbar created with " + Buttons.Length + " buttons");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //the commands stay unavailable rather than breaking Office's startup
+                Log.Error("CreateToolbar, " + step, ex); //the commands stay unavailable rather than breaking Office's startup
             }
         }
 
         public string GetCustomUI(string ribbonId)
         {
+            Log.Write("GetCustomUI: " + ribbonId);
             System.Text.StringBuilder xml = new System.Text.StringBuilder();
             xml.Append("<customUI xmlns=\"http://schemas.microsoft.com/office/2006/01/customui\"><ribbon><tabs>");
             xml.Append("<tab id=\"SystemBannerTab\" label=\"Classification\"><group id=\"SystemBannerGroup\" label=\"SystemBanner\">");
@@ -172,11 +208,19 @@ namespace SystemBannerOffice
         //ribbon callback: Office passes the IRibbonControl, read late bound to need no interop assembly
         public void OnAction(object control)
         {
-            commands.Run(Convert.ToString(Late.Get(control, "Id")));
+            try
+            {
+                commands.Run(Convert.ToString(Late.Get(control, "Id")));
+            }
+            catch (Exception ex)
+            {
+                Log.Error("OnAction", ex);
+            }
         }
 
         public void OnDisconnection(int removeMode, ref Array custom)
         {
+            Log.Write("OnDisconnection, mode " + removeMode);
             foreach (ComEventLink link in links)
             {
                 link.Dispose();
