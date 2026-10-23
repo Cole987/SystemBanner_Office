@@ -87,6 +87,27 @@ Goal: mark documents with the classifications of the European Union.
 
 **Done when:** an EU document can be classified, stamped and checked in Word, Excel and PowerPoint, with the rules documented and their sources.
 
+--------------------------------
+5. Outlook add-in (to evaluate)
+--------------------------------
+
+Not decided: a short study first, then go or no go with an estimate.
+
+- **What it would do:** classify an email like a document (subject prefix, marking at the top and bottom of the body, message headers for mail gateways), with the same systems and the same ceiling, and block sending an email less classified than its attachments.
+- **Risks to weigh:** Outlook 2000 to 2003 show security prompts when an add-in reads recipients or sends (Object Model Guard); Outlook 2000 has no ribbon and its message windows need their own toolbars; HTML, RTF and plain text bodies are marked differently.
+- **Done when:** the study says what works on Outlook 2000 to 2010, what it costs, and the decision is taken.
+
+----------------
+6. Screenshots
+----------------
+
+Like SystemBanner (`Docs/Images`), the README shows what the add-in looks like.
+
+- **Dialogs, generated:** a new `OfficeCheck.exe screenshots` mode opens each dialog filled with an example (system choice, IC, French, German, British, first page, authority block, downgrade) and saves it as a PNG with `Control.DrawToBitmap`, in English and French (and German after step 3), so they follow each build.
+- **Office, captured by hand:** one marked page of each system (IC banner, SECRET SPÉCIAL FRANCE, GEHEIM, OFFICIAL-SENSITIVE), the ribbon tab in Office 2016 and 2007, the toolbar in Office 2000, Excel and PowerPoint; Office 2000 and 2007 once bugs 1 and 2 are fixed.
+- **Where:** `Docs/Images`, named `<Office>_<system>_<what>.png` (for example `Word2016_France_Secret.png`), example content only, shown in the README under each system.
+- **Done when:** the README shows the dialogs and one marked page of each system.
+
 ------------------
 Still open, later
 ------------------
@@ -94,4 +115,3 @@ Still open, later
 - CUI markings (DoDM 5200.48) for United States unclassified information, replacing FOUO.
 - NATO and EU information inside French documents (the IGI equivalence table).
 - A strong name for the two DLLs, to remove the RegAsm RA0000 warning.
-- Outlook: classification of mails and of their attachments.
