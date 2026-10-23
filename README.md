@@ -20,6 +20,7 @@ Like SystemBanner, this is a retro computing and preservation project, shared as
 - [What the add-in checks](#what-the-add-in-checks)
 - [Limits](#limits)
 - [Building and testing](#building-and-testing)
+- [Roadmap](ROADMAP.md)
 
 --------
 FEATURES
