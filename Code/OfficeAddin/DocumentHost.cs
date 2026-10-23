@@ -12,6 +12,13 @@ namespace SystemBannerOffice
     {
         public List<Marking> Marks = new List<Marking>();               //IC portion marks, "(S//NF)"
         public List<FrenchMarking> FrenchMarks = new List<FrenchMarking>(); //IGI 1300 paragraph marks, "[S SF]"
+        public List<GermanMarking> GermanMarks = new List<GermanMarking>(); //VS-Anweisung part marks, "[Geh.]"
+
+        //how many marking systems the document's marks belong to
+        public int Systems
+        {
+            get { return (Marks.Count > 0 ? 1 : 0) + (FrenchMarks.Count > 0 ? 1 : 0) + (GermanMarks.Count > 0 ? 1 : 0); }
+        }
         public List<string> Errors = new List<string>();
         public int Unmarked;
     }
@@ -41,6 +48,7 @@ namespace SystemBannerOffice
         public List<StampLine> Cover;    //bound documents: bottom of the first page instead of Bottom, null otherwise
         public int Background = -1;      //BGR background of the lines, -1 for none (IGI stamps are on the page itself)
         public bool PageNumbers;         //"page X / Y" under the bottom stamp
+        public string PageFormat = "page {P} / {N}"; //{P} the page, {N} the page count
         public string Reference;         //TRÈS SECRET: the document reference on every page, before the page number
 
         public static readonly int Red = Late.Rgb(200, 16, 46);
@@ -88,6 +96,51 @@ namespace SystemBannerOffice
             }
             return stamps;
         }
+
+        //VS-Anweisung, Anlage IV § 1.1: STRENG GEHEIM and GEHEIM in red at the top and bottom, with "amtlich geheim gehalten";
+        //VS-VERTRAULICH (with it) and VS-NfD (without) at the top only; Seite X von Y on every page (§ 20 Abs. 2 Nr. 8)
+        public static StampSet German(GermanMarking m)
+        {
+            StampSet stamps = new StampSet();
+            if (!m.IsClassified)
+            {
+                return stamps;
+            }
+            int[] rgb = GermanFormatter.Color(m.Level);
+            int color = Late.Rgb(rgb[0], rgb[1], rgb[2]);
+            List<StampLine> stamp = new List<StampLine>();
+            stamp.Add(new StampLine(GermanFormatter.Stamp(m.Level), color, 14, 0));
+            if (m.AmtlichGeheimGehalten)
+            {
+                stamp.Add(new StampLine(GermanFormatter.AmtlichGeheimGehalten, color, 10, 0));
+            }
+            stamps.Top.AddRange(stamp);
+            foreach (string vermerk in m.Vermerke)
+            {
+                stamps.Top.Add(new StampLine(vermerk, color, 10, 0));
+            }
+            if (GermanFormatter.AtBottom(m.Level))
+            {
+                stamps.Bottom.AddRange(stamp);
+            }
+            stamps.PageNumbers = true;
+            stamps.PageFormat = "Seite {P} von {N}";
+            return stamps;
+        }
+
+        //GSCP: the classification and its additional markings at the top and bottom, in capitals, with no colour coding
+        public static StampSet British(UkMarking m)
+        {
+            StampSet stamps = new StampSet();
+            string text = UkFormatter.Marking(m);
+            stamps.Top.Add(new StampLine(text, 0, 12, 0));
+            if (m.HandlingInstruction == UkRegister.Embargoed && !string.IsNullOrEmpty(m.Embargo))
+            {
+                stamps.Top.Add(new StampLine("EMBARGOED: " + m.Embargo, 0, 10, 0)); //as close as possible to the classification
+            }
+            stamps.Bottom.Add(new StampLine(text, 0, 12, 0));
+            return stamps;
+        }
     }
 
     //what the add-in does in a document, the same way in Word, Excel and PowerPoint; every call is late bound
@@ -109,10 +162,13 @@ namespace SystemBannerOffice
 
         public const string IcSystem = "IC";
         public const string FrenchSystem = "France";
+        public const string GermanSystem = GermanSettings.Germany;
+        public const string BritishSystem = UkSettings.UnitedKingdom;
 
         //a portion mark at the start of a paragraph: "(S//NF) text" or "[S SF] text"
         private static readonly Regex PortionStart = new Regex(@"^\s*\(([^()\r\n]{1,300})\)");
         private static readonly Regex FrenchStart = new Regex(@"^\s*\[([A-Z ]{1,12})\]");
+        private static readonly Regex GermanStart = new Regex(@"^\s*\[(Str\. Geh\.|Geh\.|VS-Vertr\.|VS-NfD|offen)\]");
 
         public object Application;
         public object Document;
@@ -293,6 +349,95 @@ namespace SystemBannerOffice
             WriteStamps(StampSet.French(marking, id, bound && SupportsCover));
         }
 
+        private const string De = "SystemBanner.DE.";
+        private const string Uk = "SystemBanner.UK.";
+
+        //the VS-Anweisung stamps, and the German marking in the document properties
+        public void Mark(GermanMarking marking)
+        {
+            SetProperty(SystemProperty, GermanSystem);
+            SetProperty(BannerProperty, null);
+            SetProperty(ClassificationProperty, marking.IsClassified ? GermanFormatter.Stamp(marking.Level) : null);
+            SetProperty(De + "Grad", GermanFormatter.Abbreviation(marking.Level));
+            SetProperty(De + "Vermerke", marking.Vermerke.Count > 0 ? string.Join("\n", marking.Vermerke.ToArray()) : null);
+            WriteStamps(StampSet.German(marking));
+        }
+
+        public GermanMarking StoredGermanMarking()
+        {
+            string level = GetProperty(De + "Grad");
+            if (string.IsNullOrEmpty(level)) return null;
+            GermanMarking m = GermanParser.ParsePortion("[" + level + "]") ?? new GermanMarking();
+            string vermerke = GetProperty(De + "Vermerke");
+            if (!string.IsNullOrEmpty(vermerke)) m.Vermerke.AddRange(vermerke.Split('\n'));
+            return m;
+        }
+
+        public GermanIdentification StoredGermanIdentification()
+        {
+            GermanIdentification id = new GermanIdentification();
+            id.Herausgeber = GetProperty(De + "Herausgeber");
+            id.Kennzeichen = GetProperty(De + "Kennzeichen");
+            id.Empfaenger = GetProperty(De + "Empfaenger");
+            DateTime date;
+            if (TryDate(GetProperty(De + "Datum"), out date)) id.Datum = date;
+            int number;
+            if (int.TryParse(GetProperty(De + "EinstufungEndet"), out number)) id.EinstufungEndet = number;
+            if (int.TryParse(GetProperty(De + "Ausfertigung"), out number)) id.Ausfertigung = number;
+            return id;
+        }
+
+        public void StoreGermanIdentification(GermanIdentification id)
+        {
+            SetProperty(De + "Herausgeber", id.Herausgeber);
+            SetProperty(De + "Kennzeichen", id.Kennzeichen);
+            SetProperty(De + "Empfaenger", id.Empfaenger);
+            SetProperty(De + "Datum", id.Datum.ToString("yyyyMMdd"));
+            SetProperty(De + "EinstufungEndet", id.EinstufungEndet > 0 ? id.EinstufungEndet.ToString() : null);
+            SetProperty(De + "Ausfertigung", id.Ausfertigung > 0 ? id.Ausfertigung.ToString() : null);
+        }
+
+        //the GSCP markings, and the British marking in the document properties
+        public void Mark(UkMarking marking)
+        {
+            SetProperty(SystemProperty, BritishSystem);
+            SetProperty(BannerProperty, null);
+            SetProperty(ClassificationProperty, UkFormatter.Classification(marking));
+            SetProperty(Uk + "Level", ((int)marking.Level).ToString());
+            SetProperty(Uk + "Sensitive", marking.Sensitive ? "1" : null);
+            SetProperty(Uk + "Prefix", marking.UkPrefix ? "1" : null);
+            SetProperty(Uk + "RelEu", marking.RelEu ? "1" : null);
+            SetProperty(Uk + "Caveats", marking.Caveats.Count > 0 ? string.Join("\n", marking.Caveats.ToArray()) : null);
+            SetProperty(Uk + "Handling", marking.HandlingInstruction);
+            SetProperty(Uk + "Organisation", marking.Organisation);
+            SetProperty(Uk + "Embargo", marking.Embargo);
+            SetProperty(Uk + "Codeword", marking.Codeword);
+            SetProperty(Uk + "Descriptors", marking.Descriptors.Count > 0 ? string.Join("\n", marking.Descriptors.ToArray()) : null);
+            SetProperty(Uk + "Marking", UkFormatter.Marking(marking));
+            WriteStamps(StampSet.British(marking));
+        }
+
+        public UkMarking StoredUkMarking()
+        {
+            string level = GetProperty(Uk + "Level");
+            if (string.IsNullOrEmpty(level)) return null;
+            UkMarking m = new UkMarking();
+            int number;
+            if (int.TryParse(level, out number) && number >= 0 && number <= 2) m.Level = (UkLevel)number;
+            m.Sensitive = GetProperty(Uk + "Sensitive") == "1";
+            m.UkPrefix = GetProperty(Uk + "Prefix") == "1";
+            m.RelEu = GetProperty(Uk + "RelEu") == "1";
+            string caveats = GetProperty(Uk + "Caveats");
+            if (!string.IsNullOrEmpty(caveats)) m.Caveats.AddRange(caveats.Split('\n'));
+            m.HandlingInstruction = GetProperty(Uk + "Handling");
+            m.Organisation = GetProperty(Uk + "Organisation");
+            m.Embargo = GetProperty(Uk + "Embargo");
+            m.Codeword = GetProperty(Uk + "Codeword");
+            string descriptors = GetProperty(Uk + "Descriptors");
+            if (!string.IsNullOrEmpty(descriptors)) m.Descriptors.AddRange(descriptors.Split('\n'));
+            return m;
+        }
+
         public FrenchMarking StoredFrenchMarking()
         {
             string level = GetProperty(Fr + "Niveau");
@@ -397,6 +542,12 @@ namespace SystemBannerOffice
                 {
                     continue;
                 }
+                Match german = GermanStart.Match(text);
+                if (german.Success)
+                {
+                    scan.GermanMarks.Add(GermanParser.ParsePortion("[" + german.Groups[1].Value + "]"));
+                    continue;
+                }
                 Match french = FrenchStart.Match(text);
                 if (french.Success)
                 {
@@ -407,7 +558,7 @@ namespace SystemBannerOffice
                     }
                     else if (Regex.IsMatch(french.Groups[1].Value, @"^(NP|DR|S|TS|CD|SD|TSD)\b"))
                     {
-                        scan.Errors.Add("[" + french.Groups[1].Value + "] : marque de paragraphe non valide, les marques sont [NP], [DR], [S] et [TS], suivies de SF pour Spécial France (Confidentiel Défense n'existe plus depuis le 1er juillet 2021).");
+                        scan.Errors.Add("[" + french.Groups[1].Value + "] " + Text.T(": not a valid paragraph mark; the marks are [NP], [DR], [S] and [TS], followed by SF for Spécial France (Confidentiel Défense no longer exists since 1 July 2021).", ": marque de paragraphe non valide ; les marques sont [NP], [DR], [S] et [TS], suivies de SF pour Spécial France (Confidentiel Défense n'existe plus depuis le 1er juillet 2021)."));
                     }
                     else
                     {
@@ -472,6 +623,11 @@ namespace SystemBannerOffice
             }
             if (!found)
             {
+                match = GermanStart.Match(paragraphText);
+                found = match.Success;
+            }
+            if (!found)
+            {
                 return 0;
             }
             int length = match.Length;
@@ -517,7 +673,7 @@ namespace SystemBannerOffice
                     object footer = Late.Item(Late.Get(section, "Footers"), kind);
                     WriteHeaderFooter(Late.Item(Late.Get(section, "Headers"), kind), "SystemBannerTop" + s + "_" + kind, true, stamps.Top, stamps.Background);
                     WriteHeaderFooter(footer, "SystemBannerBottom" + s + "_" + kind, false, cover ? stamps.Cover : stamps.Bottom, stamps.Background);
-                    WritePageNumbers(footer, "SystemBannerPages" + s + "_" + kind, stamps.PageNumbers, stamps.Reference);
+                    WritePageNumbers(footer, "SystemBannerPages" + s + "_" + kind, stamps.PageNumbers, stamps.Reference, stamps.PageFormat);
                 }
             }
         }
@@ -630,7 +786,7 @@ namespace SystemBannerOffice
         }
 
         //"page X / Y", with the reference before it at the TRÈS SECRET level, as page and page count fields
-        private void WritePageNumbers(object footer, string bookmark, bool show, string reference)
+        private void WritePageNumbers(object footer, string bookmark, bool show, string reference, string format)
         {
             if (Convert.ToBoolean(Late.TryGet(footer, "LinkToPrevious") ?? false))
             {
@@ -645,7 +801,7 @@ namespace SystemBannerOffice
             }
             object range = exists ? Late.Get(Late.Item(bookmarks, bookmark), "Range") : NewParagraph(footer, false);
             int start = Convert.ToInt32(Late.Get(range, "Start"));
-            string text = (string.IsNullOrEmpty(reference) ? "" : reference + " - ") + "page \u0001 / \u0002";
+            string text = (string.IsNullOrEmpty(reference) ? "" : reference + " - ") + format.Replace("{P}", "\u0001").Replace("{N}", "\u0002");
             Late.Set(range, "Text", text);
             object borders = Late.TryGet(Late.Get(range, "Font"), "Borders");
             if (borders != null) Late.TrySet(borders, "Enable", 0);
@@ -737,7 +893,7 @@ namespace SystemBannerOffice
             string footer = Lines(stamps.Bottom, stamps.Background);
             if (stamps.PageNumbers)
             {
-                footer += (footer.Length > 0 ? "\n" : "") + "&\"Arial,Regular\"&10" + Color(0) + (string.IsNullOrEmpty(stamps.Reference) ? "" : Escape(stamps.Reference) + " - ") + "page &P / &N";
+                footer += (footer.Length > 0 ? "\n" : "") + "&\"Arial,Regular\"&10" + Color(0) + (string.IsNullOrEmpty(stamps.Reference) ? "" : Escape(stamps.Reference) + " - ") + stamps.PageFormat.Replace("{P}", "&P").Replace("{N}", "&N");
             }
             object sheets = Late.Get(Document, "Worksheets");
             int count = Late.Count(sheets);
@@ -902,7 +1058,7 @@ namespace SystemBannerOffice
             object selection = Late.Get(Late.Get(Application, "ActiveWindow"), "Selection");
             if (Convert.ToInt32(Late.Get(selection, "Type")) != 3) //ppSelectionText
             {
-                throw new InvalidOperationException("Put the cursor in the text that the portion mark applies to.");
+                throw new InvalidOperationException(Text.T("Put the cursor in the text that the portion mark applies to.", "Placer le curseur dans le texte auquel la marque s'applique."));
             }
             object paragraph = Late.Call(Late.Get(selection, "TextRange"), "Paragraphs", 1, 1);
             string text = Convert.ToString(Late.Get(paragraph, "Text"));

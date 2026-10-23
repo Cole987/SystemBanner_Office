@@ -35,7 +35,13 @@ Settings (`HKLM\SOFTWARE\Policies\SystemBanner`, or the SystemBanner Group Polic
 - [ ] `Simple` = 6: SCI accepted. `Simple` = 5: SCI refused.
 - [ ] `Simple` = 12 (France SECRET): Classify goes straight to the French dialog, offers Diffusion Restreinte and Secret, refuses Très Secret with the reason.
 - [ ] `Simple` = 4 (United States): Classify goes straight to the IC dialog, no French markings.
-- [ ] No `Simple` value: Classify asks for the system, France or IC.
+- [ ] No `Simple` value: Classify asks for the system: France, Germany, United Kingdom or IC.
+- [ ] `Simple` = 23 (Germany GEHEIM): Classify goes straight to the German dialog and refuses STRENG GEHEIM.
+- [ ] `Simple` = 32 (United Kingdom OFFICIAL-SENSITIVE): Classify goes straight to the British dialog and refuses SECRET.
+
+Language
+- [ ] An English Office shows the buttons and dialogs in English, a French Office in French.
+- [ ] `OfficeLanguage` = `fr` (or `en`) overrides the language of Office.
 - [ ] `OfficeSpellOut` = 1: banner lines spell control markings out.
 - [ ] `OfficeRequireClassification` = 1: saving and printing an unclassified document asks to classify it first, in Word and Excel.
 
@@ -59,6 +65,19 @@ French markings (Word)
 - [ ] Downgrade: Très Secret to Secret changes the stamps and writes the annexe 38 stamp; Declassify removes the stamps.
 - [ ] Switching the same document to IC markings replaces the stamps with the banner line, with no frame left.
 - [ ] Word 2000: the stamps are red (or the nearest Word 2000 color) and framed.
+
+German markings (Word)
+- [ ] GEHEIM: the level and "amtlich geheim gehalten" in red at the top and bottom of every page, "Seite X von Y" under the bottom stamp.
+- [ ] VS-VERTRAULICH: at the top only, in blue; VS-NfD: the level alone at the top, in black.
+- [ ] Part marks [offen], [VS-NfD], [Geh.]: Roll up gives GEHEIM.
+- [ ] A checked Sperrvermerk shows under the top stamp.
+- [ ] First page: from VS-VERTRAULICH up, the reference, the copy and recipient, and the end year (30 years at most) are required.
+- [ ] Downgrade: GEHEIM to VS-VERTRAULICH changes the stamps and writes the note; lifting removes them.
+
+British markings (Word)
+- [ ] OFFICIAL-SENSITIVE with RECIPIENTS ONLY and PERSONAL DATA: the marking at the top and bottom of every page, in black.
+- [ ] RECIPIENTS ONLY is refused on OFFICIAL, national caveats on OFFICIAL, FOR PUBLIC RELEASE with -SENSITIVE.
+- [ ] Portion mark explains that the GSCP has no portion marking.
 
 Excel
 - [ ] Classify: the banner is in the header and footer of every sheet (print preview). Excel 2007 and later: colored text.

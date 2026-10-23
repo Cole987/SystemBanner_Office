@@ -60,14 +60,18 @@ namespace SystemBannerOffice
     [ComVisible(true), Guid("6F1C1F5E-5B0A-4E3B-9C55-3D2B7A0B6E41"), ProgId("SystemBannerOffice.Connect"), ClassInterface(ClassInterfaceType.AutoDispatch)]
     public class Connect : IDTExtensibility2, IRibbonExtensibility
     {
-        private static readonly string[][] Buttons = new string[][]
+        //id, label and screen tip of each button, in the language of the add-in
+        private static string[][] Buttons()
         {
-            new string[] { "Classify", "Classify", "Set the classification of the document" },
-            new string[] { "PortionMark", "Portion mark", "Mark the paragraph at the cursor" },
-            new string[] { "RollUp", "Roll up", "Build the banner line from the portion marks" },
-            new string[] { "AuthorityBlock", "Authority block", "Classified By, Derived From, Declassify On; for French documents, the first page identification" },
-            new string[] { "Downgrade", "Downgrade", "French documents: lower, raise or lift the classification (IGI 1300, annexe 38)" }
-        };
+            return new string[][]
+            {
+                new string[] { "Classify", Markings.Text.T("Classify", "Classifier"), Markings.Text.T("Set the classification of the document", "Fixer la classification du document") },
+                new string[] { "PortionMark", Markings.Text.T("Portion mark", "Marque de paragraphe"), Markings.Text.T("Mark the paragraph at the cursor", "Marquer le paragraphe du curseur") },
+                new string[] { "RollUp", Markings.Text.T("Roll up", "Calculer"), Markings.Text.T("Build the classification from the portion marks", "Déduire la classification des marques de paragraphe") },
+                new string[] { "AuthorityBlock", Markings.Text.T("Authority block", "Bloc d'autorité"), Markings.Text.T("IC classification authority block; French and German first page", "Bloc d'autorité IC ; première page française et allemande") },
+                new string[] { "Downgrade", Markings.Text.T("Downgrade", "Déclasser"), Markings.Text.T("Lower, raise or lift the classification of French and German documents", "Déclasser, reclasser ou déclassifier un document français ou allemand") }
+            };
+        }
 
         private object application;
         private Commands commands;
@@ -159,7 +163,9 @@ namespace SystemBannerOffice
                 step = "CommandBars.Add";
                 toolbar = Late.Call(bars, "Add", Commands.Title, 1, Missing.Value, true); //msoBarTop, temporary
                 object controls = Late.Get(toolbar, "Controls");
-                foreach (string[] button in Buttons)
+                commands.ChooseLanguage();
+                string[][] buttons = Buttons();
+                foreach (string[] button in buttons)
                 {
                     step = "button " + button[0];
                     object control = Late.Call(controls, "Add", 1, Missing.Value, Missing.Value, Missing.Value, true); //msoControlButton
@@ -172,7 +178,7 @@ namespace SystemBannerOffice
                 }
                 step = "Visible";
                 Late.Set(toolbar, "Visible", true);
-                Log.Write("toolbar created with " + Buttons.Length + " buttons");
+                Log.Write("toolbar created with " + buttons.Length + " buttons");
             }
             catch (Exception ex)
             {
@@ -183,10 +189,14 @@ namespace SystemBannerOffice
         public string GetCustomUI(string ribbonId)
         {
             Log.Write("GetCustomUI: " + ribbonId);
+            if (commands != null)
+            {
+                commands.ChooseLanguage();
+            }
             System.Text.StringBuilder xml = new System.Text.StringBuilder();
             xml.Append("<customUI xmlns=\"http://schemas.microsoft.com/office/2006/01/customui\"><ribbon><tabs>");
             xml.Append("<tab id=\"SystemBannerTab\" label=\"Classification\"><group id=\"SystemBannerGroup\" label=\"SystemBanner\">");
-            foreach (string[] button in Buttons)
+            foreach (string[] button in Buttons())
             {
                 xml.Append("<button id=\"").Append(button[0]).Append("\" label=\"").Append(button[1]).Append("\" screentip=\"").Append(button[2])
                     .Append("\" size=\"large\" imageMso=\"").Append(Icon(button[0])).Append("\" onAction=\"OnAction\"/>");

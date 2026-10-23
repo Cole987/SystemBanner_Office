@@ -30,12 +30,12 @@ namespace SystemBannerOffice.Markings
             }
             if (value.Length == 0)
             {
-                result.Errors.Add("The marking is empty.");
+                result.Errors.Add(Text.T("The marking is empty.", "Le marquage est vide."));
                 return result;
             }
             if (value != value.ToUpperInvariant())
             {
-                result.Errors.Add("Markings must be in uppercase letters.");
+                result.Errors.Add(Text.T("Markings must be in uppercase letters.", "Les marquages s'écrivent en majuscules."));
                 value = value.ToUpperInvariant();
             }
             List<string> categories = new List<string>(value.Split(new string[] { "//" }, StringSplitOptions.None));
@@ -50,7 +50,7 @@ namespace SystemBannerOffice.Markings
             }
             else if (!ParseUsClassification(categories[0], m))
             {
-                result.Errors.Add("\"" + categories[0] + "\" is not a classification marking.");
+                result.Errors.Add(Text.T("\"" + categories[0] + "\" is not a classification marking.", "« " + categories[0] + " » n'est pas un marquage de classification."));
                 return result;
             }
             int lastCategory = 0; //categories must come in Register order: SCI 1, SAP 2, AEA 3, FGI 4, dissemination 5, non-IC dissemination 6
@@ -60,7 +60,7 @@ namespace SystemBannerOffice.Markings
                 int kind;
                 if (category.Length == 0)
                 {
-                    result.Errors.Add("Empty category: no \"////\" placeholder is allowed for categories that do not apply.");
+                    result.Errors.Add(Text.T("Empty category: no \"////\" placeholder is allowed for categories that do not apply.", "Catégorie vide : aucun « //// » n'est admis pour les catégories sans objet."));
                     continue;
                 }
                 else if (category.StartsWith("SAR-") || category == "SAR" || category.StartsWith("SPECIAL ACCESS REQUIRED-") || IsNatoSap(category.Split('/')[0], false))
@@ -95,11 +95,11 @@ namespace SystemBannerOffice.Markings
                 }
                 if (kind < lastCategory)
                 {
-                    result.Errors.Add("\"" + category + "\" is out of order: categories go classification, SCI, SAP, AEA, FGI, dissemination controls, non-IC dissemination controls.");
+                    result.Errors.Add(Text.T("\"" + category + "\" is out of order: categories go classification, SCI, SAP, AEA, FGI, dissemination controls, non-IC dissemination controls.", "« " + category + " » n'est pas à sa place : l'ordre des catégories est classification, SCI, SAP, AEA, FGI, contrôles de diffusion, contrôles de diffusion hors IC."));
                 }
                 else if (kind == lastCategory)
                 {
-                    result.Errors.Add("\"" + category + "\" repeats a category: values of one category are separated by a single \"/\".");
+                    result.Errors.Add(Text.T("\"" + category + "\" repeats a category: values of one category are separated by a single \"/\".", "« " + category + " » répète une catégorie : les valeurs d'une même catégorie sont séparées par un seul « / »."));
                 }
                 lastCategory = kind;
             }
@@ -156,7 +156,7 @@ namespace SystemBannerOffice.Markings
                 }
                 if (level == null || level == Level.Restricted)
                 {
-                    result.Errors.Add("\"" + text + "\" has no valid JOINT classification level.");
+                    result.Errors.Add(Text.T("\"" + text + "\" has no valid JOINT classification level.", "« " + text + " » n'a pas de niveau de classification JOINT valide."));
                     return false;
                 }
                 m.Level = level.Value;
@@ -166,7 +166,7 @@ namespace SystemBannerOffice.Markings
                 }
                 if (m.JointOwners.Count > 0 && !m.JointOwners.Contains("USA"))
                 {
-                    result.Errors.Add("The co-owners of JOINT information include USA.");
+                    result.Errors.Add(Text.T("The co-owners of JOINT information include USA.", "Les copropriétaires d'une information JOINT incluent USA."));
                 }
                 return true;
             }
@@ -189,7 +189,7 @@ namespace SystemBannerOffice.Markings
                         {
                             if (!IsCountryCode(words[i]))
                             {
-                                result.Errors.Add("\"" + words[i] + "\" is not a trigraph or tetragraph code.");
+                                result.Errors.Add(Text.T("\"" + words[i] + "\" is not a trigraph or tetragraph code.", "« " + words[i] + " » n'est pas un code trigraphe ou tétragraphe."));
                             }
                         }
                         m.OwnerCode = owners;
@@ -197,7 +197,7 @@ namespace SystemBannerOffice.Markings
                     return true;
                 }
             }
-            result.Errors.Add("\"//" + text + "\" is not a non-US, NATO or JOINT classification marking.");
+            result.Errors.Add(Text.T("\"//" + text + "\" is not a non-US, NATO or JOINT classification marking.", "« //" + text + " » n'est pas un marquage de classification non américain, OTAN ou JOINT."));
             return false;
         }
 
@@ -249,7 +249,7 @@ namespace SystemBannerOffice.Markings
         {
             foreach (string item in category.Split('/'))
             {
-                ControlSystem system = ParseHierarchy(item, result, "SCI control system", false);
+                ControlSystem system = ParseHierarchy(item, result, Text.T("SCI control system", "système de contrôle SCI"), false);
                 if (system == null)
                 {
                     continue;
@@ -277,7 +277,7 @@ namespace SystemBannerOffice.Markings
             string trimmed = item.Trim();
             if (trimmed.Length == 0)
             {
-                result.Errors.Add("Empty " + what + ".");
+                result.Errors.Add(Text.T("Empty " + what + ".", "Valeur vide : " + what + "."));
                 return null;
             }
             //spelled out titles contain spaces (TALENT KEYHOLE): match published titles first
@@ -300,7 +300,7 @@ namespace SystemBannerOffice.Markings
             }
             if (name.IndexOf(' ') >= 0 && !spacesInName && Register.FindSci(name) == null) //SAP program identifiers are nicknames and may be spelled out: BUTTER POPCORN
             {
-                result.Errors.Add("\"" + name + "\": a " + what + " is joined to its compartments by a hyphen.");
+                result.Errors.Add(Text.T("\"" + name + "\": a " + what + " is joined to its compartments by a hyphen.", "« " + name + " » : un " + what + " est relié à ses compartiments par un trait d'union."));
             }
             ControlSystem system = new ControlSystem(name);
             if (rest.Length > 0)
@@ -310,7 +310,7 @@ namespace SystemBannerOffice.Markings
                     string compartmentText = part.Trim();
                     if (compartmentText.Length == 0)
                     {
-                        result.Errors.Add("Empty compartment in \"" + trimmed + "\".");
+                        result.Errors.Add(Text.T("Empty compartment in \"" + trimmed + "\".", "Compartiment vide dans « " + trimmed + " »."));
                         continue;
                     }
                     //published compartment titles may contain spaces too (none do today), so split on spaces for the sub-compartments
@@ -358,10 +358,10 @@ namespace SystemBannerOffice.Markings
                 }
                 if (programText.StartsWith("SAR-") || programText.StartsWith("SPECIAL ACCESS REQUIRED-"))
                 {
-                    result.Errors.Add("The SAR- category indicator is not repeated for each program: \"" + category + "\".");
+                    result.Errors.Add(Text.T("The SAR- category indicator is not repeated for each program: \"" + category + "\".", "L'indicateur de catégorie SAR- ne se répète pas pour chaque programme : « " + category + " »."));
                     programText = programText.Substring(programText.IndexOf('-') + 1);
                 }
-                ControlSystem program = ParseHierarchy(programText, result, "SAP program identifier", true);
+                ControlSystem program = ParseHierarchy(programText, result, Text.T("SAP program identifier", "identifiant de programme SAP"), true);
                 if (program != null)
                 {
                     m.Sap.Add(program);
@@ -413,7 +413,7 @@ namespace SystemBannerOffice.Markings
                         }
                         else if (!ParseSigma(part, m.RdSigma))
                         {
-                            result.Errors.Add("\"" + part + "\" is not a sub-marking of RESTRICTED DATA (CNWDI, SIGMA [#]).");
+                            result.Errors.Add(Text.T("\"" + part + "\" is not a sub-marking of RESTRICTED DATA (CNWDI, SIGMA [#]).", "« " + part + " » n'est pas un sous-marquage de RESTRICTED DATA (CNWDI, SIGMA [#])."));
                         }
                     }
                 }
@@ -424,7 +424,7 @@ namespace SystemBannerOffice.Markings
                     {
                         if (!ParseSigma(parts[i].Trim(), m.FrdSigma))
                         {
-                            result.Errors.Add("\"" + parts[i] + "\" is not a sub-marking of FORMERLY RESTRICTED DATA (SIGMA [#]).");
+                            result.Errors.Add(Text.T("\"" + parts[i] + "\" is not a sub-marking of FORMERLY RESTRICTED DATA (SIGMA [#]).", "« " + parts[i] + " » n'est pas un sous-marquage de FORMERLY RESTRICTED DATA (SIGMA [#])."));
                         }
                     }
                 }
@@ -442,7 +442,7 @@ namespace SystemBannerOffice.Markings
                 }
                 else
                 {
-                    result.Errors.Add("\"" + item + "\" is not an Atomic Energy Act marking.");
+                    result.Errors.Add(Text.T("\"" + item + "\" is not an Atomic Energy Act marking.", "« " + item + " » n'est pas un marquage de l'Atomic Energy Act."));
                 }
             }
         }
@@ -476,7 +476,7 @@ namespace SystemBannerOffice.Markings
             {
                 if (!IsCountryCode(code))
                 {
-                    result.Errors.Add("\"" + code + "\" is not a trigraph or tetragraph code in the FGI marking.");
+                    result.Errors.Add(Text.T("\"" + code + "\" is not a trigraph or tetragraph code in the FGI marking.", "« " + code + " » n'est pas un code trigraphe ou tétragraphe dans le marquage FGI."));
                 }
                 m.FgiSources.Add(code);
             }
@@ -556,13 +556,13 @@ namespace SystemBannerOffice.Markings
                         string trimmed = code.Trim();
                         if (!IsCountryCode(trimmed))
                         {
-                            result.Errors.Add("\"" + trimmed + "\" is not a trigraph or tetragraph code in REL TO; codes are separated by \", \".");
+                            result.Errors.Add(Text.T("\"" + trimmed + "\" is not a trigraph or tetragraph code in REL TO; codes are separated by \", \".", "« " + trimmed + " » n'est pas un code trigraphe ou tétragraphe dans REL TO ; les codes sont séparés par « , »."));
                         }
                         m.RelTo.Add(trimmed);
                     }
                     if (m.RelTo.Count == 0 || m.RelTo[0] != "USA")
                     {
-                        result.Errors.Add("USA must come first in the REL TO list.");
+                        result.Errors.Add(Text.T("USA must come first in the REL TO list.", "USA vient en premier dans la liste REL TO."));
                     }
                 }
                 else if (item == "REL")
@@ -590,7 +590,7 @@ namespace SystemBannerOffice.Markings
                     RegisterEntry entry = Register.Recognize(Register.Dissemination, item);
                     if (entry == null)
                     {
-                        result.Errors.Add("\"" + item + "\" is not a dissemination control marking of the Register.");
+                        result.Errors.Add(Text.T("\"" + item + "\" is not a dissemination control marking of the Register.", "« " + item + " » n'est pas un marquage de contrôle de diffusion du Register."));
                     }
                     else
                     {
@@ -609,7 +609,7 @@ namespace SystemBannerOffice.Markings
                 RegisterEntry entry = Register.Recognize(Register.NonIcDissemination, item);
                 if (entry == null)
                 {
-                    result.Errors.Add("\"" + item + "\" is not a non-IC dissemination control marking of the Register.");
+                    result.Errors.Add(Text.T("\"" + item + "\" is not a non-IC dissemination control marking of the Register.", "« " + item + " » n'est pas un marquage de contrôle de diffusion hors IC du Register."));
                 }
                 else
                 {
@@ -623,7 +623,7 @@ namespace SystemBannerOffice.Markings
         {
             if (keys.Contains(key))
             {
-                result.Errors.Add("\"" + key + "\" appears twice.");
+                result.Errors.Add(Text.T("\"" + key + "\" appears twice.", "« " + key + " » figure deux fois."));
                 return;
             }
             keys.Add(key);
@@ -635,7 +635,7 @@ namespace SystemBannerOffice.Markings
             {
                 if (Register.OrderOf(entries, keys[i]) < Register.OrderOf(entries, keys[i - 1]))
                 {
-                    result.Errors.Add("\"" + keys[i] + "\" must come before \"" + keys[i - 1] + "\": controls are listed in Register order.");
+                    result.Errors.Add(Text.T("\"" + keys[i] + "\" must come before \"" + keys[i - 1] + "\": controls are listed in Register order.", "« " + keys[i] + " » doit précéder « " + keys[i - 1] + " » : les contrôles suivent l'ordre du Register."));
                 }
             }
         }

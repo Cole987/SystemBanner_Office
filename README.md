@@ -3,7 +3,9 @@ SystemBanner Office
 
 A Microsoft Office add-in that marks documents with their classification, from the same settings as [SystemBanner](https://github.com/Cole987/SystemBanner_XP): banner lines at the top and bottom of every page, portion marks, roll-up of the portion marks into the banner line, and the classification authority block. One build loads in Office 2000 to 2010 (Word, Excel, PowerPoint), like the Windows versions of SystemBanner.
 
-It follows the *Intelligence Community Markings System Register and Manual* (ODNI, effective 31 December 2016, released under FOIA in 2021) for United States markings, the *Instruction générale interministérielle n° 1300* (SGDSN, 9 August 2021) for French markings, and the stock classifications of SystemBanner for Germany, the United Kingdom, NATO and the United Nations.
+It follows the *Intelligence Community Markings System Register and Manual* (ODNI, effective 31 December 2016, released under FOIA in 2021) for United States markings, the *Instruction générale interministérielle n° 1300* (SGDSN, 9 August 2021) for French markings, the *Verschlusssachenanweisung* (BMI, 13 March 2023) for German markings, the *Government Security Classifications Policy* (Cabinet Office) for British markings, and the stock classifications of SystemBanner for NATO and the United Nations.
+
+The add-in speaks English and French: its dialogs, buttons and messages follow the language of Office, or the `OfficeLanguage` setting. The markings themselves are never translated.
 
 Like SystemBanner, this is a retro computing and preservation project, shared as is. It has not been evaluated or certified for computers that handle real classified or sensitive information.
 
@@ -13,6 +15,8 @@ Like SystemBanner, this is a retro computing and preservation project, shared as
 - [Settings](#settings)
 - [Use](#use)
 - [French markings](#french-markings)
+- [German markings](#german-markings)
+- [British markings](#british-markings)
 - [What the add-in checks](#what-the-add-in-checks)
 - [Limits](#limits)
 - [Building and testing](#building-and-testing)
@@ -28,7 +32,10 @@ FEATURES
 - **Classification authority block.** Classified By, Reason or Derived From, Declassify On, checked as it is typed: date format and 25 year limit, exemptions (`25X#`, `50X1-HUM`, `50X2-WMD`, `75X#`), retired values (OADR, MR, X1 to X8, `25X1-human`) with what to write instead, and the `N/A to RD/FRD/TFNI and NATO portions` line. The most restrictive Declassify On of several sources follows the hierarchy of section E.3.
 - **Metadata.** The classification is stored in the document properties (`Classification`, `SystemBanner.Banner`, the authority block), for mail guards and file servers.
 - **French markings (IGI 1300).** SECRET, TRÈS SECRET and DIFFUSION RESTREINTE stamps, Spécial France, paragraph marks `[S]`, first page identification, declassification, see [French markings](#french-markings).
-- **The computer's classification is the ceiling.** A document cannot be marked above the `Simple` level of the computer; SCI needs a TOP SECRET//SCI computer. With no `Simple` value, the classifier chooses IC or French markings for each document; a computer set to the United States offers IC markings only, a computer set to France French markings only, and a computer set to the German, British, NATO or UN system that system's levels.
+- **German markings (VS-Anweisung).** VS-NUR FÜR DEN DIENSTGEBRAUCH, VS-VERTRAULICH, GEHEIM and STRENG GEHEIM stamps, "amtlich geheim gehalten", Warn- und Sperrvermerke, part marks `[Geh.]`, first page, downgrading, see [German markings](#german-markings).
+- **British markings (GSCP).** OFFICIAL, OFFICIAL-SENSITIVE, SECRET and TOP SECRET with handling instructions, descriptors, codewords, the UK prefix, REL EU and national caveats, see [British markings](#british-markings).
+- **English and French.** Dialogs, buttons and messages in the language of Office, or the one set by `OfficeLanguage`.
+- **The computer's classification is the ceiling.** A document cannot be marked above the `Simple` level of the computer; SCI needs a TOP SECRET//SCI computer. With no `Simple` value, the classifier chooses the system of each document: IC, France, Germany or the United Kingdom. A computer set to one of these countries offers that system only, up to its level; a computer set to NATO or the UN offers the stock levels of SystemBanner. The add-in claims no equivalence between the levels of two systems.
 - **No saving or printing unclassified documents**, when the administrator asks for it (Word and Excel).
 
 ------------
@@ -58,6 +65,7 @@ The add-in reads the SystemBanner key, `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Sys
 | `OfficeRequireClassification` | DWORD | 1: a document with no classification cannot be saved or printed. |
 | `OfficeSpellOut` | DWORD | 1: banner lines spell control markings out (`TALENT KEYHOLE`) instead of using their abbreviations (`TK`). |
 | `OfficeAnalyticProducts` | DWORD | 1: documents are disseminated analytic products, every classified portion must carry an FD&R marking (ICD 710 E.5). |
+| `OfficeLanguage` | String | `en` or `fr`: the language of the add-in. Without it, the language of the Office user interface. A user may also set it in `HKEY_CURRENT_USER\Software\SystemBanner`. |
 | `OfficeToolbar` | DWORD | 1: the SystemBanner toolbar in Office 2007 and later too (Add-ins tab), besides the ribbon. A user may also set it in `HKEY_CURRENT_USER\Software\SystemBanner`. |
 
 ---
@@ -69,8 +77,8 @@ The **Classification** tab (Office 2007 and later) or the **SystemBanner** toolb
 - **Classify**: picks the classification of a document with no portion marks, or of an Excel workbook. The dialog shows the banner line and the portion mark as they are typed, and the reasons a combination is refused.
 - **Portion mark**: marks the paragraph at the cursor, then rolls up the banner line.
 - **Roll up**: rebuilds the banner line from every portion mark of the document, and reports unmarked paragraphs and the choices it made.
-- **Authority block**: writes the classification authority block at the cursor in Word, and stores it in the document properties; for a French document, the first page identification.
-- **Downgrade**: for a French document, lowers, raises or lifts the classification (IGI 1300, annexe 38).
+- **Authority block**: writes the classification authority block at the cursor in Word, and stores it in the document properties; for a French or German document, the first page.
+- **Downgrade**: for a French document, lowers, raises or lifts the classification (IGI 1300, annexe 38); for a German document, downgrades or lifts it (VSA § 18, § 19).
 
 ---------------
 FRENCH MARKINGS
@@ -90,6 +98,44 @@ French markings follow the IGI 1300 of 9 August 2021 (section 7.1, annexes 1, 36
 | Declassification | Lowering, raising and lifting stamps, with the decision number and date | annexe 38 |
 
 The IGI gives no paragraph mark for Spécial France: the add-in writes `[S SF]`, a choice of this project. IC and French markings are never mixed in one document, and the add-in claims no equivalence between their levels. EU and NATO classified information in French documents is not handled. The special classifications and their application directives are not public: the "mention particulière" is free text the add-in cannot check. Excel headers take no frame: the stamps are red text.
+
+---------------
+GERMAN MARKINGS
+---------------
+
+German markings follow the federal *Allgemeine Verwaltungsvorschrift zum materiellen Geheimschutz* (Verschlusssachenanweisung, VSA) of 13 March 2023: § 16 (duration), § 20 (marking) and Anlage IV.
+
+| Element | What the add-in writes | VSA |
+|---|---|---|
+| STRENG GEHEIM, GEHEIM | The level with "amtlich geheim gehalten", in red, at the top and bottom of every page | Anlage IV § 1.1 |
+| VS-VERTRAULICH | The level with "amtlich geheim gehalten", at the top of every page only, in blue (black or blue allowed) | Anlage IV § 1.1 |
+| VS-NUR FÜR DEN DIENSTGEBRAUCH | The level alone, at the top of every page only, in black (black or blue allowed) | Anlage IV § 1.1 |
+| Levels | Written out in full; the abbreviations VS-NfD, VS-Vertr., Geh., Str. Geh. are used for part marks only | § 20 Abs. 4 |
+| Parts | `[VS-NfD]`, `[VS-Vertr.]`, `[Geh.]`, `[Str. Geh.]`, `[offen]` at the start of a paragraph; the document takes the highest level | § 20 Abs. 6 |
+| Warn- und Sperrvermerke | "Nur Deutschen zur Kenntnis", "Nur zu ihrer Information", "Die Fertigung von Kopien dieser VS ist untersagt", "Für Geheimschutzbeauftragte", "Weitergabe an …", "… intern", KRYPTOSICHERHEIT, Controlled COMSEC Item, Atomal, Auswertesache, under the top stamp | § 20 Abs. 3, Anlage IV § 1.3 |
+| First page | Herausgeber, Datum, page count; from VS-VERTRAULICH up the reference with the level abbreviation, the copy number and recipient, and "Die Einstufung endet mit Ablauf des Jahres …" (30 years at most) | § 16, § 20 Abs. 2 |
+| Pages | "Seite X von Y" on every page | § 20 Abs. 2 Nr. 8 |
+| Downgrading, lifting | "Herabgestuft auf … am … durch …", "VS-Einstufung aufgehoben am … durch …" | § 18 Abs. 4, § 19 Abs. 1 |
+
+Choices of this project, where the VSA leaves the form open: the part marks and `[offen]`, the colors of VS-VERTRAULICH and VS-NfD, the place of the Vermerke, and the wording of the downgrading notes (the VSA asks for a visible note of the change and of who decided it). The models of Anlage VIII were not available. The rules of the Länder, which have their own VS-Anweisung, may differ.
+
+----------------
+BRITISH MARKINGS
+----------------
+
+British markings follow the *Government Security Classifications Policy* (GSCP) of the Cabinet Office, as published on gov.uk (file of June 2023, headed "DRAFT 5 August 2024").
+
+| Element | What the add-in writes | GSCP |
+|---|---|---|
+| Tiers | OFFICIAL, SECRET, TOP SECRET; -SENSITIVE is an additional marking of OFFICIAL, written right after it: OFFICIAL-SENSITIVE | Definitions, paragraph 25 |
+| Handling instructions | RECIPIENTS ONLY (OFFICIAL-SENSITIVE and above), FOR PUBLIC RELEASE (OFFICIAL only, never with -SENSITIVE), [ORGANISATION] USE ONLY, HMG USE ONLY (up to SECRET), EMBARGOED (up to SECRET, with its time and date and the handling after it next to the classification) | Handling Instructions |
+| Descriptors | PERSONAL DATA, LEGAL PROFESSIONAL PRIVILEGE (LPP), LEGAL (up to OFFICIAL-SENSITIVE), MARKET SENSITIVE, COMMERCIAL, HR / MANAGEMENT, after the handling instruction | Descriptors |
+| Codewords | One word in capitals, after the classification and the handling instruction | Codewords |
+| Prefix | UK, for assets sent to foreign governments or international organisations; REL EU with it | Prefixes and National Caveats |
+| National caveats | UK EYES ONLY, UK/US EYES ONLY, FIVE EYES ONLY, SECRET and TOP SECRET only, in alphabetical order | Prefixes and National Caveats |
+| Place | The whole marking at the top and bottom of every page, in black: the guidance asks not to color code | paragraph 4, Guidance 1.7 |
+
+The GSCP has no portion marking, no authority block and no downgrading marking: Portion mark, Authority block and Downgrade explain it and do nothing. The order of national caveats and REL EU relative to the other additional markings is shown in pictures of the GSCP that could not be read: the add-in writes `[UK] CLASSIFICATION [REL EU] [CAVEATS] [HANDLING INSTRUCTION] [CODEWORD] [DESCRIPTORS]`, a choice of this project to check against the published policy.
 
 ------------------------
 WHAT THE ADD-IN CHECKS

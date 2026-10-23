@@ -69,11 +69,11 @@ namespace SystemBannerOffice.Markings
             //every classified or Diffusion Restreinte document is identified on its first page
             if (string.IsNullOrEmpty(AutoriteEmettrice))
             {
-                errors.Add("L'autorité émettrice (ou l'organisme auteur) figure sur la première page.");
+                errors.Add(Text.T("The issuing authority (or originating body) appears on the first page.", "L'autorité émettrice (ou l'organisme auteur) figure sur la première page."));
             }
             if (string.IsNullOrEmpty(NumeroEnregistrement))
             {
-                errors.Add("Le numéro d'enregistrement figure sur la première page.");
+                errors.Add(Text.T("The registration number appears on the first page.", "Le numéro d'enregistrement figure sur la première page."));
             }
             if (!marking.IsClassified)
             {
@@ -81,52 +81,52 @@ namespace SystemBannerOffice.Markings
             }
             if (string.IsNullOrEmpty(Auteur))
             {
-                errors.Add("L'auteur de l'information classifiée figure sur la première page.");
+                errors.Add(Text.T("The author of the classified information appears on the first page.", "L'auteur de l'information classifiée figure sur la première page."));
             }
             int choices = (Echeance.HasValue ? 1 : 0) + (Reevaluation.HasValue ? 1 : 0) + (SansEcheance ? 1 : 0);
             if (choices == 0)
             {
-                errors.Add("Une information classifiée porte son échéance de classification (« Déclassifié le »), ou, à titre exceptionnel, sa date de réévaluation (IGI 1300, 7.6.1).");
+                errors.Add(Text.T("Classified information carries its classification deadline (\"Déclassifié le\") or, by exception, its re-evaluation date (IGI 1300, 7.6.1).", "Une information classifiée porte son échéance de classification (« Déclassifié le »), ou, à titre exceptionnel, sa date de réévaluation (IGI 1300, 7.6.1)."));
             }
             else if (choices > 1)
             {
-                errors.Add("Choisir une seule option : échéance, date de réévaluation, ou aucune échéance.");
+                errors.Add(Text.T("Choose a single option: deadline, re-evaluation date, or no deadline.", "Choisir une seule option : échéance, date de réévaluation, ou aucune échéance."));
             }
             if (Echeance.HasValue)
             {
                 if (Echeance.Value.Date <= DateEmission.Date)
                 {
-                    errors.Add("L'échéance de classification est postérieure à la date d'émission.");
+                    errors.Add(Text.T("The classification deadline comes after the issue date.", "L'échéance de classification est postérieure à la date d'émission."));
                 }
                 else if (Echeance.Value.Date >= DateEmission.Date.AddYears(CommunicabilityYears))
                 {
-                    errors.Add("L'échéance de classification est antérieure au délai de cinquante ans de communicabilité (IGI 1300, 7.6.1).");
+                    errors.Add(Text.T("The classification deadline comes before the end of the fifty-year period after which records may be released (IGI 1300, 7.6.1).", "L'échéance de classification est antérieure au délai de cinquante ans de communicabilité (IGI 1300, 7.6.1)."));
                 }
             }
             if (Reevaluation.HasValue)
             {
                 if (Reevaluation.Value.Date <= DateEmission.Date)
                 {
-                    errors.Add("La date de réévaluation est postérieure à la date d'émission.");
+                    errors.Add(Text.T("The re-evaluation date comes after the issue date.", "La date de réévaluation est postérieure à la date d'émission."));
                 }
                 else if (Reevaluation.Value.Date > DateEmission.Date.AddYears(MaximumReevaluationYears))
                 {
-                    errors.Add("La date de réévaluation n'excède pas vingt ans à compter de la date de production (IGI 1300, 7.6.1).");
+                    errors.Add(Text.T("The re-evaluation date is no more than twenty years from the production date (IGI 1300, 7.6.1).", "La date de réévaluation n'excède pas vingt ans à compter de la date de production (IGI 1300, 7.6.1)."));
                 }
             }
             if (marking.Level == FrenchLevel.TresSecret)
             {
                 if (Exemplaire <= 0 || NombreExemplaires <= 0)
                 {
-                    errors.Add("Au niveau Très Secret, chaque document porte son numéro d'exemplaire et le nombre total d'exemplaires (IGI 1300, 7.1.2.3 b).");
+                    errors.Add(Text.T("At the Très Secret level, each document carries its copy number and the total number of copies (IGI 1300, 7.1.2.3 b).", "Au niveau Très Secret, chaque document porte son numéro d'exemplaire et le nombre total d'exemplaires (IGI 1300, 7.1.2.3 b)."));
                 }
                 else if (Exemplaire > NombreExemplaires)
                 {
-                    errors.Add("Le numéro d'exemplaire ne peut dépasser le nombre total d'exemplaires.");
+                    errors.Add(Text.T("The copy number cannot exceed the total number of copies.", "Le numéro d'exemplaire ne peut dépasser le nombre total d'exemplaires."));
                 }
                 if (string.IsNullOrEmpty(Reference))
                 {
-                    errors.Add("Au niveau Très Secret, chaque page porte la référence du document.");
+                    errors.Add(Text.T("At the Très Secret level, each page carries the document reference.", "Au niveau Très Secret, chaque page porte la référence du document."));
                 }
             }
             return errors;
@@ -283,7 +283,7 @@ namespace SystemBannerOffice.Markings
             result.Document = document;
             if (portions.Count == 0)
             {
-                result.Errors.Add("Le document ne comporte aucune marque de paragraphe.");
+                result.Errors.Add(Text.T("The document has no paragraph marks.", "Le document ne comporte aucune marque de paragraphe."));
                 return result;
             }
             foreach (FrenchMarking portion in portions)
@@ -299,7 +299,7 @@ namespace SystemBannerOffice.Markings
             }
             if (document.SpecialFrance && document.Level == FrenchLevel.NonProtege)
             {
-                result.Errors.Add("La mention Spécial France ne s'applique qu'à des informations classifiées ou Diffusion Restreinte.");
+                result.Errors.Add(Text.T("The Spécial France mention only applies to classified or Diffusion Restreinte information.", "La mention Spécial France ne s'applique qu'à des informations classifiées ou Diffusion Restreinte."));
             }
             return result;
         }
@@ -313,11 +313,11 @@ namespace SystemBannerOffice.Markings
             List<string> errors = new List<string>();
             if (m.SpecialFrance && m.Level == FrenchLevel.NonProtege)
             {
-                errors.Add("La mention Spécial France ne s'applique qu'à des informations classifiées ou Diffusion Restreinte.");
+                errors.Add(Text.T("The Spécial France mention only applies to classified or Diffusion Restreinte information.", "La mention Spécial France ne s'applique qu'à des informations classifiées ou Diffusion Restreinte."));
             }
             if (!string.IsNullOrEmpty(m.MentionParticuliere) && !m.IsClassified)
             {
-                errors.Add("Les mentions particulières (7.1.1.3 b) accompagnent des informations classifiées.");
+                errors.Add(Text.T("Particular mentions (7.1.1.3 b) go with classified information.", "Les mentions particulières (7.1.1.3 b) accompagnent des informations classifiées."));
             }
             return errors;
         }

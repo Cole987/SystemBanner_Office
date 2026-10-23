@@ -182,6 +182,63 @@ namespace SystemBannerOffice.Check
             }
             Late.Call(document, "Close", 0); //wdDoNotSaveChanges
             WordFrench(word);
+            WordGerman(word);
+            WordBritish(word);
+        }
+
+        //VS-Anweisung: part marks, GEHEIM in red at the top and bottom with "amtlich geheim gehalten", VS-NfD at the top only, Seite X von Y
+        private static void WordGerman(object word)
+        {
+            object document = Late.Call(Late.Get(word, "Documents"), "Add");
+            Late.Set(Late.Get(document, "Content"), "Text", "[offen] Betreff.\r[Geh.] Geheimer Teil.\r[VS-NfD] Teil VS-NfD.");
+            DocumentHost host = DocumentHost.Active(word);
+            PortionScan scan = host.ScanPortions();
+            Check(scan.GermanMarks.Count == 3 && scan.FrenchMarks.Count == 0 && scan.Systems == 1, "Word German scan: 3 part marks (" + scan.GermanMarks.Count + ")");
+            GermanMarking marking = GermanRollUp.Compute(scan.GermanMarks);
+            Check(marking.Level == GermanLevel.Geheim, "Word German roll-up: " + marking);
+            marking.Vermerke.Add("Nur Deutschen zur Kenntnis");
+            host.Mark(marking);
+            object section = Late.Item(Late.Get(document, "Sections"), 1);
+            object header = Late.Get(Late.Item(Late.Get(section, "Headers"), 1), "Range");
+            object footer = Late.Get(Late.Item(Late.Get(section, "Footers"), 1), "Range");
+            Check(Text(header).StartsWith("GEHEIM\ramtlich geheim gehalten\rNur Deutschen zur Kenntnis"), "Word German header: " + Show(Text(header)));
+            Check(Text(footer).StartsWith("GEHEIM\ramtlich geheim gehalten\r") && Text(footer).Contains("Seite 1 von 1") && Text(footer).IndexOf("Nur Deutschen") < 0, "Word German footer: " + Show(Text(footer)));
+            object first = Late.Get(Late.Get(header, "Characters"), "First");
+            Check(Convert.ToInt32(Late.Get(Late.Get(first, "Font"), "Color")) == StampSet.Red, "Word GEHEIM in red");
+            Check(host.StoredClassification() == "GEHEIM" && host.StoredSystem() == DocumentHost.GermanSystem && host.StoredGermanMarking().Vermerke.Count == 1, "Word German document properties");
+            host.Mark(GermanParser.ParsePortion("[VS-NfD]"));
+            Check(Text(header).StartsWith("VS-NUR FÜR DEN DIENSTGEBRAUCH\r") && Text(header).IndexOf("amtlich") < 0, "Word VS-NfD header, the level alone: " + Show(Text(header)));
+            Check(Text(footer).IndexOf("VS-NUR") < 0 && Text(footer).Contains("Seite 1 von 1"), "Word VS-NfD: no bottom stamp, page numbers: " + Show(Text(footer)));
+            GermanIdentification id = new GermanIdentification();
+            id.Herausgeber = "Bundesministerium X";
+            Late.Call(Late.Get(word, "Selection"), "HomeKey", 6);
+            host.WriteBlock(DocumentHost.IdentificationBookmark, id.Lines(GermanParser.ParsePortion("[VS-NfD]")));
+            Check(Text(Late.Get(document, "Content")).Contains("Herausgeber: Bundesministerium X") && Text(Late.Get(document, "Content")).Contains("1 Seiten"), "Word German first page with the page count field");
+            Late.Call(document, "Close", 0);
+        }
+
+        //GSCP: the classification and its additional markings at the top and bottom, black, no frame, no page numbers
+        private static void WordBritish(object word)
+        {
+            object document = Late.Call(Late.Get(word, "Documents"), "Add");
+            DocumentHost host = DocumentHost.Active(word);
+            UkMarking marking = new UkMarking();
+            marking.Sensitive = true;
+            marking.HandlingInstruction = UkRegister.Embargoed;
+            marking.Embargo = "until 10:00 1 November 2026, then OFFICIAL";
+            marking.Descriptors.Add("PERSONAL DATA");
+            host.Mark(marking);
+            object section = Late.Item(Late.Get(document, "Sections"), 1);
+            object header = Late.Get(Late.Item(Late.Get(section, "Headers"), 1), "Range");
+            object footer = Late.Get(Late.Item(Late.Get(section, "Footers"), 1), "Range");
+            Check(Text(header).StartsWith("OFFICIAL-SENSITIVE EMBARGOED PERSONAL DATA\rEMBARGOED: until 10:00 1 November 2026, then OFFICIAL"), "Word British header: " + Show(Text(header)));
+            Check(Text(footer).StartsWith("OFFICIAL-SENSITIVE EMBARGOED PERSONAL DATA") && Text(footer).IndexOf("page") < 0, "Word British footer: " + Show(Text(footer)));
+            object first = Late.Get(Late.Get(header, "Characters"), "First");
+            Check(Convert.ToInt32(Late.Get(Late.Get(first, "Font"), "Color")) == 0, "Word British marking in black, no colour coding");
+            Check(host.StoredClassification() == "OFFICIAL-SENSITIVE" && host.StoredUkMarking().Descriptors.Count == 1, "Word British document properties");
+            host.Mark(FrenchParser.ParsePortion("[S]"), new FrenchIdentification(), false);
+            Check(Text(header).StartsWith("SECRET\r") && Text(header).IndexOf("OFFICIAL") < 0 && Text(header).IndexOf("EMBARGOED") < 0, "Word French stamps replace the British marking: " + Show(Text(header)));
+            Late.Call(document, "Close", 0);
         }
 
         private static void Excel(object excel)
@@ -332,6 +389,13 @@ namespace SystemBannerOffice.Check
             Check(footer.Contains("TRÈS SECRET") && footer.Contains("TS-2026-042 - page &P / &N") && footer.IndexOf("SPÉCIAL") < 0, "Excel French footer: " + footer);
             host.Mark(FrenchParser.ParsePortion("[DR]"), Identification(), false);
             Check(Convert.ToString(Late.Get(setup, "CenterFooter")).Length == 0, "Excel Diffusion Restreinte: no footer");
+            host.Mark(GermanParser.ParsePortion("[Str. Geh.]"));
+            Check(Convert.ToString(Late.Get(setup, "CenterHeader")).Contains("STRENG GEHEIM") && Convert.ToString(Late.Get(setup, "CenterFooter")).Contains("Seite &P von &N"), "Excel German: " + Convert.ToString(Late.Get(setup, "CenterFooter")));
+            UkMarking uk = new UkMarking();
+            uk.Level = UkLevel.Secret;
+            uk.Caveats.Add("UK EYES ONLY");
+            host.Mark(uk);
+            Check(Convert.ToString(Late.Get(setup, "CenterHeader")).Contains("&K000000SECRET UK EYES ONLY") && Convert.ToString(Late.Get(setup, "CenterFooter")).IndexOf("Seite") < 0, "Excel British: " + Convert.ToString(Late.Get(setup, "CenterHeader")));
             Late.Call(workbook, "Close", false);
         }
 
@@ -363,6 +427,17 @@ namespace SystemBannerOffice.Check
                 if (Convert.ToString(Late.Get(Late.Item(shapes, i), "Name")).StartsWith("SystemBannerBottom")) bottom++;
             }
             Check(bottom == 0, "PowerPoint Diffusion Restreinte: no bottom stamp");
+            host.Mark(GermanParser.ParsePortion("[VS-Vertr.]"));
+            names.Clear();
+            for (int i = 1; i <= Late.Count(shapes); i++)
+            {
+                object shape = Late.Item(shapes, i);
+                string name = Convert.ToString(Late.Get(shape, "Name"));
+                if (name.StartsWith("SystemBanner")) names.Add(name + "=" + Text(Late.Get(Late.Get(shape, "TextFrame"), "TextRange")));
+            }
+            names.Sort(string.CompareOrdinal);
+            all = string.Join(", ", names.ToArray());
+            Check(all == "SystemBannerTop2=amtlich geheim gehalten, SystemBannerTop=VS-VERTRAULICH", "PowerPoint VS-VERTRAULICH at the top only: " + all);
             Late.Call(presentation, "Close");
         }
     }

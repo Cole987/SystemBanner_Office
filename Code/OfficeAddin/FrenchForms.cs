@@ -68,7 +68,7 @@ namespace SystemBannerOffice
             ok.Click += delegate { DialogResult = DialogResult.OK; Close(); };
             Controls.Add(ok);
             Button cancel = new Button();
-            cancel.Text = "Annuler";
+            cancel.Text = Markings.Text.T("Cancel", "Annuler");
             cancel.SetBounds(415, y, 75, 24);
             cancel.DialogResult = DialogResult.Cancel;
             Controls.Add(cancel);
@@ -102,13 +102,13 @@ namespace SystemBannerOffice
         public bool Bound;
 
         public FrenchForm(bool portionMode, FrenchMarking initial, bool initialBound, bool coverAvailable, SystemSettings settings)
-            : base(portionMode ? "Marque de paragraphe (IGI 1300)" : "Classifier le document (IGI 1300)")
+            : base(portionMode ? Markings.Text.T("Paragraph mark (IGI 1300)", "Marque de paragraphe (IGI 1300)") : Markings.Text.T("Classify the document (IGI 1300)", "Classifier le document (IGI 1300)"))
         {
             this.portionMode = portionMode;
             this.settings = settings;
             this.coverAvailable = coverAvailable;
             int y = 10;
-            AddLabel("Niveau", 10, y, 150);
+            AddLabel(Markings.Text.T("Level", "Niveau"), 10, y, 150);
             FrenchLevel[] choices = portionMode
                 ? new FrenchLevel[] { FrenchLevel.NonProtege, FrenchLevel.DiffusionRestreinte, FrenchLevel.Secret, FrenchLevel.TresSecret }
                 : new FrenchLevel[] { FrenchLevel.DiffusionRestreinte, FrenchLevel.Secret, FrenchLevel.TresSecret };
@@ -125,25 +125,25 @@ namespace SystemBannerOffice
                 y += 22;
             }
             specialFrance = new CheckBox();
-            specialFrance.Text = "Spécial France (aux seuls ressortissants français)";
+            specialFrance.Text = Markings.Text.T("Spécial France (French nationals only)", "Spécial France (aux seuls ressortissants français)");
             specialFrance.SetBounds(160, y, 330, 20);
             specialFrance.CheckedChanged += OnChange;
             Controls.Add(specialFrance);
             y += 26;
             if (!portionMode)
             {
-                mention = AddText("Mention particulière", ref y, OnChange);
-                AddLabel("services, États ou organisations autorisés, ou classification spéciale (7.1.1.3 b)", 160, y - 4, 330).ForeColor = SystemColors.GrayText;
+                mention = AddText(Markings.Text.T("Mention particulière", "Mention particulière"), ref y, OnChange);
+                AddLabel(Markings.Text.T("services, states or organisations allowed, or special classification (7.1.1.3 b)", "services, États ou organisations autorisés, ou classification spéciale (7.1.1.3 b)"), 160, y - 4, 330).ForeColor = SystemColors.GrayText;
                 y += 18;
                 bound = new CheckBox();
-                bound.Text = "Document relié : timbre de couverture en bas de la première page";
+                bound.Text = Markings.Text.T("Bound document: cover stamp at the bottom of the first page", "Document relié : timbre de couverture en bas de la première page");
                 bound.SetBounds(160, y, 330, 20);
                 bound.Enabled = coverAvailable;
                 bound.CheckedChanged += OnChange;
                 Controls.Add(bound);
                 y += 28;
             }
-            AddLabel(portionMode ? "Marque" : "Timbres", 10, y, 150);
+            AddLabel(portionMode ? Markings.Text.T("Mark", "Marque") : Markings.Text.T("Stamps", "Timbres"), 10, y, 150);
             if (portionMode)
             {
                 portion = new Label();
@@ -162,7 +162,7 @@ namespace SystemBannerOffice
                 Controls.Add(bottom);
                 y += 84;
             }
-            AddFooter(ref y, portionMode ? "Insérer" : "Classifier");
+            AddFooter(ref y, portionMode ? Markings.Text.T("Insert", "Insérer") : Markings.Text.T("Classify", "Classifier"));
             FrenchMarking start = initial ?? new FrenchMarking();
             if (!portionMode && start.Level == FrenchLevel.NonProtege) start.Level = FrenchLevel.Secret;
             foreach (RadioButton radio in levels)
@@ -212,14 +212,14 @@ namespace SystemBannerOffice
             if (ceiling != null) errors.Add(ceiling);
             if (portionMode)
             {
-                portion.Text = FrenchFormatter.Portion(m) + " texte du paragraphe";
+                portion.Text = FrenchFormatter.Portion(m) + " " + Markings.Text.T("text of the paragraph", "texte du paragraphe");
             }
             else
             {
                 top.Text = FrenchFormatter.Stamp(m);
                 special.Text = m.SpecialFrance ? FrenchFormatter.SpecialFranceStamp : "";
                 special.Visible = m.SpecialFrance;
-                bottom.Text = m.IsClassified ? "en haut et en bas de chaque page, Spécial France en haut seulement" : "en haut de chaque page seulement (annexe 1)";
+                bottom.Text = m.IsClassified ? Markings.Text.T("top and bottom of each page, Spécial France at the top only", "en haut et en bas de chaque page, Spécial France en haut seulement") : Markings.Text.T("top of each page only (annexe 1)", "en haut de chaque page seulement (annexe 1)");
                 if (bound != null) bound.Enabled = coverAvailable && m.IsClassified;
             }
             ShowProblems(errors);
@@ -238,37 +238,37 @@ namespace SystemBannerOffice
         public FrenchIdentification Result;
 
         public IdentificationForm(FrenchIdentification initial, FrenchMarking marking)
-            : base("Identification (IGI 1300, 7.1.2.3)")
+            : base(Markings.Text.T("First page identification (IGI 1300, 7.1.2.3)", "Identification (IGI 1300, 7.1.2.3)"))
         {
             this.marking = marking;
             int y = 10;
-            AddLabel("Document " + marking.ToString(), 10, y, 480).Font = new Font("Tahoma", 8.25f, FontStyle.Bold);
+            AddLabel(Markings.Text.T("Document ", "Document ") + marking.ToString(), 10, y, 480).Font = new Font("Tahoma", 8.25f, FontStyle.Bold);
             y += 24;
-            lieu = AddText("Lieu", ref y, OnChange);
-            AddLabel("Date d'émission", 10, y, 150);
+            lieu = AddText(Markings.Text.T("Place", "Lieu"), ref y, OnChange);
+            AddLabel(Markings.Text.T("Date of issue", "Date d'émission"), 10, y, 150);
             emission = AddDate(160, y, OnChange);
             y += 26;
-            enregistrement = AddText("N° d'enregistrement", ref y, OnChange);
-            autorite = AddText("Autorité émettrice", ref y, OnChange);
-            auteur = AddText("Auteur", ref y, OnChange);
-            annexes = AddText("Annexes ou plans", ref y, OnChange);
+            enregistrement = AddText(Markings.Text.T("Registration number", "N° d'enregistrement"), ref y, OnChange);
+            autorite = AddText(Markings.Text.T("Issuing authority", "Autorité émettrice"), ref y, OnChange);
+            auteur = AddText(Markings.Text.T("Author", "Auteur"), ref y, OnChange);
+            annexes = AddText(Markings.Text.T("Annexes or plans", "Annexes ou plans"), ref y, OnChange);
             if (marking.IsClassified)
             {
-                AddLabel("Échéance", 10, y, 150);
-                withDeadline = Radio("Déclassifié le", 160, y);
+                AddLabel(Markings.Text.T("Deadline", "Échéance"), 10, y, 150);
+                withDeadline = Radio(Markings.Text.T("Declassified on", "Déclassifié le"), 160, y);
                 echeance = AddDate(300, y, OnChange);
                 y += 24;
-                withReview = Radio("À réévaluer le", 160, y);
+                withReview = Radio(Markings.Text.T("Re-evaluate on", "À réévaluer le"), 160, y);
                 reevaluation = AddDate(300, y, OnChange);
-                AddLabel("(à titre exceptionnel, 20 ans au plus)", 415, y, 90).ForeColor = SystemColors.GrayText;
+                AddLabel(Markings.Text.T("(by exception, 20 years at most)", "(à titre exceptionnel, 20 ans au plus)"), 415, y, 90).ForeColor = SystemColors.GrayText;
                 y += 24;
-                without = Radio("Aucune échéance (armes NRBC, 7.6.1)", 160, y);
+                without = Radio(Markings.Text.T("No deadline (NRBC weapons, 7.6.1)", "Aucune échéance (armes NRBC, 7.6.1)"), 160, y);
                 without.Width = 330;
                 y += 28;
             }
             if (marking.Level == FrenchLevel.TresSecret)
             {
-                AddLabel("Exemplaire n° / sur", 10, y, 150);
+                AddLabel(Markings.Text.T("Copy number / of", "Exemplaire n° / sur"), 10, y, 150);
                 exemplaire = new TextBox();
                 exemplaire.SetBounds(160, y, 50, 20);
                 exemplaire.TextChanged += OnChange;
@@ -278,9 +278,9 @@ namespace SystemBannerOffice
                 total.TextChanged += OnChange;
                 Controls.Add(total);
                 y += 26;
-                reference = AddText("Référence (chaque page)", ref y, OnChange);
+                reference = AddText(Markings.Text.T("Reference (every page)", "Référence (chaque page)"), ref y, OnChange);
             }
-            AddFooter(ref y, "Écrire");
+            AddFooter(ref y, Markings.Text.T("Write", "Écrire"));
             FrenchIdentification id = initial ?? new FrenchIdentification();
             lieu.Text = id.Lieu ?? "";
             emission.Value = id.DateEmission;
@@ -363,26 +363,26 @@ namespace SystemBannerOffice
         public string[] Lines;
 
         public ChangeForm(FrenchMarking marking, SystemSettings settings)
-            : base("Déclassement et déclassification (annexe 38)")
+            : base(Markings.Text.T("Downgrade and declassification (annexe 38)", "Déclassement et déclassification (annexe 38)"))
         {
             this.marking = marking;
             this.settings = settings;
             int y = 10;
-            AddLabel("Document " + marking.ToString(), 10, y, 480).Font = new Font("Tahoma", 8.25f, FontStyle.Bold);
+            AddLabel(Markings.Text.T("Document ", "Document ") + marking.ToString(), 10, y, 480).Font = new Font("Tahoma", 8.25f, FontStyle.Bold);
             y += 24;
-            lower = Radio("Déclasser de Très Secret à Secret", ref y);
-            raise = Radio("Reclasser de Secret à Très Secret", ref y);
-            lift = Radio("Déclassifier", ref y);
+            lower = Radio(Markings.Text.T("Downgrade from Très Secret to Secret", "Déclasser de Très Secret à Secret"), ref y);
+            raise = Radio(Markings.Text.T("Upgrade from Secret to Très Secret", "Reclasser de Secret à Très Secret"), ref y);
+            lift = Radio(Markings.Text.T("Declassify", "Déclassifier"), ref y);
             lower.Enabled = marking.Level == FrenchLevel.TresSecret;
             raise.Enabled = marking.Level == FrenchLevel.Secret;
-            AddLabel("Intervient le", 10, y, 150);
+            AddLabel(Markings.Text.T("Takes effect on", "Intervient le"), 10, y, 150);
             effective = AddDate(160, y, OnChange);
             y += 26;
-            decision = AddText("Décision n°", ref y, OnChange);
-            AddLabel("du", 10, y, 150);
+            decision = AddText(Markings.Text.T("Decision number", "Décision n°"), ref y, OnChange);
+            AddLabel(Markings.Text.T("of", "du"), 10, y, 150);
             decisionDate = AddDate(160, y, OnChange);
             y += 30;
-            AddFooter(ref y, "Appliquer");
+            AddFooter(ref y, Markings.Text.T("Apply", "Appliquer"));
             if (lower.Enabled) lower.Checked = true; else if (raise.Enabled) raise.Checked = true; else lift.Checked = true;
             OnChange(null, EventArgs.Empty);
         }
@@ -407,7 +407,7 @@ namespace SystemBannerOffice
             List<string> errors = new List<string>();
             if (decision.Text.Trim().Length == 0)
             {
-                errors.Add("Le numéro de la décision est requis.");
+                errors.Add(Markings.Text.T("The decision number is required.", "Le numéro de la décision est requis."));
             }
             string date = FrenchFormatter.Date(effective.Value);
             string number = decision.Text.Trim();
@@ -433,30 +433,45 @@ namespace SystemBannerOffice
             }
             if (!lower.Checked && !raise.Checked && !lift.Checked)
             {
-                errors.Add("Choisir une opération.");
+                errors.Add(Markings.Text.T("Choose an operation.", "Choisir une opération."));
             }
             ShowProblems(errors);
         }
     }
 
-    //IC or French markings, on a computer where both are allowed
+    //the marking system of a document, on a computer where several are allowed (no Simple value)
     public class SystemForm : FrenchDialog
     {
         public string Result;
 
-        public SystemForm(string current)
-            : base("Système de classification")
+        public SystemForm(string current, string[] systems)
+            : base(Markings.Text.T("Marking system", "Système de classification"))
         {
-            AddLabel("Ce poste accepte les deux systèmes : lequel s'applique à ce document ?", 10, 10, 480);
-            AddButton(DocumentHost.FrenchSystem, "France - IGI 1300 (Secret, Très Secret, Diffusion Restreinte)", 36, current);
-            AddButton(DocumentHost.IcSystem, "États-Unis - IC Markings System (TOP SECRET//SI//NOFORN...)", 70, current);
+            AddLabel(Markings.Text.T("This computer accepts several systems: which one applies to this document?", "Ce poste accepte plusieurs systèmes : lequel s'applique à ce document ?"), 10, 10, 480);
+            int y = 36;
+            foreach (string system in systems)
+            {
+                AddButton(system, Describe(system), y, current);
+                y += 34;
+            }
             Button cancel = new Button();
-            cancel.Text = "Annuler";
-            cancel.SetBounds(415, 108, 75, 24);
+            cancel.Text = Markings.Text.T("Cancel", "Annuler");
+            cancel.SetBounds(415, y + 4, 75, 24);
             cancel.DialogResult = DialogResult.Cancel;
             Controls.Add(cancel);
             CancelButton = cancel;
-            ClientSize = new Size(500, 142);
+            ClientSize = new Size(500, y + 38);
+        }
+
+        private static string Describe(string system)
+        {
+            switch (system)
+            {
+                case DocumentHost.FrenchSystem: return Markings.Text.T("France - IGI 1300 (SECRET, TRÈS SECRET, DIFFUSION RESTREINTE)", "France - IGI 1300 (SECRET, TRÈS SECRET, DIFFUSION RESTREINTE)");
+                case DocumentHost.GermanSystem: return Markings.Text.T("Germany - VS-Anweisung (VS-NfD, VS-VERTRAULICH, GEHEIM, STRENG GEHEIM)", "Allemagne - VS-Anweisung (VS-NfD, VS-VERTRAULICH, GEHEIM, STRENG GEHEIM)");
+                case DocumentHost.BritishSystem: return Markings.Text.T("United Kingdom - GSCP (OFFICIAL, OFFICIAL-SENSITIVE, SECRET, TOP SECRET)", "Royaume-Uni - GSCP (OFFICIAL, OFFICIAL-SENSITIVE, SECRET, TOP SECRET)");
+                default: return Markings.Text.T("United States - IC Markings System (TOP SECRET//SI//NOFORN...)", "États-Unis - IC Markings System (TOP SECRET//SI//NOFORN...)");
+            }
         }
 
         private void AddButton(string system, string text, int y, string current)

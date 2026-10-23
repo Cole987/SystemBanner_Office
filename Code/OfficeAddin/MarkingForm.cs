@@ -30,7 +30,7 @@ namespace SystemBannerOffice
             this.portionMode = portionMode;
             this.settings = settings;
             this.documentBanner = documentBanner;
-            Text = portionMode ? "SystemBanner - Portion mark" : "SystemBanner - Classify document";
+            Text = "SystemBanner - " + (portionMode ? Markings.Text.T("Portion mark", "Marque de portion") : Markings.Text.T("Classify document", "Classifier le document"));
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
@@ -80,7 +80,7 @@ namespace SystemBannerOffice
 
         private void Build()
         {
-            AddLabel("Classification", 10, y, 130);
+            AddLabel(Markings.Text.T("Classification", "Classification"), 10, y, 130);
             owner = new ComboBox();
             owner.DropDownStyle = ComboBoxStyle.DropDownList;
             owner.Items.AddRange(new object[] { "US", "Non-US (//GBR ...)", "NATO", "JOINT" });
@@ -96,9 +96,9 @@ namespace SystemBannerOffice
             level.SelectedIndexChanged += UpdatePreview;
             Controls.Add(level);
             y += 26;
-            ownerCodes = AddText("Owners / NAC activity", "non-US: GBR, or CAN GBR; JOINT: CAN GBR USA; NATO: ISAF");
+            ownerCodes = AddText(Markings.Text.T("Owners / NAC activity", "Propriétaires / activité NAC"), Markings.Text.T("non-US: GBR, or CAN GBR; JOINT: CAN GBR USA; NATO: ISAF", "non US : GBR, ou CAN GBR ; JOINT : CAN GBR USA ; OTAN : ISAF"));
             sci = AddText("SCI", "SI-G ABCD/TK-BLFH/123");
-            sap = AddText("SAP", "BP-123/CA-XYZ (without SAR-)");
+            sap = AddText("SAP", Markings.Text.T("BP-123/CA-XYZ (without SAR-)", "BP-123/CA-XYZ (sans SAR-)"));
 
             AddLabel("AEA", 10, y, 130);
             rd = AddCheck("RD", 140, y, 45);
@@ -109,15 +109,15 @@ namespace SystemBannerOffice
             doeUcni = AddCheck("DOE UCNI", 435, y, 80);
             atomal = AddCheck("ATOMAL", 515, y, 70);
             y += 24;
-            sigma = AddText("SIGMA", "14 18 (with RD or FRD)");
+            sigma = AddText("SIGMA", Markings.Text.T("14 18 (with RD or FRD)", "14 18 (avec RD ou FRD)"));
             AddLabel("NATO SAP", 10, y, 130);
             bohemia = AddCheck("BOHEMIA", 140, y, 80);
             balk = AddCheck("BALK", 220, y, 60);
-            fgiBox = AddCheck("FGI in US information", 300, y, 150);
+            fgiBox = AddCheck(Markings.Text.T("FGI in US information", "FGI dans une information US"), 300, y, 180);
             y += 24;
-            fgi = AddText("FGI sources", "DEU GBR, empty to conceal the source");
+            fgi = AddText(Markings.Text.T("FGI sources", "Sources FGI"), Markings.Text.T("DEU GBR, empty to conceal the source", "DEU GBR, vide pour masquer la source"));
 
-            AddLabel("Dissemination", 10, y, 130);
+            AddLabel(Markings.Text.T("Dissemination", "Diffusion"), 10, y, 130);
             dissem = new CheckedListBox();
             dissem.CheckOnClick = true;
             foreach (RegisterEntry entry in Register.Dissemination)
@@ -138,18 +138,18 @@ namespace SystemBannerOffice
             nonIc.ItemCheck += delegate { BeginInvoke(new EventHandler(UpdatePreview), this, EventArgs.Empty); };
             Controls.Add(nonIc);
             y += 126;
-            relTo = AddText("REL TO", "USA, AUS, GBR, NATO (with REL TO checked)");
-            eyes = AddText("EYES ONLY", "USA/CAN/GBR (NSA SIGINT only)");
+            relTo = AddText("REL TO", Markings.Text.T("USA, AUS, GBR, NATO (with REL TO checked)", "USA, AUS, GBR, NATO (avec REL TO coché)"));
+            eyes = AddText("EYES ONLY", Markings.Text.T("USA/CAN/GBR (NSA SIGINT only)", "USA/CAN/GBR (SIGINT de la NSA uniquement)"));
             display = AddText("DISPLAY ONLY", "AFG, IRQ");
 
-            AddLabel("Banner line", 10, y, 130);
+            AddLabel(Markings.Text.T("Banner line", "Ligne de bannière"), 10, y, 130);
             banner = new Label();
             banner.SetBounds(140, y, 490, 34);
             banner.Font = new Font("Tahoma", 9f, FontStyle.Bold);
             banner.TextAlign = ContentAlignment.MiddleCenter;
             Controls.Add(banner);
             y += 38;
-            AddLabel("Portion mark", 10, y, 130);
+            AddLabel(Markings.Text.T("Portion mark", "Marque de portion"), 10, y, 130);
             portion = new Label();
             portion.SetBounds(140, y, 490, 18);
             portion.Font = new Font("Tahoma", 9f, FontStyle.Bold);
@@ -162,12 +162,12 @@ namespace SystemBannerOffice
             Controls.Add(problems);
             y += 76;
             ok = new Button();
-            ok.Text = portionMode ? "Insert" : "Classify";
+            ok.Text = portionMode ? Markings.Text.T("Insert", "Insérer") : Markings.Text.T("Classify", "Classifier");
             ok.SetBounds(470, y, 75, 24);
             ok.Click += delegate { DialogResult = DialogResult.OK; Close(); };
             Controls.Add(ok);
             Button cancel = new Button();
-            cancel.Text = "Cancel";
+            cancel.Text = Markings.Text.T("Cancel", "Annuler");
             cancel.SetBounds(555, y, 75, 24);
             cancel.DialogResult = DialogResult.Cancel;
             Controls.Add(cancel);
@@ -261,7 +261,7 @@ namespace SystemBannerOffice
                 }
                 else
                 {
-                    errors.Add("SIGMA numbers are numbers: \"" + number + "\".");
+                    errors.Add(Markings.Text.T("SIGMA numbers are numbers: \"" + number + "\".", "Les numéros SIGMA sont des nombres : « " + number + " »."));
                 }
             }
             if (atomal.Checked) m.NatoSap.Add("ATOMAL");
@@ -307,10 +307,10 @@ namespace SystemBannerOffice
             List<string> errors = new List<string>();
             Marking m = Build(errors);
             errors.AddRange(MarkingValidator.Validate(m));
-            if (m.HasDissem("REL") && m.RelTo.Count == 0) errors.Add("REL TO needs its countries.");
-            if (m.HasDissem("DISPLAYONLY") && m.DisplayOnly.Count == 0) errors.Add("DISPLAY ONLY needs its countries.");
-            if (m.Owner == Markings.Owner.NonUS && m.OwnerCode == null && !portionMode) errors.Add("A non-US document names its owner country.");
-            if (m.Owner == Markings.Owner.Joint && m.JointOwners.Count < 2) errors.Add("JOINT information names its co-owners, USA among them.");
+            if (m.HasDissem("REL") && m.RelTo.Count == 0) errors.Add(Markings.Text.T("REL TO needs its countries.", "REL TO a besoin de ses pays."));
+            if (m.HasDissem("DISPLAYONLY") && m.DisplayOnly.Count == 0) errors.Add(Markings.Text.T("DISPLAY ONLY needs its countries.", "DISPLAY ONLY a besoin de ses pays."));
+            if (m.Owner == Markings.Owner.NonUS && m.OwnerCode == null && !portionMode) errors.Add(Markings.Text.T("A non-US document names its owner country.", "Un document non américain nomme son pays propriétaire."));
+            if (m.Owner == Markings.Owner.Joint && m.JointOwners.Count < 2) errors.Add(Markings.Text.T("JOINT information names its co-owners, USA among them.", "Une information JOINT nomme ses copropriétaires, dont USA."));
             if (!portionMode && settings != null)
             {
                 string ceiling = settings.CheckCeiling(m);
@@ -360,11 +360,11 @@ namespace SystemBannerOffice
                 y += 26;
             }
             Label note = new Label();
-            note.Text = "Levels above the classification of this computer (" + settings.Ceiling.Text + ") are not offered.";
+            note.Text = Markings.Text.T("Levels above the classification of this computer (" + settings.Ceiling.Text + ") are not offered.", "Les niveaux supérieurs à la classification de ce poste (" + settings.Ceiling.Text + ") ne sont pas proposés.");
             note.SetBounds(10, y + 4, 300, 30);
             Controls.Add(note);
             Button cancel = new Button();
-            cancel.Text = "Cancel";
+            cancel.Text = Markings.Text.T("Cancel", "Annuler");
             cancel.SetBounds(235, y + 40, 75, 24);
             cancel.DialogResult = DialogResult.Cancel;
             Controls.Add(cancel);
