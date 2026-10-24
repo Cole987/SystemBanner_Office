@@ -56,7 +56,12 @@ namespace SystemBannerOffice.Markings
             new Preset(44, "NATO", "NATO SECRET", 3, new int[6] { 200, 16, 46, 255, 255, 255 }),
             new Preset(45, "NATO", "COSMIC TOP SECRET", 4, new int[6] { 247, 234, 72, 0, 0, 0 }),
             new Preset(51, "United Nations", "UN CONFIDENTIAL", 0, new int[6] { 0, 0, 0, 255, 255, 255 }),
-            new Preset(52, "United Nations", "UN STRICTLY CONFIDENTIAL", 1, new int[6] { 0, 0, 0, 255, 255, 255 })
+            new Preset(52, "United Nations", "UN STRICTLY CONFIDENTIAL", 1, new int[6] { 0, 0, 0, 255, 255, 255 }),
+            //EU classified information: the texts set no colour (CSR Annex III pt 13); EU blue with white text, a choice of this project
+            new Preset(61, "European Union", "RESTREINT UE/EU RESTRICTED", 0, new int[6] { 0, 51, 153, 255, 255, 255 }),
+            new Preset(62, "European Union", "CONFIDENTIEL UE/EU CONFIDENTIAL", 1, new int[6] { 0, 51, 153, 255, 255, 255 }),
+            new Preset(63, "European Union", "SECRET UE/EU SECRET", 2, new int[6] { 0, 51, 153, 255, 255, 255 }),
+            new Preset(64, "European Union", "TRÈS SECRET UE/EU TOP SECRET", 3, new int[6] { 0, 51, 153, 255, 255, 255 })
         };
 
         public static Preset Find(int code) //null when no stock classification has this code

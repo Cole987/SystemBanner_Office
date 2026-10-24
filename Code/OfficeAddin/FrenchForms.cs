@@ -469,6 +469,7 @@ namespace SystemBannerOffice
             {
                 case DocumentHost.FrenchSystem: return Markings.Text.T("France - IGI 1300 (SECRET, TRÈS SECRET, DIFFUSION RESTREINTE)", "France - IGI 1300 (SECRET, TRÈS SECRET, DIFFUSION RESTREINTE)", "Frankreich - IGI 1300 (SECRET, TRÈS SECRET, DIFFUSION RESTREINTE)");
                 case DocumentHost.GermanSystem: return Markings.Text.T("Germany - VS-Anweisung (VS-NfD, VS-VERTRAULICH, GEHEIM, STRENG GEHEIM)", "Allemagne - VS-Anweisung (VS-NfD, VS-VERTRAULICH, GEHEIM, STRENG GEHEIM)", "Deutschland - VS-Anweisung (VS-NfD, VS-VERTRAULICH, GEHEIM, STRENG GEHEIM)");
+                case DocumentHost.EuSystem: return Markings.Text.T("European Union - EUCI (RESTREINT UE/EU RESTRICTED to TRÈS SECRET UE/EU TOP SECRET)", "Union européenne - ICUE (RESTREINT UE/EU RESTRICTED à TRÈS SECRET UE/EU TOP SECRET)", "Europäische Union - EU-VS (RESTREINT UE/EU RESTRICTED bis TRÈS SECRET UE/EU TOP SECRET)");
                 case DocumentHost.BritishSystem: return Markings.Text.T("United Kingdom - GSCP (OFFICIAL, OFFICIAL-SENSITIVE, SECRET, TOP SECRET)", "Royaume-Uni - GSCP (OFFICIAL, OFFICIAL-SENSITIVE, SECRET, TOP SECRET)", "Vereinigtes Königreich - GSCP (OFFICIAL, OFFICIAL-SENSITIVE, SECRET, TOP SECRET)");
                 default: return Markings.Text.T("United States - IC Markings System (TOP SECRET//SI//NOFORN...)", "États-Unis - IC Markings System (TOP SECRET//SI//NOFORN...)", "Vereinigte Staaten - IC Markings System (TOP SECRET//SI//NOFORN...)");
             }

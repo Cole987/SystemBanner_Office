@@ -138,6 +138,27 @@ British markings follow the *Government Security Classifications Policy* (GSCP) 
 
 The GSCP has no portion marking, no authority block and no downgrading marking: Portion mark, Authority block and Downgrade explain it and do nothing. The order of national caveats and REL EU relative to the other additional markings is shown in pictures of the GSCP that could not be read: the add-in writes `[UK] CLASSIFICATION [REL EU] [CAVEATS] [HANDLING INSTRUCTION] [CODEWORD] [DESCRIPTORS]`, a choice of this project to check against the published policy.
 
+------------------------------
+EU CLASSIFIED INFORMATION
+------------------------------
+
+EU markings follow Council Decision 2013/488/EU on the security rules for protecting EU classified information (CSR) and Commission Decision (EU, Euratom) 2015/444 (CSD), which have the same marking rules. Every rule, its reference and what the texts leave open are in [Docs/EU-marking-rules.md](Docs/EU-marking-rules.md).
+
+| Element | What the add-in writes | Source |
+|---|---|---|
+| Levels | TRÈS SECRET UE/EU TOP SECRET, SECRET UE/EU SECRET, CONFIDENTIEL UE/EU CONFIDENTIAL, RESTREINT UE/EU RESTRICTED: the bilingual string is the marking, in every language | CSR Art. 2(2), CSD Art. 3(2) |
+| Pages | The level at the top and bottom of every page, in black; every page numbered "P / N" | CSR Annex III pt 13(a) and (b) |
+| Reference | The reference or registration number, required, before the page number on every page | CSR Annex III pt 13(c) |
+| Copy number | From SECRET UE/EU SECRET up, on every page when there are several copies: "Ex./Copy N" | CSR Annex III pt 13(e) |
+| Additional markings | Originator, caveats, releasability, downgrading date or event: one line each, as typed, under the top marking | CSR Annex III pt 10, CSD Art. 23 |
+| Paragraph marks | [TS-UE/EU-TS], [S-UE/EU-S], [C-UE/EU-C], [R-UE/EU-R]; optional; the document takes the highest | CSR Annex III pt 7, 11 and 12 |
+| Downgrading | Only with the originator's prior written consent: Downgrade asks for it, then sets the new level | CSR Art. 3(2), CSD Art. 4(2) |
+| Settings | `Simple` = 61 to 64 (RESTREINT to TRÈS SECRET) offers the EU markings only, up to that level | Codes of this project, to add to SystemBanner |
+
+Choices of this project, where the texts are silent: the place of the marking (top and bottom, centred, black), the brackets around the paragraph abbreviations, the free form of the additional markings and of the releasability, the "P / N" page numbers and "Ex./Copy N", and the blue of the SystemBanner presets 61 to 64. The texts write TRES without the accent in the English version of the CSD: the add-in writes TRÈS, and its parser accepts both. The Council's and the Commission's guidelines on marking are not published in the Official Journal and were not checked. The proposed Regulation on information security, COM(2022) 119, was not adopted when this was written: check EUR-Lex before relying on these rules.
+
+The EU texts define no authority block and no cover page: Authority block explains it. LIMITE (Council) and SENSITIVE (Commission) are not EU classified information and are not offered.
+
 ------------------------
 WHAT THE ADD-IN CHECKS
 ------------------------

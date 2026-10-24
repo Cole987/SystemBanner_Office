@@ -13,11 +13,12 @@ namespace SystemBannerOffice
         public List<Marking> Marks = new List<Marking>();               //IC portion marks, "(S//NF)"
         public List<FrenchMarking> FrenchMarks = new List<FrenchMarking>(); //IGI 1300 paragraph marks, "[S SF]"
         public List<GermanMarking> GermanMarks = new List<GermanMarking>(); //VS-Anweisung part marks, "[Geh.]"
+        public List<EuMarking> EuMarks = new List<EuMarking>();             //EU paragraph abbreviations, "[R-UE/EU-R]"
 
         //how many marking systems the document's marks belong to
         public int Systems
         {
-            get { return (Marks.Count > 0 ? 1 : 0) + (FrenchMarks.Count > 0 ? 1 : 0) + (GermanMarks.Count > 0 ? 1 : 0); }
+            get { return (Marks.Count > 0 ? 1 : 0) + (FrenchMarks.Count > 0 ? 1 : 0) + (GermanMarks.Count > 0 ? 1 : 0) + (EuMarks.Count > 0 ? 1 : 0); }
         }
         public List<string> Errors = new List<string>();
         public int Unmarked;
@@ -141,6 +142,25 @@ namespace SystemBannerOffice
             stamps.Bottom.Add(new StampLine(text, 0, 12, 0));
             return stamps;
         }
+
+        //EUCI: each page marked with the level (CSR Annex III pt 13(a)) and numbered (13(b)); the texts set no place, colour or size:
+        //top and bottom in black like the GSCP, the additional markings under the top one, the reference and copy number by the page number
+        public static StampSet Eu(EuMarking m)
+        {
+            StampSet stamps = new StampSet();
+            string text = EuFormatter.Marking(m.Level);
+            stamps.Top.Add(new StampLine(text, 0, 12, 0));
+            foreach (string line in m.Additional)
+            {
+                stamps.Top.Add(new StampLine(line, 0, 10, 0));
+            }
+            stamps.Bottom.Add(new StampLine(text, 0, 12, 0));
+            stamps.PageNumbers = true;
+            stamps.PageFormat = "{P} / {N}";
+            string footer = EuFormatter.Footer(m);
+            if (footer.Length > 0) stamps.Reference = footer;
+            return stamps;
+        }
     }
 
     //what the add-in does in a document, the same way in Word, Excel and PowerPoint; every call is late bound
@@ -164,6 +184,7 @@ namespace SystemBannerOffice
         public const string FrenchSystem = "France";
         public const string GermanSystem = GermanSettings.Germany;
         public const string BritishSystem = UkSettings.UnitedKingdom;
+        public const string EuSystem = EuSettings.EuropeanUnion;
 
         //a portion mark at the start of a paragraph: "(S//NF) text" or "[S SF] text"
         private static readonly Regex PortionStart = new Regex(@"^\s*\(([^()\r\n]{1,300})\)");
@@ -417,6 +438,34 @@ namespace SystemBannerOffice
             WriteStamps(StampSet.British(marking));
         }
 
+        private const string Eu = "SystemBanner.EU.";
+
+        //the EU markings, and the EU marking in the document properties
+        public void Mark(EuMarking marking)
+        {
+            SetProperty(SystemProperty, EuSystem);
+            SetProperty(BannerProperty, null);
+            SetProperty(ClassificationProperty, EuFormatter.Marking(marking.Level));
+            SetProperty(Eu + "Level", EuFormatter.Abbreviation(marking.Level));
+            SetProperty(Eu + "Additional", marking.Additional.Count > 0 ? string.Join("\n", marking.Additional.ToArray()) : null);
+            SetProperty(Eu + "Reference", marking.Reference);
+            SetProperty(Eu + "Copy", marking.Copy > 0 ? marking.Copy.ToString() : null);
+            WriteStamps(StampSet.Eu(marking));
+        }
+
+        public EuMarking StoredEuMarking()
+        {
+            string level = GetProperty(Eu + "Level");
+            if (string.IsNullOrEmpty(level)) return null;
+            EuMarking m = EuParser.ParsePortion("[" + level + "]") ?? new EuMarking();
+            string additional = GetProperty(Eu + "Additional");
+            if (!string.IsNullOrEmpty(additional)) m.Additional.AddRange(additional.Split('\n'));
+            m.Reference = GetProperty(Eu + "Reference");
+            int copy;
+            if (int.TryParse(GetProperty(Eu + "Copy"), out copy)) m.Copy = copy;
+            return m;
+        }
+
         public UkMarking StoredUkMarking()
         {
             string level = GetProperty(Uk + "Level");
@@ -542,6 +591,20 @@ namespace SystemBannerOffice
                 {
                     continue;
                 }
+                Match eu = EuParser.PortionStart.Match(text);
+                if (eu.Success)
+                {
+                    EuMarking mark = EuParser.ParsePortion(eu.Value.Trim());
+                    if (mark != null)
+                    {
+                        scan.EuMarks.Add(mark);
+                    }
+                    else
+                    {
+                        scan.Errors.Add(eu.Value.Trim() + " " + Text.T(": not a valid EU paragraph mark; the marks are [TS-UE/EU-TS], [S-UE/EU-S], [C-UE/EU-C] and [R-UE/EU-R].", " : marque de paragraphe UE non valide ; les marques sont [TS-UE/EU-TS], [S-UE/EU-S], [C-UE/EU-C] et [R-UE/EU-R].", ": keine gültige EU-Absatzkennzeichnung; die Kennzeichnungen sind [TS-UE/EU-TS], [S-UE/EU-S], [C-UE/EU-C] und [R-UE/EU-R]."));
+                    }
+                    continue;
+                }
                 Match german = GermanStart.Match(text);
                 if (german.Success)
                 {
@@ -621,8 +684,13 @@ namespace SystemBannerOffice
         //length of the portion mark at the start of a paragraph's text, with the space after it, 0 when there is none
         protected static int ExistingMarkLength(string paragraphText)
         {
-            Match match = PortionStart.Match(paragraphText);
-            bool found = match.Success && MarkingParser.Parse(match.Groups[1].Value).Success;
+            Match match = EuParser.PortionStart.Match(paragraphText);
+            bool found = match.Success;
+            if (!found)
+            {
+                match = PortionStart.Match(paragraphText);
+                found = match.Success && MarkingParser.Parse(match.Groups[1].Value).Success;
+            }
             if (!found)
             {
                 match = FrenchStart.Match(paragraphText);

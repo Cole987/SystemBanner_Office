@@ -77,6 +77,8 @@ Goal: dialogs, buttons and messages in German as well, for German users.
 
 **Done when:** every message has its German text, reviewed, and the add-in follows a German Office.
 
+**Done on 24 October 2026, review still to do:** every message has German text (`OfficeLanguage` = `de` or a German Office). A German-speaking security officer still has to review it, especially the US terms (compartments, FD&R), which have no official German form.
+
 ------------------------------------
 4. EU classified information (EUCI)
 ------------------------------------
@@ -98,6 +100,8 @@ Goal: mark documents with the classifications of the European Union.
 5. README section and TESTING.md checks.
 
 **Done when:** an EU document can be classified, stamped and checked in Word, Excel and PowerPoint, with the rules documented and their sources.
+
+**Done on 24 October 2026:** rules in `Docs/EU-marking-rules.md`, engine `Eu.cs`, dialog, stamps, paragraph marks, roll-up, document properties, `Simple` codes 61 to 64 (to add to SystemBanner), unit tests and Word checks. Still to do: check on the VMs, and a review of the choices listed in the README by someone who handles EU classified information.
 
 --------------------------------
 5. Outlook add-in (to evaluate)

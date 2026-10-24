@@ -76,6 +76,14 @@ namespace SystemBannerOffice.Check
                 m.Vermerke.Add(GermanVermerke.Sperrvermerke[0]);
                 return new GermanForm(false, m, settings);
             });
+            Dialog("EU dialog filled with additional markings", delegate
+            {
+                EuMarking m = new EuMarking();
+                m.Level = EuLevel.Secret;
+                m.Reference = "EEAS(2026) 42";
+                m.Additional.Add("RELEASABLE TO NATO");
+                return new EuForm(false, m, settings);
+            });
             Dialog("British dialog filled with descriptors and caveats", delegate
             {
                 UkMarking m = new UkMarking();
@@ -319,6 +327,7 @@ namespace SystemBannerOffice.Check
             WordFrench(word);
             WordGerman(word);
             WordBritish(word);
+            WordEu(word);
         }
 
         //VS-Anweisung: part marks, GEHEIM in red at the top and bottom with "amtlich geheim gehalten", VS-NfD at the top only, Seite X von Y
@@ -373,6 +382,38 @@ namespace SystemBannerOffice.Check
             Check(host.StoredClassification() == "OFFICIAL-SENSITIVE" && host.StoredUkMarking().Descriptors.Count == 1, "Word British document properties");
             host.Mark(FrenchParser.ParsePortion("[S]"), new FrenchIdentification(), false);
             Check(Text(header).StartsWith("SECRET\r") && Text(header).IndexOf("OFFICIAL") < 0 && Text(header).IndexOf("EMBARGOED") < 0, "Word French stamps replace the British marking: " + Show(Text(header)));
+            Late.Call(document, "Close", 0);
+        }
+
+        //EUCI: the level in full at the top and bottom, the additional markings under the top one, the reference and copy number by the page number
+        private static void WordEu(object word)
+        {
+            object document = Late.Call(Late.Get(word, "Documents"), "Add");
+            Late.Set(Late.Get(document, "Content"), "Text", "[R-UE/EU-R] Subject.\r[C-UE/EU-C] Confidential part.\rUnmarked paragraph.");
+            DocumentHost host = DocumentHost.Active(word);
+            PortionScan scan = host.ScanPortions();
+            Check(scan.EuMarks.Count == 2 && scan.Systems == 1 && scan.Unmarked == 1 && scan.Errors.Count == 0, "Word EU paragraph marks: " + scan.EuMarks.Count + " marks, " + scan.Unmarked + " unmarked");
+            EuMarking marking = EuRollUp.Compute(scan.EuMarks);
+            Check(marking.Level == EuLevel.Confidentiel, "Word EU roll-up: " + marking);
+            marking.Reference = "EEAS(2026) 42";
+            marking.Copy = 2;
+            marking.Additional.Add("RELEASABLE TO NATO");
+            host.Mark(marking);
+            object section = Late.Item(Late.Get(document, "Sections"), 1);
+            object header = Late.Get(Late.Item(Late.Get(section, "Headers"), 1), "Range");
+            object footer = Late.Get(Late.Item(Late.Get(section, "Footers"), 1), "Range");
+            Check(Text(header).StartsWith("CONFIDENTIEL UE/EU CONFIDENTIAL\rRELEASABLE TO NATO"), "Word EU header: " + Show(Text(header)));
+            Check(Text(footer).StartsWith("CONFIDENTIEL UE/EU CONFIDENTIAL\r") && Text(footer).Contains("EEAS(2026) 42 - 1 / 1") && Text(footer).IndexOf("Copy") < 0, "Word EU footer, no copy number below SECRET UE: " + Show(Text(footer)));
+            marking.Level = EuLevel.Secret;
+            host.Mark(marking);
+            Check(Text(footer).Contains("EEAS(2026) 42 - Ex./Copy 2 - 1 / 1"), "Word EU footer with the copy number: " + Show(Text(footer)));
+            EuMarking stored = host.StoredEuMarking();
+            Check(host.StoredClassification() == "SECRET UE/EU SECRET" && host.StoredSystem() == DocumentHost.EuSystem && stored.Reference == "EEAS(2026) 42" && stored.Copy == 2 && stored.Additional.Count == 1, "Word EU document properties");
+            //a new mark replaces the one at the start of the paragraph
+            Late.Call(Late.Get(word, "Selection"), "HomeKey", 6); //wdStory
+            host.InsertPortionMark(EuFormatter.Portion(EuLevel.Secret));
+            string first = Text(Late.Get(Late.Item(Late.Get(document, "Paragraphs"), 1), "Range"));
+            Check(first.StartsWith("[S-UE/EU-S] Subject."), "Word EU paragraph mark replaced: " + Show(first));
             Late.Call(document, "Close", 0);
         }
 

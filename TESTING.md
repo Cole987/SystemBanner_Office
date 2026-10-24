@@ -83,6 +83,13 @@ British markings (Word)
 - [ ] RECIPIENTS ONLY is refused on OFFICIAL, national caveats on OFFICIAL, FOR PUBLIC RELEASE with -SENSITIVE.
 - [ ] Portion mark explains that the GSCP has no portion marking.
 
+EU markings (Word)
+- [ ] Classify as SECRET UE/EU SECRET with a reference, copy number 2 and RELEASABLE TO NATO: the level at the top and bottom, the additional marking under the top one, "reference - Ex./Copy 2 - 1 / 1" at the bottom.
+- [ ] CONFIDENTIEL UE/EU CONFIDENTIAL: no copy number at the bottom; no reference: Classify stays greyed with the reason.
+- [ ] Paragraph marks [R-UE/EU-R] and [C-UE/EU-C], Roll up: CONFIDENTIEL UE/EU CONFIDENTIAL; the reference and additional markings stay.
+- [ ] Downgrade asks for the originator's consent, then opens the EU dialog.
+- [ ] `Simple` = 62: Classify goes straight to the EU dialog and refuses SECRET UE/EU SECRET.
+
 Excel
 - [ ] Classify: the banner is in the header and footer of every sheet (print preview). Excel 2007 and later: colored text.
 

@@ -16,6 +16,7 @@ namespace SystemBannerOffice
         private Marking lastPortion;
         private FrenchMarking lastFrenchPortion;
         private GermanMarking lastGermanPortion;
+        private EuMarking lastEuPortion;
 
         public Commands(object application)
         {
@@ -144,6 +145,7 @@ namespace SystemBannerOffice
             if (settings.FrenchAvailable) systems.Add(DocumentHost.FrenchSystem);
             if (GermanSettings.Available(settings)) systems.Add(DocumentHost.GermanSystem);
             if (UkSettings.Available(settings)) systems.Add(DocumentHost.BritishSystem);
+            if (EuSettings.Available(settings)) systems.Add(DocumentHost.EuSystem);
             if (settings.IcAvailable) systems.Add(DocumentHost.IcSystem);
             return systems;
         }
@@ -181,6 +183,7 @@ namespace SystemBannerOffice
                 case DocumentHost.FrenchSystem: ClassifyFrench(host, settings); break;
                 case DocumentHost.GermanSystem: ClassifyGerman(host, settings); break;
                 case DocumentHost.BritishSystem: ClassifyBritish(host, settings); break;
+                case DocumentHost.EuSystem: ClassifyEu(host, settings); break;
                 case DocumentHost.IcSystem: ClassifyIc(host, settings); break;
             }
         }
@@ -235,6 +238,16 @@ namespace SystemBannerOffice
         private void ClassifyBritish(DocumentHost host, SystemSettings settings)
         {
             BritishForm form = new BritishForm(host.StoredUkMarking(), settings);
+            if (form.ShowDialog(new OfficeWindow()) == DialogResult.OK && form.Result != null)
+            {
+                host.Mark(form.Result);
+            }
+        }
+
+        private void ClassifyEu(DocumentHost host, SystemSettings settings)
+        {
+            if (OfferRollUp(host, host.SupportsPortions ? host.ScanPortions().EuMarks.Count : 0)) return;
+            EuForm form = new EuForm(false, host.StoredEuMarking(), settings);
             if (form.ShowDialog(new OfficeWindow()) == DialogResult.OK && form.Result != null)
             {
                 host.Mark(form.Result);
@@ -303,6 +316,15 @@ namespace SystemBannerOffice
                         RollUpDocument(false);
                         return;
                     }
+                case DocumentHost.EuSystem:
+                    {
+                        EuForm eu = new EuForm(true, lastEuPortion, settings);
+                        if (eu.ShowDialog(new OfficeWindow()) != DialogResult.OK || eu.Result == null) return;
+                        lastEuPortion = eu.Result;
+                        host.InsertPortionMark(EuFormatter.Portion(eu.Result.Level));
+                        RollUpDocument(false);
+                        return;
+                    }
                 case DocumentHost.GermanSystem:
                     {
                         GermanForm german = new GermanForm(true, lastGermanPortion, settings);
@@ -345,13 +367,14 @@ namespace SystemBannerOffice
             }
             if (scan.Systems > 1)
             {
-                Show(Text.T("This document mixes the marks of several systems (IC \"(S//NF)\", French \"[S]\", German \"[Geh.]\"): a document belongs to one system, and their levels are not equivalent.",
-                    "Ce document mélange les marques de plusieurs systèmes (IC « (S//NF) », français « [S] », allemand « [Geh.] ») : un document relève d'un seul système, sans équivalence entre leurs niveaux.",
-                    "Dieses Dokument mischt die Kennzeichnungen mehrerer Systeme (IC „(S//NF)“, französisch „[S]“, deutsch „[Geh.]“): Ein Dokument gehört zu einem System, und ihre Geheimhaltungsgrade sind nicht gleichwertig."), MessageBoxIcon.Warning);
+                Show(Text.T("This document mixes the marks of several systems (IC \"(S//NF)\", French \"[S]\", German \"[Geh.]\", EU \"[S-UE/EU-S]\"): a document belongs to one system, and their levels are not equivalent.",
+                    "Ce document mélange les marques de plusieurs systèmes (IC « (S//NF) », français « [S] », allemand « [Geh.] », UE « [S-UE/EU-S] ») : un document relève d'un seul système, sans équivalence entre leurs niveaux.",
+                    "Dieses Dokument mischt die Kennzeichnungen mehrerer Systeme (IC „(S//NF)“, französisch „[S]“, deutsch „[Geh.]“, EU „[S-UE/EU-S]“): Ein Dokument gehört zu einem System, und ihre Geheimhaltungsgrade sind nicht gleichwertig."), MessageBoxIcon.Warning);
                 return false;
             }
             if (scan.FrenchMarks.Count > 0) return RollUpFrench(host, settings, scan, verbose);
             if (scan.GermanMarks.Count > 0) return RollUpGerman(host, settings, scan, verbose);
+            if (scan.EuMarks.Count > 0) return RollUpEu(host, settings, scan, verbose);
             if (scan.Marks.Count == 0)
             {
                 if (verbose) Show(Text.T("The document has no portion marks yet: use Portion mark on each paragraph.", "Le document n'a pas encore de marques de paragraphe : utiliser Portion mark sur chaque paragraphe.", "Das Dokument hat noch keine Teilkennzeichnungen: Verwenden Sie Teilkennzeichnung für jeden Absatz."), MessageBoxIcon.Information);
@@ -464,6 +487,53 @@ namespace SystemBannerOffice
             return true;
         }
 
+        private bool RollUpEu(DocumentHost host, SystemSettings settings, PortionScan scan, bool verbose)
+        {
+            EuMarking document = EuRollUp.Compute(scan.EuMarks);
+            string ceiling = EuSettings.CheckCeiling(settings, document);
+            if (ceiling != null)
+            {
+                Show(ceiling, MessageBoxIcon.Warning);
+                return false;
+            }
+            EuMarking stored = host.StoredEuMarking();
+            if (stored != null)
+            {
+                //set on the whole document
+                document.Additional = stored.Additional;
+                document.Reference = stored.Reference;
+                document.Copy = stored.Copy;
+            }
+            host.Mark(document);
+            StringBuilder report = new StringBuilder();
+            report.Append(Text.T("Level of the document: ", "Niveau du document : ", "Geheimhaltungsgrad des Dokuments: ")).Append(document.ToString()).Append('\n');
+            if (scan.Unmarked > 0)
+            {
+                report.Append('\n').Append(scan.Unmarked).Append(Text.T(" paragraph(s) without a mark: parts with different levels are marked accordingly (CSR Annex III pt 6); the EU texts define no mark for unclassified paragraphs.\n",
+                    " paragraphe(s) sans marque : les parties de niveaux différents sont marquées en conséquence (CSR annexe III pt 6) ; les textes de l'UE ne prévoient pas de marque pour les paragraphes non classifiés.\n",
+                    " Absatz/Absätze ohne Kennzeichnung: Teile mit unterschiedlichem Geheimhaltungsgrad werden entsprechend gekennzeichnet (CSR Anhang III Nr. 6); die EU-Texte sehen keine Kennzeichnung für nicht eingestufte Absätze vor.\n"));
+            }
+            if (verbose || scan.Unmarked > 0)
+            {
+                Show(report.ToString(), MessageBoxIcon.Information);
+            }
+            if (verbose && EuValidator.Validate(document).Count > 0
+                && Ask(Text.T("The reference number of the document is missing (CSR Annex III pt 13(c)). Write it now?", "Le numéro de référence du document manque (CSR annexe III pt 13 c)). L'écrire maintenant ?", "Das Aktenzeichen des Dokuments fehlt (CSR Anhang III Nr. 13 Buchst. c). Jetzt eintragen?")))
+            {
+                ClassifyEuForm(host, settings, document);
+            }
+            return true;
+        }
+
+        private void ClassifyEuForm(DocumentHost host, SystemSettings settings, EuMarking initial)
+        {
+            EuForm form = new EuForm(false, initial, settings);
+            if (form.ShowDialog(new OfficeWindow()) == DialogResult.OK && form.Result != null)
+            {
+                host.Mark(form.Result);
+            }
+        }
+
         private void SuggestAuthorityBlock(DocumentHost host, Marking banner)
         {
             if (banner.Owner == Owner.NonUS || banner.Owner == Owner.Nato || banner.Level == Level.Unclassified)
@@ -505,6 +575,13 @@ namespace SystemBannerOffice
                     return;
                 }
                 WriteGermanIdentification(host, marking);
+                return;
+            }
+            if (system == DocumentHost.EuSystem)
+            {
+                Show(Text.T("The EU security rules define no authority block: the reference number, date and copy number are entered with Classify (CSR Annex III pt 13).",
+                    "Les règles de sécurité de l'UE ne prévoient pas de bloc d'autorité : le numéro de référence, la date et le numéro d'exemplaire se saisissent avec Classifier (CSR annexe III pt 13).",
+                    "Die EU-Sicherheitsvorschriften kennen keinen Einstufungsvermerk: Aktenzeichen, Datum und Ausfertigungsnummer werden mit Einstufen eingetragen (CSR Anhang III Nr. 13)."), MessageBoxIcon.Information);
                 return;
             }
             if (system == DocumentHost.BritishSystem)
@@ -570,6 +647,17 @@ namespace SystemBannerOffice
             if (system == DocumentHost.GermanSystem)
             {
                 DowngradeGerman(host);
+                return;
+            }
+            if (system == DocumentHost.EuSystem && host.StoredEuMarking() != null)
+            {
+                //CSR Art. 3(2), CSD Art. 4(2): only with the originator's prior written consent; the texts give no downgrading marking
+                if (Ask(Text.T("EU classified information is downgraded or declassified only with the prior written consent of its originator (CSR Art. 3(2), CSD Art. 4(2)).\n\nDo you have that consent, and change the level now?",
+                    "Une information classifiée de l'UE n'est déclassée ou déclassifiée qu'avec l'accord écrit préalable de son autorité d'origine (CSR art. 3, par. 2, CSD art. 4, par. 2).\n\nAvez-vous cet accord, et changer le niveau maintenant ?",
+                    "EU-Verschlusssachen werden nur mit vorheriger schriftlicher Zustimmung des Urhebers herabgestuft oder freigegeben (CSR Art. 3 Abs. 2, CSD Art. 4 Abs. 2).\n\nLiegt diese Zustimmung vor, und den Geheimhaltungsgrad jetzt ändern?")))
+                {
+                    ClassifyEuForm(host, SystemSettings.Read(), host.StoredEuMarking());
+                }
                 return;
             }
             FrenchMarking marking = system == DocumentHost.FrenchSystem ? host.StoredFrenchMarking() : null;
