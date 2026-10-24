@@ -24,14 +24,59 @@ namespace SystemBannerOffice
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetAncestor(IntPtr window, uint flags);
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr window, IntPtr processId);
+        [DllImport("kernel32.dll")]
+        private static extern uint GetCurrentThreadId();
+        [DllImport("user32.dll")]
+        private static extern bool IsWindowVisible(IntPtr window);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern int GetClassName(IntPtr window, StringBuilder name, int size);
+        private delegate bool WindowCallback(IntPtr window, IntPtr parameter);
+        [DllImport("user32.dll")]
+        private static extern bool EnumThreadWindows(uint thread, WindowCallback callback, IntPtr parameter);
 
-        //dialogs stay in front of the Office window; Office 2000 has no window handle property, the foreground window is it
+        //dialogs are owned by the main Office window, so they open in front of it. Office 2000 has no window handle property.
+        //The foreground window alone is not enough: in Office 2007 it can be a ribbon or screen tip window, which hides
+        //or closes the dialog with it. The main window is the top level window of Office's thread with Office's frame class.
         private class OfficeWindow : IWin32Window
         {
-            private readonly IntPtr handle = GetForegroundWindow();
+            private readonly IntPtr handle = Find();
             public IntPtr Handle
             {
                 get { return handle; }
+            }
+
+            private static bool IsFrame(IntPtr window)
+            {
+                StringBuilder name = new StringBuilder(64);
+                GetClassName(window, name, name.Capacity);
+                string frame = name.ToString();
+                //Word: OpusApp; Excel: XLMAIN; PowerPoint: PP9FrameClass to PP12FrameClass, then PPTFrameClass
+                return frame == "OpusApp" || frame == "XLMAIN" || (frame.StartsWith("PP") && frame.EndsWith("FrameClass"));
+            }
+
+            private static IntPtr Find()
+            {
+                uint thread = GetCurrentThreadId();
+                IntPtr foreground = GetAncestor(GetForegroundWindow(), 2); //GA_ROOT
+                if (foreground != IntPtr.Zero && GetWindowThreadProcessId(foreground, IntPtr.Zero) == thread && IsFrame(foreground))
+                {
+                    return foreground;
+                }
+                IntPtr found = IntPtr.Zero;
+                EnumThreadWindows(thread, delegate(IntPtr window, IntPtr parameter)
+                {
+                    if (IsWindowVisible(window) && IsFrame(window))
+                    {
+                        found = window;
+                        return false;
+                    }
+                    return true;
+                }, IntPtr.Zero);
+                return found != IntPtr.Zero ? found : foreground;
             }
         }
 
@@ -73,6 +118,7 @@ namespace SystemBannerOffice
         {
             try
             {
+                Log.Write("command " + command + ", dialogs owned by window " + new OfficeWindow().Handle);
                 ChooseLanguage();
                 switch (command)
                 {

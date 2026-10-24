@@ -35,6 +35,16 @@ namespace SystemBannerOffice.Check
                 Console.WriteLine(failures == 0 ? "add-in loaded" : "add-in did not load");
                 return failures == 0 ? 0 : 1;
             }
+            if (args.Length > 0 && args[0] == "toolbar")
+            {
+                //OfficeCheck.exe toolbar: starts the add-in in each Office application as Office does, with the toolbar
+                Connect.ToolbarAlways = true;
+                Run("Word.Application", Toolbar);
+                Run("Excel.Application", Toolbar);
+                Run("PowerPoint.Application", Toolbar);
+                Console.WriteLine(failures == 0 ? "all checks passed" : failures + " check(s) failed");
+                return failures == 0 ? 0 : 1;
+            }
             List<string> apps = new List<string>(args.Length > 0 ? args : new string[] { "word", "excel", "powerpoint" });
             if (apps.Contains("word")) Run("Word.Application", Word);
             if (apps.Contains("excel")) Run("Excel.Application", Excel);
@@ -44,6 +54,57 @@ namespace SystemBannerOffice.Check
         }
 
         private delegate void Scenario(object application);
+
+        private static object FindToolbar(object application)
+        {
+            try
+            {
+                return Late.Item(Late.Get(application, "CommandBars"), Commands.Title);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        //the toolbar of Office 2000 to 2003: created at startup, kept visible by the later checks, removed at the end
+        private static void Toolbar(object application)
+        {
+            if (Convert.ToString(Late.Get(application, "Name")).IndexOf("PowerPoint") >= 0)
+            {
+                Late.TrySet(application, "Visible", -1); //PowerPoint shows no command bar while hidden
+            }
+            Connect addIn = new Connect();
+            Array custom = new object[0];
+            addIn.OnConnection(application, ext_ConnectMode.ext_cm_Startup, null, ref custom);
+            addIn.OnStartupComplete(ref custom);
+            object bar = FindToolbar(application);
+            Check(bar != null, "toolbar created");
+            if (bar == null) return;
+            Check(Late.Count(Late.Get(bar, "Controls")) == 5, "toolbar has its 5 buttons");
+            Check(Convert.ToBoolean(Late.Get(bar, "Visible")), "toolbar visible");
+            //Office hides it, as Word and Excel 2000 can do when they restore their own layout: the later check shows it again
+            Late.Set(bar, "Visible", false);
+            DateTime end = DateTime.Now.AddSeconds(3);
+            while (DateTime.Now < end)
+            {
+                System.Windows.Forms.Application.DoEvents();
+                System.Threading.Thread.Sleep(50);
+            }
+            Check(Convert.ToBoolean(Late.Get(bar, "Visible")), "hidden toolbar shown again by the later check");
+            //Office deletes it: the later check creates it again
+            Late.Call(bar, "Delete");
+            end = DateTime.Now.AddSeconds(3);
+            while (DateTime.Now < end)
+            {
+                System.Windows.Forms.Application.DoEvents();
+                System.Threading.Thread.Sleep(50);
+            }
+            bar = FindToolbar(application);
+            Check(bar != null && Late.Count(Late.Get(bar, "Controls")) == 5, "deleted toolbar created again by the later check");
+            addIn.OnDisconnection(ext_DisconnectMode.ext_dm_HostShutdown, ref custom);
+            Check(FindToolbar(application) == null, "toolbar removed when the add-in unloads");
+        }
 
         private static void Run(string progId, Scenario scenario)
         {

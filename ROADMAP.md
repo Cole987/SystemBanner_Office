@@ -24,6 +24,8 @@ Seen on the Windows 2000 VM: the SystemBanner toolbar shows in PowerPoint 2000, 
 | B | `toolbar created with 5 buttons`, but nothing on screen | Word and Excel restore their own toolbar layout after the add-in starts (Normal.dot, Excel.xlb), and hide or move it. | Word: set `Application.CustomizationContext` to the Normal template before creating it. Both: set `Visible` and `Position` again on the first window activation, or create the toolbar on the first `WindowActivate`/`NewWorkbook` event. |
 | C | No `[WINWORD]` or `[EXCEL]` line at all | Word and Excel 2000 never start the add-in: `LoadBehavior` turned to 2 after an old crash, or they do not read the `HKLM` Addins key. | Check `LoadBehavior` in the diag. Try `Install\SystemBannerOffice_currentuser.reg`. If it works, the installer also writes the `HKCU` key on Office 2000. |
 
+**Fixed in the code on 24 October 2026, to check on the VM:** the toolbar is shown before its buttons are added, each button is added in its own `try` (a failing button no longer hides the whole toolbar), Word keeps the toolbar in Normal.dot without asking to save it, and the toolbar is checked again 2, 4 and 6 seconds after startup: shown again if hidden, created again if deleted (hypotheses A and B). `OfficeCheck.exe toolbar` passes on Office 2016. Hypothesis C (add-in not loaded) needs the diag of the VM.
+
 **Done when:** the toolbar shows in Word, Excel and PowerPoint 2000, each of its 5 buttons opens its dialog, and the log has no error.
 
 ------------------------------------------------------
@@ -46,6 +48,8 @@ Seen on the Windows XP VM with Office 2007: the Classification tab shows, Classi
 | A | Word frozen after the click | The dialog opens behind Word or off screen: its owner is `GetForegroundWindow()`, which may be the ribbon's own window in Office 2007. | Use the Office main window as the owner: `FindWindow("OpusApp")` for Word, `"XLMAIN"` for Excel, `"PPTFrameClass"` for PowerPoint, with the caption of the active window; bring the dialog to the front. |
 | B | No log line for the click, a ribbon error message | Office 2007 does not find or call `OnAction` (callback signature). | Declare the `IRibbonControl` interface (`000C0395-0000-0000-C000-000000000046`) and take it as the callback parameter; give each button its own callback if needed. |
 | C | `ERROR in Classify` in the log | An exception in the command, shown in a message box that is itself hidden (see A). | Fix the error the log names. |
+
+**Fixed in the code on 24 October 2026, to check on the VM:** dialogs and messages are owned by the main Office window (class `OpusApp`, `XLMAIN` or `PP...FrameClass` of Office's thread), no longer by the foreground window, which can be a ribbon window in Office 2007 (hypothesis A). The log has a line for each ribbon click (`OnAction`) and each command (`command`), which separates hypothesis B from C.
 
 **Done when:** on Office 2007, every button opens its dialog in front of Office, in Word, Excel and PowerPoint.
 

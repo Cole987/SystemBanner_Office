@@ -73,10 +73,15 @@ namespace SystemBannerOffice
             };
         }
 
+        //OfficeCheck.exe toolbar: the Office 2000-2003 toolbar on any Office version, without changing the settings
+        public static bool ToolbarAlways;
+
         private object application;
         private Commands commands;
         private object toolbar;
+        private string name = "";
         private readonly List<ComEventLink> links = new List<ComEventLink>();
+        private readonly List<ComEventLink> buttonLinks = new List<ComEventLink>();
 
         public Connect()
         {
@@ -90,7 +95,7 @@ namespace SystemBannerOffice
             {
                 this.application = application;
                 commands = new Commands(application);
-                string name = Convert.ToString(Late.Get(application, "Name"));
+                name = Convert.ToString(Late.Get(application, "Name"));
                 Log.Write("OnConnection: " + name + " " + Late.Get(application, "Version") + ", connect mode " + connectMode);
                 //the save and print check is only wired when the administrator asks for it, one less hook in Office otherwise
                 if (!Markings.SystemSettings.Read().RequireClassification)
@@ -125,9 +130,10 @@ namespace SystemBannerOffice
             {
                 int version = MajorVersion();
                 Log.Write("OnStartupComplete: Office major version " + version);
-                if (version < 12 || Markings.SystemSettings.Read().Toolbar)
+                if (version < 12 || Markings.SystemSettings.Read().Toolbar || ToolbarAlways)
                 {
                     CreateToolbar(); //Office 2007 and later ask for the ribbon instead, see GetCustomUI
+                    CheckToolbarLater();
                 }
             }
             catch (Exception ex)
@@ -148,6 +154,9 @@ namespace SystemBannerOffice
         private void CreateToolbar()
         {
             string step = "CommandBars";
+            //Word ignores Temporary and keeps toolbars in Normal.dot: it must not ask to save Normal.dot because of the add-in
+            object normal = name.IndexOf("Word") >= 0 ? Late.TryGet(application, "NormalTemplate") : null;
+            bool normalSaved = normal != null && Convert.ToBoolean(Late.TryGet(normal, "Saved") ?? false);
             try
             {
                 object bars = Late.Get(application, "CommandBars");
@@ -160,29 +169,103 @@ namespace SystemBannerOffice
                 {
                     //no toolbar left from a previous session
                 }
+                if (normal != null)
+                {
+                    step = "CustomizationContext";
+                    Late.TrySet(application, "CustomizationContext", normal);
+                }
                 step = "CommandBars.Add";
                 toolbar = Late.Call(bars, "Add", Commands.Title, 1, Missing.Value, true); //msoBarTop, temporary
-                object controls = Late.Get(toolbar, "Controls");
-                commands.ChooseLanguage();
-                string[][] buttons = Buttons();
-                foreach (string[] button in buttons)
-                {
-                    step = "button " + button[0];
-                    object control = Late.Call(controls, "Add", 1, Missing.Value, Missing.Value, Missing.Value, true); //msoControlButton
-                    Late.Set(control, "Caption", button[1]);
-                    Late.Set(control, "Style", 2); //msoButtonCaption
-                    Late.Set(control, "TooltipText", button[2]);
-                    Late.Set(control, "Tag", "SystemBanner." + button[0]);
-                    step = "Click event of " + button[0];
-                    links.Add(new ComEventLink(control, typeof(CommandBarButtonEvents).GUID, new ButtonSink(commands, button[0])));
-                }
+                //shown before the buttons: a button that fails must not leave the whole toolbar hidden
                 step = "Visible";
                 Late.Set(toolbar, "Visible", true);
-                Log.Write("toolbar created with " + buttons.Length + " buttons");
+                object controls = Late.Get(toolbar, "Controls");
+                commands.ChooseLanguage();
+                int added = 0;
+                foreach (string[] button in Buttons())
+                {
+                    step = "button " + button[0];
+                    try
+                    {
+                        object control = Late.Call(controls, "Add", 1, Missing.Value, Missing.Value, Missing.Value, true); //msoControlButton
+                        Late.Set(control, "Caption", button[1]);
+                        Late.Set(control, "Style", 2); //msoButtonCaption
+                        Late.Set(control, "TooltipText", button[2]);
+                        Late.Set(control, "Tag", "SystemBanner." + button[0]);
+                        step = "Click event of " + button[0];
+                        buttonLinks.Add(new ComEventLink(control, typeof(CommandBarButtonEvents).GUID, new ButtonSink(commands, button[0])));
+                        added++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error("CreateToolbar, " + step, ex); //one button less rather than no toolbar
+                    }
+                }
+                Log.Write("toolbar created with " + added + " buttons, visible " + Late.TryGet(toolbar, "Visible") + ", position " + Late.TryGet(toolbar, "Position"));
             }
             catch (Exception ex)
             {
                 Log.Error("CreateToolbar, " + step, ex); //the commands stay unavailable rather than breaking Office's startup
+            }
+            if (normalSaved)
+            {
+                Late.TrySet(normal, "Saved", true);
+            }
+        }
+
+        //Word and Excel 2000 can restore their own toolbar layout after OnStartupComplete (Normal.dot, Excel.xlb):
+        //the toolbar is checked again once Office has finished starting, and shown or rebuilt if needed
+        private System.Windows.Forms.Timer toolbarCheck;
+        private int toolbarChecks;
+
+        private void CheckToolbarLater()
+        {
+            toolbarCheck = new System.Windows.Forms.Timer();
+            toolbarCheck.Interval = 2000;
+            toolbarCheck.Tick += delegate
+            {
+                toolbarChecks++;
+                if (toolbarChecks >= 3)
+                {
+                    toolbarCheck.Stop();
+                }
+                CheckToolbar();
+            };
+            toolbarCheck.Start();
+        }
+
+        private void CheckToolbar()
+        {
+            try
+            {
+                if (application == null) return;
+                object bar = null;
+                try
+                {
+                    bar = Late.Item(Late.Get(application, "CommandBars"), Commands.Title);
+                }
+                catch (Exception)
+                {
+                    //gone
+                }
+                if (bar == null)
+                {
+                    Log.Write("toolbar check " + toolbarChecks + ": toolbar gone, created again");
+                    DisposeAll(buttonLinks);
+                    CreateToolbar();
+                    return;
+                }
+                object visible = Late.TryGet(bar, "Visible");
+                Log.Write("toolbar check " + toolbarChecks + ": visible " + visible + ", position " + Late.TryGet(bar, "Position") + ", " + Late.TryGet(Late.TryGet(bar, "Controls"), "Count") + " buttons");
+                if (!Convert.ToBoolean(visible ?? false))
+                {
+                    Late.Set(bar, "Visible", true);
+                    Log.Write("toolbar shown again");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("CheckToolbar", ex);
             }
         }
 
@@ -222,7 +305,9 @@ namespace SystemBannerOffice
         {
             try
             {
-                commands.Run(Convert.ToString(Late.Get(control, "Id")));
+                string id = Convert.ToString(Late.Get(control, "Id"));
+                Log.Write("OnAction " + id); //no such line after a click: Office did not call the add-in
+                commands.Run(id);
             }
             catch (Exception ex)
             {
@@ -233,11 +318,13 @@ namespace SystemBannerOffice
         public void OnDisconnection(ext_DisconnectMode removeMode, ref Array custom)
         {
             Log.Write("OnDisconnection, mode " + removeMode);
-            foreach (ComEventLink link in links)
+            if (toolbarCheck != null)
             {
-                link.Dispose();
+                toolbarCheck.Stop();
+                toolbarCheck = null;
             }
-            links.Clear();
+            DisposeAll(links);
+            DisposeAll(buttonLinks);
             if (toolbar != null)
             {
                 try
@@ -250,6 +337,15 @@ namespace SystemBannerOffice
                 toolbar = null;
             }
             application = null;
+        }
+
+        private static void DisposeAll(List<ComEventLink> list)
+        {
+            foreach (ComEventLink link in list)
+            {
+                link.Dispose();
+            }
+            list.Clear();
         }
 
         public void OnAddInsUpdate(ref Array custom)

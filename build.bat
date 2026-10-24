@@ -25,7 +25,7 @@ if exist Code\OfficeAddin\*.cs (
     "%CSC%" /nologo /target:library /out:"%OUT%\SystemBannerOffice.dll" %REFS% /r:"%NET2%\System.Windows.Forms.dll" /r:"%NET2%\System.Drawing.dll" /r:"%OUT%\SystemBannerOffice.Markings.dll" Code\OfficeAddin\*.cs
     if errorlevel 1 exit /b 1
     rem drives the installed Word, Excel and PowerPoint with the add-in's document code, without installing it
-    "%CSC%" /nologo /target:exe /out:"%OUT%\OfficeCheck.exe" %REFS% /r:"%OUT%\SystemBannerOffice.Markings.dll" /r:"%OUT%\SystemBannerOffice.dll" Code\OfficeCheck\*.cs
+    "%CSC%" /nologo /target:exe /out:"%OUT%\OfficeCheck.exe" %REFS% /r:"%NET2%\System.Windows.Forms.dll" /r:"%OUT%\SystemBannerOffice.Markings.dll" /r:"%OUT%\SystemBannerOffice.dll" Code\OfficeCheck\*.cs
     if errorlevel 1 exit /b 1
 )
 copy /y "%OUT%\SystemBannerOffice.dll" Install\ >nul

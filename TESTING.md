@@ -9,6 +9,8 @@ Automated, on any Windows with the .NET Framework 3.5
 - `build\SystemBannerOffice.Tests.exe`: the marking engine, built on the examples of the Manual. Expected: `41 passed, 0 failed`.
 - `build\OfficeCheck.exe`: drives the installed Word, Excel and PowerPoint through automation (no install needed). Expected: `all checks passed`. Passed on Office 2016 (16.0), 64 bit, on Windows 10.
 
+- `build\OfficeCheck.exe toolbar`: starts the add-in in Word, Excel and PowerPoint as Office does, with the Office 2000-2003 toolbar on any version; checks its 5 buttons, that a hidden or deleted toolbar comes back, and that it goes away when the add-in unloads. Expected: `all checks passed`.
+
 Run both first on each VM: they show at once whether the late bound calls work on that Office version.
 
 Matrix
@@ -95,7 +97,8 @@ When Office does not start, or the add-in does not show
 1. Get Office back: start it in safe mode, which loads no add-in (`winword /safe`, `excel /safe`, `powerpnt /safe`; Office 2000 and XP have no safe mode switch, hold Ctrl while starting). If it still does not start, run `Install\RemoveSystemBannerOffice.bat` as an administrator.
 2. Run `build\OfficeCheck.exe load word` (or `excel`, `powerpoint`): Office loads the installed add-in as the COM add-ins dialog does, and the end of the log shows how far it went.
 3. Run `build\OfficeCheck.exe diag` as the user who started Office. It writes `SystemBannerOffice_diag.txt` on the Desktop: Office versions, the add-in's registration in Office and in COM, the add-ins Office disabled, a test creation of the add-in outside Office, and the end of the add-in's log.
-4. The add-in's log is `%TEMP%\SystemBannerOffice.log`: one line per start (Office version, .NET version), toolbar or ribbon creation, and every error with its stack trace. No log at all means Office never started the add-in.
+4. The log tells how far each click went: `OnAction Classify` (Office 2007 and later called the add-in), then `command Classify, dialogs owned by window N` (the command started; N = 0 means no Office window was found for the dialog). No `OnAction` line after a click on the ribbon: in Office 2007, tick Word Options > Advanced > General > Show add-in user interface errors, and note the message. Toolbar: `toolbar created with 5 buttons`, then up to 3 `toolbar check` lines in the 6 seconds after startup.
+5. The add-in's log is `%TEMP%\SystemBannerOffice.log`: one line per start (Office version, .NET version), toolbar or ribbon creation, and every error with its stack trace. No log at all means Office never started the add-in.
 
 Send the diag file with the report.
 
