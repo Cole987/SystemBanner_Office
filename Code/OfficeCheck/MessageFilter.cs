@@ -16,6 +16,7 @@ namespace SystemBannerOffice.Check
 
     internal class MessageFilter : IOleMessageFilter
     {
+        private const int ServerCallRejected = 1; //PowerPoint also rejects calls while it starts or closes
         private const int ServerCallRetryLater = 2;
         private const int GiveUpAfterMilliseconds = 30000;
 
@@ -41,7 +42,7 @@ namespace SystemBannerOffice.Check
 
         public int RetryRejectedCall(IntPtr callee, int tickCount, int rejectType)
         {
-            if (rejectType == ServerCallRetryLater && tickCount < GiveUpAfterMilliseconds)
+            if ((rejectType == ServerCallRetryLater || rejectType == ServerCallRejected) && tickCount < GiveUpAfterMilliseconds)
             {
                 return 100; //retry after 100 ms
             }

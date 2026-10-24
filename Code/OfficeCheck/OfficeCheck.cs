@@ -35,6 +35,12 @@ namespace SystemBannerOffice.Check
                 Console.WriteLine(failures == 0 ? "add-in loaded" : "add-in did not load");
                 return failures == 0 ? 0 : 1;
             }
+            if (args.Length > 0 && args[0] == "dialogs")
+            {
+                Dialogs();
+                Console.WriteLine(failures == 0 ? "all checks passed" : failures + " check(s) failed");
+                return failures == 0 ? 0 : 1;
+            }
             if (args.Length > 0 && args[0] == "toolbar")
             {
                 //OfficeCheck.exe toolbar: starts the add-in in each Office application as Office does, with the toolbar
@@ -46,6 +52,7 @@ namespace SystemBannerOffice.Check
                 return failures == 0 ? 0 : 1;
             }
             List<string> apps = new List<string>(args.Length > 0 ? args : new string[] { "word", "excel", "powerpoint" });
+            if (args.Length == 0) Dialogs();
             if (apps.Contains("word")) Run("Word.Application", Word);
             if (apps.Contains("excel")) Run("Excel.Application", Excel);
             if (apps.Contains("powerpoint")) Run("PowerPoint.Application", PowerPoint);
@@ -54,6 +61,47 @@ namespace SystemBannerOffice.Check
         }
 
         private delegate void Scenario(object application);
+
+        //the dialogs open filled with a document's marking, list boxes checked included (the Office 2007 VM error of 24 October 2026)
+        private static void Dialogs()
+        {
+            SystemSettings settings = new SystemSettings();
+            Dialog("IC dialog filled with TOP SECRET//SI//ORCON/NOFORN", delegate
+            {
+                return new MarkingForm(false, MarkingParser.Parse("TOP SECRET//SI//ORCON/NOFORN").Marking, null, settings);
+            });
+            Dialog("German dialog filled with a Sperrvermerk", delegate
+            {
+                GermanMarking m = GermanParser.ParsePortion("[Geh.]");
+                m.Vermerke.Add(GermanVermerke.Sperrvermerke[0]);
+                return new GermanForm(false, m, settings);
+            });
+            Dialog("British dialog filled with descriptors and caveats", delegate
+            {
+                UkMarking m = new UkMarking();
+                m.Level = UkLevel.Secret;
+                m.Caveats.Add("UK/US EYES ONLY");
+                return new BritishForm(m, settings);
+            });
+        }
+
+        private delegate System.Windows.Forms.Form NewDialog();
+
+        private static void Dialog(string what, NewDialog create)
+        {
+            try
+            {
+                System.Windows.Forms.Form form = create();
+                form.Show();
+                System.Windows.Forms.Application.DoEvents();
+                form.Close();
+                Check(true, what);
+            }
+            catch (Exception ex)
+            {
+                Check(false, what + ": " + ex);
+            }
+        }
 
         private static object FindToolbar(object application)
         {

@@ -9,6 +9,27 @@ namespace SystemBannerOffice
 {
     //picks a classification and its control markings, with the banner line and portion mark shown as they are typed
     //and the reasons a combination is refused; built in code, .NET 2.0 Windows Forms, no designer file
+    internal static class ItemCheckUpdate
+    {
+        //ItemCheck comes before the box changes state: the update runs right after the click. Before the window exists
+        //(a dialog filled from the document's marking), BeginInvoke would fail: the update runs when the dialog opens.
+        public static void After(Form form, EventHandler update)
+        {
+            if (form.IsHandleCreated)
+            {
+                form.BeginInvoke(update, form, EventArgs.Empty);
+                return;
+            }
+            EventHandler once = null;
+            once = delegate(object sender, EventArgs e)
+            {
+                form.Load -= once;
+                update(sender, e);
+            };
+            form.Load += once;
+        }
+    }
+
     public class MarkingForm : Form
     {
         private readonly bool portionMode;
@@ -125,7 +146,7 @@ namespace SystemBannerOffice
                 dissem.Items.Add(entry.BannerText(true) + (entry.Abbreviation == null ? "" : "  (" + entry.Title + ")"));
             }
             dissem.SetBounds(140, y, 230, 120);
-            dissem.ItemCheck += delegate { BeginInvoke(new EventHandler(UpdatePreview), this, EventArgs.Empty); };
+            dissem.ItemCheck += delegate { ItemCheckUpdate.After(this, UpdatePreview); };
             Controls.Add(dissem);
             AddLabel("Non-IC", 375, y, 60);
             nonIc = new CheckedListBox();
@@ -135,7 +156,7 @@ namespace SystemBannerOffice
                 nonIc.Items.Add(entry.BannerText(true));
             }
             nonIc.SetBounds(435, y, 195, 120);
-            nonIc.ItemCheck += delegate { BeginInvoke(new EventHandler(UpdatePreview), this, EventArgs.Empty); };
+            nonIc.ItemCheck += delegate { ItemCheckUpdate.After(this, UpdatePreview); };
             Controls.Add(nonIc);
             y += 126;
             relTo = AddText("REL TO", Markings.Text.T("USA, AUS, GBR, NATO (with REL TO checked)", "USA, AUS, GBR, NATO (avec REL TO coché)"));

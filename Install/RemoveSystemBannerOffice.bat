@@ -15,4 +15,10 @@ if exist "%WINDIR%\Microsoft.NET\Framework64\v2.0.50727\RegAsm.exe" (
 "%WINDIR%\Microsoft.NET\Framework\v2.0.50727\RegAsm.exe" /nologo /unregister "%TARGET%\SystemBannerOffice.dll"
 del /q "%TARGET%\SystemBannerOffice.dll" "%TARGET%\SystemBannerOffice.Markings.dll"
 rmdir "%TARGET%" 2>nul
+rem the config files the installer wrote for Office 2000 to 2003, and only those
+for %%D in ("%ProgramFiles%\Microsoft Office\Office" "%ProgramFiles%\Microsoft Office\Office10" "%ProgramFiles%\Microsoft Office\Office11") do (
+    for %%E in (WINWORD EXCEL POWERPNT) do (
+        if exist "%%~D\%%E.EXE.config" find "SystemBanner Office add-in installer" "%%~D\%%E.EXE.config" >nul && del /q "%%~D\%%E.EXE.config"
+    )
+)
 echo SystemBanner Office add-in removed.

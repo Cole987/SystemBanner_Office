@@ -11,6 +11,8 @@ Automated, on any Windows with the .NET Framework 3.5
 
 - `build\OfficeCheck.exe toolbar`: starts the add-in in Word, Excel and PowerPoint as Office does, with the Office 2000-2003 toolbar on any version; checks its 5 buttons, that a hidden or deleted toolbar comes back, and that it goes away when the add-in unloads. Expected: `all checks passed`.
 
+- `build\OfficeCheck.exe dialogs`: opens each dialog filled with a marking, checked list boxes included (also part of the plain `OfficeCheck.exe` run). Expected: `all checks passed`.
+
 Run both first on each VM: they show at once whether the late bound calls work on that Office version.
 
 Matrix
@@ -98,7 +100,8 @@ When Office does not start, or the add-in does not show
 2. Run `build\OfficeCheck.exe load word` (or `excel`, `powerpoint`): Office loads the installed add-in as the COM add-ins dialog does, and the end of the log shows how far it went.
 3. Run `build\OfficeCheck.exe diag` as the user who started Office. It writes `SystemBannerOffice_diag.txt` on the Desktop: Office versions, the add-in's registration in Office and in COM, the add-ins Office disabled, a test creation of the add-in outside Office, and the end of the add-in's log.
 4. The log tells how far each click went: `OnAction Classify` (Office 2007 and later called the add-in), then `command Classify, dialogs owned by window N` (the command started; N = 0 means no Office window was found for the dialog). No `OnAction` line after a click on the ribbon: in Office 2007, tick Word Options > Advanced > General > Show add-in user interface errors, and note the message. Toolbar: `toolbar created with 5 buttons`, then up to 3 `toolbar check` lines in the 6 seconds after startup.
-5. The add-in's log is `%TEMP%\SystemBannerOffice.log`: one line per start (Office version, .NET version), toolbar or ribbon creation, and every error with its stack trace. No log at all means Office never started the add-in.
+5. In Word or Excel 2000 to 2003, `File or assembly name SystemBannerOffice, or one of its dependencies, was not found` (from `OfficeCheck.exe load word`) is a .NET 1.x message: Office started .NET 1.1, which cannot load the add-in. The installer writes `WINWORD.EXE.config`, `EXCEL.EXE.config` and `POWERPNT.EXE.config` next to Office 2000 to 2003 to ask for .NET 2.0; the diag shows them under each Office version. An existing config file is never replaced: the installer warns, and `supportedRuntime version="v2.0.50727"` must be added to it by hand.
+6. The add-in's log is `%TEMP%\SystemBannerOffice.log`: one line per start (Office version, .NET version), toolbar or ribbon creation, and every error with its stack trace. No log at all means Office never started the add-in.
 
 Send the diag file with the report.
 

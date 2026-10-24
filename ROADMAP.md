@@ -28,6 +28,8 @@ Seen on the Windows 2000 VM: the SystemBanner toolbar shows in PowerPoint 2000, 
 
 **VM log of 24 October 2026:** `OfficeCheck.exe toolbar` passes in Word and Excel 2000, but the log has no `[WINWORD]` or `[EXCEL]` line: Word and Excel 2000 never create the add-in (hypothesis C), PowerPoint 2000 does.
 
+**Cause found on 24 October 2026 (VM diag):** `OfficeCheck.exe load word` and `load excel` fail with `File or assembly name SystemBannerOffice, or one of its dependencies, was not found`, the wording of .NET 1.x: Word and Excel 2000 start .NET 1.1 (installed on the VM), PowerPoint 2000 starts .NET 2.0. Fixed in the installer: a `.exe.config` next to Word, Excel and PowerPoint 2000 to 2003 asks for .NET 2.0. Word had also turned its `LoadBehavior` to 2 after an old failure; installing again sets it back to 3. To check on the VM.
+
 **Done when:** the toolbar shows in Word, Excel and PowerPoint 2000, each of its 5 buttons opens its dialog, and the log has no error.
 
 ------------------------------------------------------
@@ -54,6 +56,8 @@ Seen on the Windows XP VM with Office 2007: the Classification tab shows, Classi
 **Fixed in the code on 24 October 2026, to check on the VM:** dialogs and messages are owned by the main Office window (class `OpusApp`, `XLMAIN` or `PP...FrameClass` of Office's thread), no longer by the foreground window, which can be a ribbon window in Office 2007 (hypothesis A). The log has a line for each ribbon click (`OnAction`) and each command (`command`), which separates hypothesis B from C.
 
 **Cause found on 24 October 2026 (VM log):** `ERROR in OnAction: 0x800A01A8` (object required) at each click: Office 2007 refuses the late bound read of `IRibbonControl.Id`. Fixed: one callback per button (`OnClassify`, `OnPortionMark`...), the control is never read. To check on the VM.
+
+**Checked on the VM on 24 October 2026:** the buttons work. A second bug showed: Classify failed (`Invoke or BeginInvoke cannot be called on a control until the window handle has been created`) on a document with checked dissemination controls, in every Office version. Fixed: the dialog updates its preview when it opens; `OfficeCheck.exe dialogs` checks it for the IC, German and British dialogs.
 
 **Done when:** on Office 2007, every button opens its dialog in front of Office, in Word, Excel and PowerPoint.
 

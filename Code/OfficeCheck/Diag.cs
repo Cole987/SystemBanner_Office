@@ -31,6 +31,24 @@ namespace SystemBannerOffice.Check
                 {
                     string path = Value(Registry.LocalMachine, view + @"Microsoft\Office\" + version + @"\Common\InstallRoot", "Path");
                     if (path != null) report.AppendLine("  " + version + " (" + view + "): " + path);
+                    if (path == null || !Directory.Exists(path)) continue;
+                    //the .NET runtime Office starts for its add-ins: the one the .exe.config names, or the one of the first managed add-in.
+                    //"File or assembly name SystemBannerOffice ... was not found" in Office means .NET 1.x, which cannot load the add-in.
+                    foreach (string exe in new string[] { "WINWORD.EXE", "EXCEL.EXE", "POWERPNT.EXE" })
+                    {
+                        string config = Path.Combine(path, exe + ".config");
+                        if (!File.Exists(Path.Combine(path, exe))) continue;
+                        if (!File.Exists(config))
+                        {
+                            report.AppendLine("    " + exe + ".config: none" + (version == "9.0" || version == "10.0" || version == "11.0" ? " (Office 2000 to 2003: see the installer)" : ""));
+                            continue;
+                        }
+                        report.AppendLine("    " + exe + ".config:");
+                        foreach (string line in File.ReadAllLines(config))
+                        {
+                            if (line.Trim().Length > 0) report.AppendLine("      " + line.Trim());
+                        }
+                    }
                 }
             }
             report.AppendLine();

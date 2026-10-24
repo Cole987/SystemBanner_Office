@@ -49,7 +49,7 @@ namespace SystemBannerOffice
                 vermerke.Items.AddRange(GermanVermerke.Sperrvermerke);
                 vermerke.Items.AddRange(GermanVermerke.Warnvermerke);
                 vermerke.SetBounds(160, y, 330, 100);
-                vermerke.ItemCheck += delegate { BeginInvoke(new EventHandler(OnChange), this, EventArgs.Empty); };
+                vermerke.ItemCheck += delegate { ItemCheckUpdate.After(this, OnChange); };
                 Controls.Add(vermerke);
                 y += 106;
                 weitergabe = AddText(Markings.Text.T("Weitergabe an / intern", "Weitergabe an / intern"), ref y, OnChange);
@@ -354,7 +354,7 @@ namespace SystemBannerOffice
             list.CheckOnClick = true;
             list.Items.AddRange(items);
             list.SetBounds(160, y, 330, height);
-            list.ItemCheck += delegate { BeginInvoke(new EventHandler(OnChange), this, EventArgs.Empty); };
+            list.ItemCheck += delegate { ItemCheckUpdate.After(this, OnChange); };
             Controls.Add(list);
             return list;
         }
