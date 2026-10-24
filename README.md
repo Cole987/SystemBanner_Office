@@ -55,10 +55,10 @@ REQUIREMENTS
 | Office | Tested |
 |---|---|
 | 2000 (Windows 2000) | Yes: toolbar, Word, Excel, PowerPoint |
-| XP, 2003 | Not yet: same toolbar code as Office 2000 |
+| XP, 2003 | Yes: toolbar, Word, Excel, PowerPoint |
 | 2007 (Windows XP) | Yes: ribbon, Word, Excel, PowerPoint |
 | 2010 (Windows 7) | Yes: ribbon, Word, Excel, PowerPoint |
-| 2013 | Not yet: same ribbon code as 2010 and Microsoft 365 |
+| 2013 | Yes: ribbon, Word, Excel, PowerPoint |
 | Microsoft 365, version 16, 64 bit (Windows 10) | Yes: ribbon, Word, Excel, PowerPoint, and every automated check |
 | 2016, 2019, 2021, 2024 | Not on their own: they are version 16, the version of Microsoft 365, and load the add-in the same way |
 
@@ -203,7 +203,7 @@ LIMITS
 - **Appendices A, B and C** of the Manual (non-US, NATO and UN values) and the Register annexes of trigraph and tetragraph codes are not published with it: country codes are checked for their form (3 or 4 letters), not against a list, and only the NAC activity of the Manual's own example (ISAF, `NIS`) has a portion mark.
 - Where the Manual leaves room or contradicts itself, the roll-up reports its choice in its message: unclassified caveated portions in a classified document are handled as RELIDO (the Manual's `(U//FISA)` example), JOINT co-owners are added to the FGI list of a US banner (the rule, where the Manual's example leaves GBR out), foreign RESTRICTED rolls up to a US banner as CONFIDENTIAL.
 - Portion marks are read at the start of paragraphs of the Word body and of PowerPoint text boxes; footnotes, text boxes in Word, PowerPoint notes and table cells in PowerPoint are not read. Excel workbooks are marked as a whole.
-- Tested by hand on Office 2000, 2007, 2010 and Microsoft 365, and through automation on Microsoft 365 (see below); Office XP, 2003, 2013, and the standalone 2016 to 2024 still have to be tested on their own versions, see `TESTING.md`.
+- Tested by hand on Office 2000, XP, 2003, 2007, 2010, 2013 and Microsoft 365, and through automation on Microsoft 365 (see below); the standalone Office 2016 to 2024 still have to be tested on their own versions, see `TESTING.md`.
 
 -------------------
 BUILDING AND TESTING

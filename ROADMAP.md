@@ -1,6 +1,20 @@
 Roadmap
 =======
 
+> **To do in SystemBanner_XP (not in this repository): add the EU codes 61 to 64.**
+> The add-in reads these `Simple` values, the classification of the computer, for the European Union:
+>
+> | `Simple` | Classification | Rank |
+> |---|---|---|
+> | 61 | RESTREINT UE/EU RESTRICTED | 0 |
+> | 62 | CONFIDENTIEL UE/EU CONFIDENTIAL | 1 |
+> | 63 | SECRET UE/EU SECRET | 2 |
+> | 64 | TRÈS SECRET UE/EU TOP SECRET | 3 |
+>
+> Where: the presets of SystemBanner (classification system "European Union"), its ADM and ADMX/ADML templates (the `Simple` dropdown), and its README. Colors used here, a choice of this project: EU blue (0, 51, 153) with white text, for the four levels. The texts set no color (Council Decision 2013/488/EU, Annex III point 13). The same table is in `Code/MarkingEngine/Presets.cs`.
+
+Tested by hand on 24 October 2026: Office 2000, XP, 2003, 2007, 2010, 2013 and Microsoft 365.
+
 Plan for the next working session, 25 October 2026. Order: the two bugs first (they block the tests on the VMs), then the German interface, then EU markings.
 
 State on 24 October 2026: IC, French, German and British markings, English and French interface, 61 unit tests, every OfficeCheck check passed on Office 2016 (64 bit). Tested by hand on Office 2016. On the VMs: PowerPoint 2000 shows the toolbar; the two bugs below remain.
