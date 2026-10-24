@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <displayName>Complément Office SystemBanner</displayName>
+  <description>Réglages du complément Office SystemBanner. La classification du poste (Simple) se règle avec le modèle de SystemBanner.</description>
+  <resources>
+    <stringTable>
+      <string id="SystemBannerOffice">Complément Office SystemBanner</string>
+      <string id="SystemBannerOffice_Help">Réglages du complément Office SystemBanner. La classification du poste (Simple) se règle avec le modèle de SystemBanner.</string>
+      <string id="SUPPORTED_SystemBannerOffice">Office 2000 à 2024 et Microsoft 365, avec le complément Office SystemBanner</string>
+      <string id="RequireClassification">Exiger une classification pour enregistrer et imprimer</string>
+      <string id="RequireClassification_Help">Activé : un document sans classification ne peut être ni enregistré ni imprimé dans Word et Excel ; le complément demande d'abord de le classifier.&#xD;&#xA;&#xD;&#xA;Désactivé ou non configuré : les documents sont enregistrés et imprimés tels quels.</string>
+      <string id="SpellOut">Écrire en entier les marquages de contrôle IC</string>
+      <string id="SpellOut_Help">Activé : les lignes de bannière IC écrivent les marquages de contrôle en entier (TALENT KEYHOLE) au lieu de leurs abréviations (TK).&#xD;&#xA;&#xD;&#xA;Désactivé ou non configuré : abréviations, comme dans la plupart des documents IC.</string>
+      <string id="AnalyticProducts">Les documents sont des produits d'analyse diffusés</string>
+      <string id="AnalyticProducts_Help">Activé : chaque partie IC classifiée doit porter un marquage de communication à l'étranger (ICD 710 E.5) ; le calcul signale les parties qui n'en ont pas.&#xD;&#xA;&#xD;&#xA;Désactivé ou non configuré : ce marquage n'est pas exigé.</string>
+      <string id="BannerBackground">Lignes de bannière IC sur fond coloré</string>
+      <string id="BannerBackground_Help">Activé : lignes de bannière IC sur le fond coloré de SystemBanner, comme à l'écran, en texte blanc ou noir.&#xD;&#xA;&#xD;&#xA;Désactivé ou non configuré : texte gras de la couleur du niveau, sans fond, lisible en impression noir et blanc. Le registre IC n'impose aucune couleur.</string>
+      <string id="Toolbar">Afficher la barre d'outils dans Office 2007 et suivants</string>
+      <string id="Toolbar_Help">Activé : la barre d'outils SystemBanner d'Office 2000 à 2003 s'affiche aussi dans Office 2007 et suivants (onglet Compléments), en plus de l'onglet du ruban.&#xD;&#xA;&#xD;&#xA;Désactivé ou non configuré : l'onglet Classification du ruban seul.</string>
+      <string id="Language">Langue du complément</string>
+      <string id="Language_Help">Activé : les fenêtres, boutons et messages du complément dans la langue choisie. Les marquages eux-mêmes ne sont jamais traduits.&#xD;&#xA;&#xD;&#xA;Désactivé ou non configuré : la langue de l'interface d'Office (anglais, français ou allemand, sinon anglais). Un utilisateur peut aussi régler OfficeLanguage dans HKEY_CURRENT_USER\Software\SystemBanner.</string>
+      <string id="Language_en">Anglais</string>
+      <string id="Language_fr">Français</string>
+      <string id="Language_de">Allemand</string>
+    </stringTable>
+    <presentationTable>
+      <presentation id="Language">
+        <dropdownList refId="Language" noSort="true" defaultItem="0">Langue :</dropdownList>
+      </presentation>
+    </presentationTable>
+  </resources>
+</policyDefinitionResources>

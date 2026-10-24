@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <displayName>SystemBanner Office-Add-in</displayName>
+  <description>Einstellungen des SystemBanner Office-Add-ins. Die Einstufung des Rechners (Simple) wird mit der Vorlage von SystemBanner eingestellt.</description>
+  <resources>
+    <stringTable>
+      <string id="SystemBannerOffice">SystemBanner Office-Add-in</string>
+      <string id="SystemBannerOffice_Help">Einstellungen des SystemBanner Office-Add-ins. Die Einstufung des Rechners (Simple) wird mit der Vorlage von SystemBanner eingestellt.</string>
+      <string id="SUPPORTED_SystemBannerOffice">Office 2000 bis 2024 und Microsoft 365, mit dem SystemBanner Office-Add-in</string>
+      <string id="RequireClassification">Einstufung vor dem Speichern und Drucken verlangen</string>
+      <string id="RequireClassification_Help">Aktiviert: Ein Dokument ohne Einstufung kann in Word und Excel weder gespeichert noch gedruckt werden; das Add-in verlangt zuerst eine Einstufung.&#xD;&#xA;&#xD;&#xA;Deaktiviert oder nicht konfiguriert: Dokumente werden unverändert gespeichert und gedruckt.</string>
+      <string id="SpellOut">IC-Kontrollkennzeichnungen ausschreiben</string>
+      <string id="SpellOut_Help">Aktiviert: IC-Bannerzeilen schreiben Kontrollkennzeichnungen aus (TALENT KEYHOLE) statt sie abzukürzen (TK).&#xD;&#xA;&#xD;&#xA;Deaktiviert oder nicht konfiguriert: Abkürzungen, wie in den meisten IC-Dokumenten.</string>
+      <string id="AnalyticProducts">Dokumente sind verbreitete Analyseprodukte</string>
+      <string id="AnalyticProducts_Help">Aktiviert: Jeder eingestufte IC-Teil muss eine Kennzeichnung zur Weitergabe ins Ausland tragen (ICD 710 E.5); die Ableitung meldet Teile ohne sie.&#xD;&#xA;&#xD;&#xA;Deaktiviert oder nicht konfiguriert: Diese Kennzeichnung ist nicht verlangt.</string>
+      <string id="BannerBackground">IC-Bannerzeilen auf farbigem Hintergrund</string>
+      <string id="BannerBackground_Help">Aktiviert: IC-Bannerzeilen auf dem farbigen Hintergrund von SystemBanner, wie am Bildschirm, mit weißem oder schwarzem Text.&#xD;&#xA;&#xD;&#xA;Deaktiviert oder nicht konfiguriert: fetter Text in der Farbe des Geheimhaltungsgrads, ohne Hintergrund, im Schwarzweißdruck lesbar. Das IC-Register schreibt keine Farbe vor.</string>
+      <string id="Toolbar">Symbolleiste in Office 2007 und höher anzeigen</string>
+      <string id="Toolbar_Help">Aktiviert: Die SystemBanner-Symbolleiste von Office 2000 bis 2003 erscheint auch in Office 2007 und höher (Registerkarte Add-Ins), neben der Registerkarte im Menüband.&#xD;&#xA;&#xD;&#xA;Deaktiviert oder nicht konfiguriert: nur die Registerkarte Klassifizierung.</string>
+      <string id="Language">Sprache des Add-ins</string>
+      <string id="Language_Help">Aktiviert: Dialoge, Schaltflächen und Meldungen des Add-ins in der gewählten Sprache. Die Kennzeichnungen selbst werden nie übersetzt.&#xD;&#xA;&#xD;&#xA;Deaktiviert oder nicht konfiguriert: die Sprache der Office-Oberfläche (Englisch, Französisch oder Deutsch, sonst Englisch). Ein Benutzer kann OfficeLanguage auch in HKEY_CURRENT_USER\Software\SystemBanner setzen.</string>
+      <string id="Language_en">Englisch</string>
+      <string id="Language_fr">Französisch</string>
+      <string id="Language_de">Deutsch</string>
+    </stringTable>
+    <presentationTable>
+      <presentation id="Language">
+        <dropdownList refId="Language" noSort="true" defaultItem="0">Sprache:</dropdownList>
+      </presentation>
+    </presentationTable>
+  </resources>
+</policyDefinitionResources>

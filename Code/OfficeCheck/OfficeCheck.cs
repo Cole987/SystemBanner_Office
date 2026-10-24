@@ -66,6 +66,23 @@ namespace SystemBannerOffice.Check
 
         private delegate void Scenario(object application);
 
+        //an instance of the previous scenario may still be closing: PowerPoint, a single instance, rejects the new one meanwhile
+        public static object Start(Type type)
+        {
+            for (int attempt = 1; ; attempt++)
+            {
+                try
+                {
+                    return Activator.CreateInstance(type);
+                }
+                catch (COMException ex)
+                {
+                    if (ex.ErrorCode != unchecked((int)0x80010001) || attempt >= 10) throw;
+                    System.Threading.Thread.Sleep(1000);
+                }
+            }
+        }
+
         //the dialogs open filled with a document's marking, list boxes checked included (the Office 2007 VM error of 24 October 2026)
         private static void Dialogs()
         {
@@ -183,7 +200,7 @@ namespace SystemBannerOffice.Check
                 Console.WriteLine("skip " + progId + ": not installed");
                 return;
             }
-            object application = Activator.CreateInstance(type);
+            object application = Start(type);
             try
             {
                 Console.WriteLine(progId + " " + Late.Get(application, "Version"));

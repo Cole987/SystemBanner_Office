@@ -97,8 +97,20 @@ PowerPoint
 - [ ] Classify or roll up: banners at the top and bottom of every slide, title slides included (PowerPoint 2000 to 2003 title master).
 - [ ] Portion mark in a bullet, then Roll up.
 
+Setup program
+- [ ] `Install\SystemBannerOfficeSetup.exe`, Install: the add-in loads in Word, Excel and PowerPoint; "SystemBanner Office add-in" is in Add or Remove Programs.
+- [ ] Windows Vista and later: `SystemBannerOffice.admx` and its ADML are in `C:\Windows\PolicyDefinitions`; gpedit.msc shows *SystemBanner Office add-in* with 6 settings. Windows 2000 and XP: the ADM files are in `C:\WINDOWS\inf`, Add/Remove Templates loads them.
+- [ ] Each setting set in gpedit.msc writes its value in `HKLM\SOFTWARE\Policies\SystemBanner` and the add-in follows it after Office restarts.
+- [ ] With Word open, Install refuses and names it. As a standard user (Windows 2000 and XP), Install refuses.
+- [ ] Office 2000 to 2003: `WINWORD.EXE.config`, `EXCEL.EXE.config`, `POWERPNT.EXE.config` written next to Office.
+- [ ] `/install /quiet` and `/uninstall /quiet` from a command prompt: no window, `echo %errorlevel%` gives 0.
+- [ ] Remove (or Add or Remove Programs): Office starts with no toolbar or tab and no error; the folder, the templates and the config files are gone (after a restart if Office held a file).
+
 Removal
 - [ ] `Install\RemoveSystemBannerOffice.bat`: Office starts with no toolbar or tab and no error.
+
+Excel 2000 to 2003
+- [ ] With no printer installed, Classify explains that Excel needs one; with the "Generic / Text Only" printer, the header and footer are written.
 
 When Office does not start, or the add-in does not show
 -------------------------------------------------------

@@ -1,7 +1,7 @@
 SystemBanner Office
 ===================
 
-A Microsoft Office add-in that marks documents with their classification, from the same settings as [SystemBanner for Windows 2000 to 7](https://github.com/Cole987/SystemBanner_XP), the fork of the [original SystemBanner](https://github.com/awawrzyniak10/SystemBanner): banner lines at the top and bottom of every page, portion marks, roll-up of the portion marks into the banner line, and the classification authority block. One build loads in Office 2000 to 2010 (Word, Excel, PowerPoint), like the Windows versions of SystemBanner.
+A Microsoft Office add-in that marks documents with their classification, from the same settings as [SystemBanner for Windows 2000 to 7](https://github.com/Cole987/SystemBanner_XP), the fork of the [original SystemBanner](https://github.com/awawrzyniak10/SystemBanner): banner lines at the top and bottom of every page, portion marks, roll-up of the portion marks into the banner line, and the classification authority block. One build loads in every Office from 2000 to 2024 and Microsoft 365 (Word, Excel, PowerPoint), 32 and 64 bit: a toolbar in Office 2000 to 2003, a ribbon tab from Office 2007 on.
 
 It follows the *Intelligence Community Markings System Register and Manual* (ODNI, effective 31 December 2016, released under FOIA in 2021) for United States markings, the *Instruction générale interministérielle n° 1300* (SGDSN, 9 August 2021) for French markings, the *Verschlusssachenanweisung* (BMI, 13 March 2023) for German markings, the *Government Security Classifications Policy* (Cabinet Office) for British markings, Council Decision 2013/488/EU and Commission Decision 2015/444 for EU classified information, and the stock classifications of SystemBanner for NATO and the United Nations.
 
@@ -49,25 +49,45 @@ REQUIREMENTS
 ------------
 
 - Windows 2000 SP4 to Windows 7 (and later), with the .NET Framework 2.0 or later (3.5 SP1 on Windows 7 and later).
-- Office 2000, XP, 2003, 2007 or 2010, 32 bit, or 64 bit Office 2010. The ribbon tab appears in Office 2007 and later, a toolbar in Office 2000 to 2003.
+- Office 2000, XP, 2003, 2007, 2010, 2013, 2016, 2019, 2021, 2024 or Microsoft 365, 32 or 64 bit. The ribbon tab appears in Office 2007 and later, a toolbar in Office 2000 to 2003.
+- Excel 2000 to 2003 need a printer installed, even the "Generic / Text Only" printer of Windows, to change the header and footer of a sheet.
+
+| Office | Tested |
+|---|---|
+| 2000 (Windows 2000) | Yes: toolbar, Word, Excel, PowerPoint |
+| XP, 2003 | Not yet: same toolbar code as Office 2000 |
+| 2007 (Windows XP) | Yes: ribbon, Word, Excel, PowerPoint |
+| 2010 (Windows 7) | Yes: ribbon, Word, Excel, PowerPoint |
+| 2013 | Not yet: same ribbon code as 2010 and Microsoft 365 |
+| Microsoft 365, version 16, 64 bit (Windows 10) | Yes: ribbon, Word, Excel, PowerPoint, and every automated check |
+| 2016, 2019, 2021, 2024 | Not on their own: they are version 16, the version of Microsoft 365, and load the add-in the same way |
 
 ------------
 INSTALLATION
 ------------
 
-As an administrator, run `Install\InstallSystemBannerOffice.bat`. It copies the add-in to `C:\Program Files\SystemBanner\Office`, registers it for COM with RegAsm, and loads it in Word, Excel and PowerPoint for every user (`HKLM\SOFTWARE\Microsoft\Office\<App>\Addins\SystemBannerOffice.Connect`). Restart Office.
+Close Word, Excel and PowerPoint, then run `Install\SystemBannerOfficeSetup.exe` as an administrator (Windows Vista and later ask for it) and click Install. It does what the script below does, then adds the add-in to Add or Remove Programs and copies the Group Policy templates (see [Settings](#settings)). The window speaks English, French or German, as Windows does.
 
-To remove it, close Office and run `Install\RemoveSystemBannerOffice.bat` as an administrator.
+For deployment scripts: `SystemBannerOfficeSetup.exe /install /quiet` and `SystemBannerOfficeSetup.exe /uninstall /quiet`, exit code 0 when it worked; the log is `%TEMP%\SystemBannerOfficeSetup.log`. The setup needs the .NET Framework 2.0 or later, like the add-in.
+
+Or, as an administrator, run `Install\InstallSystemBannerOffice.bat`. It copies the add-in to `C:\Program Files\SystemBanner\Office`, registers it for COM with RegAsm, and loads it in Word, Excel and PowerPoint for every user (`HKLM\SOFTWARE\Microsoft\Office\<App>\Addins\SystemBannerOffice.Connect`). Restart Office.
+
+To remove it, close Office and use Add or Remove Programs, or run `Install\RemoveSystemBannerOffice.bat` as an administrator.
 
 --------
 SETTINGS
 --------
 
-The add-in reads the SystemBanner key, `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\SystemBanner`:
+The add-in reads the SystemBanner key, `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\SystemBanner`. The Office values below are in the Group Policy templates of the `Policies` folder, under *Computer Configuration > Administrative Templates > SystemBanner Office add-in*:
+
+- Windows Vista and later: `SystemBannerOffice.admx` in `C:\Windows\PolicyDefinitions` (or the central store of the domain), with `en-US`, `fr-FR` or `de-DE\SystemBannerOffice.adml` in the folder of the same language.
+- Windows 2000 and XP: add `SystemBannerOffice.adm` (English), `SystemBannerOffice_FR.adm` or `SystemBannerOffice_DE.adm` with *Add/Remove Templates*.
+
+The setup copies them on the computer it installs. `Simple`, the classification of the computer, is in the templates of [SystemBanner](https://github.com/Cole987/SystemBanner_XP); its codes 61 to 64 (European Union) are to add there.
 
 | Value | Type | Meaning |
 |---|---|---|
-| `Simple` | DWORD | The classification of the computer, same codes as SystemBanner: 1 to 6 for the United States, 11 to 52 for the other systems. It is the ceiling of the documents written on it. Not set or 0: no ceiling, IC markings. |
+| `Simple` | DWORD | The classification of the computer, same codes as SystemBanner: 1 to 6 for the United States, 11 to 64 for the other systems (61 to 64: European Union). It is the ceiling of the documents written on it. Not set or 0: no ceiling, IC markings. |
 | `OfficeRequireClassification` | DWORD | 1: a document with no classification cannot be saved or printed. |
 | `OfficeSpellOut` | DWORD | 1: banner lines spell control markings out (`TALENT KEYHOLE`) instead of using their abbreviations (`TK`). |
 | `OfficeAnalyticProducts` | DWORD | 1: documents are disseminated analytic products, every classified portion must carry an FD&R marking (ICD 710 E.5). |
@@ -183,7 +203,7 @@ LIMITS
 - **Appendices A, B and C** of the Manual (non-US, NATO and UN values) and the Register annexes of trigraph and tetragraph codes are not published with it: country codes are checked for their form (3 or 4 letters), not against a list, and only the NAC activity of the Manual's own example (ISAF, `NIS`) has a portion mark.
 - Where the Manual leaves room or contradicts itself, the roll-up reports its choice in its message: unclassified caveated portions in a classified document are handled as RELIDO (the Manual's `(U//FISA)` example), JOINT co-owners are added to the FGI list of a US banner (the rule, where the Manual's example leaves GBR out), foreign RESTRICTED rolls up to a US banner as CONFIDENTIAL.
 - Portion marks are read at the start of paragraphs of the Word body and of PowerPoint text boxes; footnotes, text boxes in Word, PowerPoint notes and table cells in PowerPoint are not read. Excel workbooks are marked as a whole.
-- Loaded by Word, Excel and PowerPoint 2016 (64 bit), ribbon and toolbar included, and driven through automation (see below). Office 2000 to 2010 still have to be tested on their own versions, see `TESTING.md`.
+- Tested by hand on Office 2000, 2007, 2010 and Microsoft 365, and through automation on Microsoft 365 (see below); Office XP, 2003, 2013, and the standalone 2016 to 2024 still have to be tested on their own versions, see `TESTING.md`.
 
 -------------------
 BUILDING AND TESTING
@@ -204,7 +224,21 @@ The add-in logs each start and every error to `%TEMP%\SystemBannerOffice.log`.
 SCREENSHOTS
 -----------
 
-Example content only. These pictures are made by `build\OfficeCheck.exe screenshots`, from the add-in's own code, so they follow each build; they show Word and PowerPoint 2016.
+Example content only, with fictitious names.
+
+In Office, from Office 2000 to Microsoft 365 (the orange or yellow bar at the very top is [SystemBanner](https://github.com/Cole987/SystemBanner_XP) itself):
+
+| Office 2000: toolbar, Word | Office 2000: toolbar, PowerPoint |
+|---|---|
+| ![Word 2000 toolbar](Docs/Images/Word2000_Toolbar.png) | ![PowerPoint 2000 toolbar](Docs/Images/PowerPoint2000_Toolbar.png) |
+| **Office 2007: ribbon in French** | **Excel 2010: print preview** |
+| ![Word 2007 ribbon in French](Docs/Images/Word2007_Ribbon-French.png) | ![Excel 2010 print preview](Docs/Images/Excel2010_IC_Secret.png) |
+| **Microsoft 365: saving an unclassified document** | **Microsoft 365: the COM add-in loaded** |
+| ![Save blocked](Docs/Images/Word2016_SaveBlocked.png) | ![COM add-ins](Docs/Images/Word2016_ComAddins.png) |
+
+The ribbon of Office 2007 in [English](Docs/Images/Word2007_Ribbon-English.png), [French](Docs/Images/Word2007_Ribbon-French.png) and [German](Docs/Images/Word2007_Ribbon-German.png).
+
+The pictures below are made by `build\OfficeCheck.exe screenshots`, from the add-in's own code, so they follow each build; they show Word and PowerPoint for Microsoft 365 (version 16).
 
 A page of each system, in Word:
 

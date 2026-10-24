@@ -111,7 +111,7 @@ namespace SystemBannerOffice.Check
                 Console.WriteLine("skip " + progId + ": not installed");
                 return;
             }
-            object application = Activator.CreateInstance(type);
+            object application = OfficeCheck.Start(type);
             try
             {
                 string version = Convert.ToString(Late.Get(application, "Version"));

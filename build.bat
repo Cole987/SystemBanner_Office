@@ -27,7 +27,11 @@ if exist Code\OfficeAddin\*.cs (
     rem drives the installed Word, Excel and PowerPoint with the add-in's document code, without installing it
     "%CSC%" /nologo /target:exe /out:"%OUT%\OfficeCheck.exe" %REFS% /r:"%NET2%\System.Windows.Forms.dll" /r:"%NET2%\System.Drawing.dll" /r:"%OUT%\SystemBannerOffice.Markings.dll" /r:"%OUT%\SystemBannerOffice.dll" Code\OfficeCheck\*.cs
     if errorlevel 1 exit /b 1
+    rem the setup program, with the add-in, its registry files and the Group Policy templates inside
+    "%CSC%" /nologo /target:winexe /platform:x86 /out:"%OUT%\SystemBannerOfficeSetup.exe" %REFS% /r:"%NET2%\System.Windows.Forms.dll" /r:"%NET2%\System.Drawing.dll" /win32manifest:Code\Setup\Setup.manifest /resource:"%OUT%\SystemBannerOffice.dll",SystemBannerOffice.dll /resource:"%OUT%\SystemBannerOffice.Markings.dll",SystemBannerOffice.Markings.dll /resource:Install\SystemBannerOffice.reg,SystemBannerOffice.reg /resource:Install\SystemBannerOffice_remove.reg,SystemBannerOffice_remove.reg /resource:Install\SystemBannerOffice.exe.config,SystemBannerOffice.exe.config /resource:Policies\SystemBannerOffice.admx,SystemBannerOffice.admx /resource:Policies\en-US\SystemBannerOffice.adml,en-US.SystemBannerOffice.adml /resource:Policies\fr-FR\SystemBannerOffice.adml,fr-FR.SystemBannerOffice.adml /resource:Policies\de-DE\SystemBannerOffice.adml,de-DE.SystemBannerOffice.adml /resource:Policies\SystemBannerOffice.adm,SystemBannerOffice.adm /resource:Policies\SystemBannerOffice_FR.adm,SystemBannerOffice_FR.adm /resource:Policies\SystemBannerOffice_DE.adm,SystemBannerOffice_DE.adm Code\Setup\*.cs
+    if errorlevel 1 exit /b 1
 )
 copy /y "%OUT%\SystemBannerOffice.dll" Install\ >nul
 copy /y "%OUT%\SystemBannerOffice.Markings.dll" Install\ >nul
+if exist "%OUT%\SystemBannerOfficeSetup.exe" copy /y "%OUT%\SystemBannerOfficeSetup.exe" Install\ >nul
 echo Build succeeded.

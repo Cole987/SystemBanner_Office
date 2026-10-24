@@ -1043,8 +1043,35 @@ namespace SystemBannerOffice
             for (int i = 1; i <= count; i++)
             {
                 object setup = Late.Get(Late.Item(sheets, i), "PageSetup");
-                Late.Set(setup, "CenterHeader", header);
-                Late.Set(setup, "CenterFooter", footer);
+                try
+                {
+                    Late.Set(setup, "CenterHeader", header);
+                    Late.Set(setup, "CenterFooter", footer);
+                }
+                catch (Exception ex)
+                {
+                    //Excel reads the page setup from the printer driver: with no printer installed, Excel 2000 to 2003
+                    //refuse every change of the header and footer (0x800A03EC, "Unable to set the CenterHeader property")
+                    if (Printers() == 0)
+                    {
+                        throw new InvalidOperationException(Text.T("Excel cannot write the header and footer of the sheets: no printer is installed on this computer. Excel needs one to change the page setup, even the \"Generic / Text Only\" printer of Windows: add a printer, then classify again.",
+                            "Excel ne peut pas écrire l'en-tête et le pied de page des feuilles : aucune imprimante n'est installée sur ce poste. Excel en a besoin pour modifier la mise en page, même l'imprimante « Générique / Texte seul » de Windows : ajouter une imprimante, puis classifier à nouveau.",
+                            "Excel kann Kopf- und Fußzeile der Blätter nicht schreiben: Auf diesem Rechner ist kein Drucker installiert. Excel braucht einen, um die Seiteneinrichtung zu ändern, auch den Windows-Drucker \"Generisch / Nur Text\": Fügen Sie einen Drucker hinzu und stufen Sie erneut ein."), ex);
+                    }
+                    throw;
+                }
+            }
+        }
+
+        private static int Printers()
+        {
+            try
+            {
+                return System.Drawing.Printing.PrinterSettings.InstalledPrinters.Count;
+            }
+            catch (Exception)
+            {
+                return -1; //unknown: the error of Excel is shown as it is
             }
         }
 

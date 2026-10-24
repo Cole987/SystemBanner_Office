@@ -53,6 +53,18 @@ namespace SystemBannerOffice.Check
             }
             report.AppendLine();
 
+            try
+            {
+                System.Collections.Generic.List<string> printers = new System.Collections.Generic.List<string>();
+                foreach (string printer in System.Drawing.Printing.PrinterSettings.InstalledPrinters) printers.Add(printer);
+                report.AppendLine("Printers: " + (printers.Count == 0 ? "none (Excel 2000 to 2003 cannot change headers and footers without one)" : string.Join(", ", printers.ToArray())));
+            }
+            catch (Exception ex)
+            {
+                report.AppendLine("Printers: " + ex.Message);
+            }
+            report.AppendLine();
+
             report.AppendLine("== Add-in registration in Office (LoadBehavior 3 = load at startup) ==");
             foreach (string app in Apps)
             {

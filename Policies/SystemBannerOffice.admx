@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SystemBanner Office add-in: Group Policy template, generated with the ADML files of en-US, fr-FR and de-DE -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="systembanneroffice" namespace="SystemBanner.Office.Policies" />
+    <using prefix="windows" namespace="Microsoft.Policies.Windows" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+  <supportedOn>
+    <definitions>
+      <definition name="SUPPORTED_SystemBannerOffice" displayName="$(string.SUPPORTED_SystemBannerOffice)" />
+    </definitions>
+  </supportedOn>
+  <categories>
+    <category name="SystemBannerOffice" displayName="$(string.SystemBannerOffice)" explainText="$(string.SystemBannerOffice_Help)" />
+  </categories>
+  <policies>
+    <policy name="RequireClassification" class="Machine" displayName="$(string.RequireClassification)" explainText="$(string.RequireClassification_Help)" key="Software\Policies\SystemBanner" valueName="OfficeRequireClassification">
+      <parentCategory ref="SystemBannerOffice" />
+      <supportedOn ref="SUPPORTED_SystemBannerOffice" />
+      <enabledValue><decimal value="1" /></enabledValue>
+      <disabledValue><decimal value="0" /></disabledValue>
+    </policy>
+    <policy name="SpellOut" class="Machine" displayName="$(string.SpellOut)" explainText="$(string.SpellOut_Help)" key="Software\Policies\SystemBanner" valueName="OfficeSpellOut">
+      <parentCategory ref="SystemBannerOffice" />
+      <supportedOn ref="SUPPORTED_SystemBannerOffice" />
+      <enabledValue><decimal value="1" /></enabledValue>
+      <disabledValue><decimal value="0" /></disabledValue>
+    </policy>
+    <policy name="AnalyticProducts" class="Machine" displayName="$(string.AnalyticProducts)" explainText="$(string.AnalyticProducts_Help)" key="Software\Policies\SystemBanner" valueName="OfficeAnalyticProducts">
+      <parentCategory ref="SystemBannerOffice" />
+      <supportedOn ref="SUPPORTED_SystemBannerOffice" />
+      <enabledValue><decimal value="1" /></enabledValue>
+      <disabledValue><decimal value="0" /></disabledValue>
+    </policy>
+    <policy name="BannerBackground" class="Machine" displayName="$(string.BannerBackground)" explainText="$(string.BannerBackground_Help)" key="Software\Policies\SystemBanner" valueName="OfficeBannerBackground">
+      <parentCategory ref="SystemBannerOffice" />
+      <supportedOn ref="SUPPORTED_SystemBannerOffice" />
+      <enabledValue><decimal value="1" /></enabledValue>
+      <disabledValue><decimal value="0" /></disabledValue>
+    </policy>
+    <policy name="Toolbar" class="Machine" displayName="$(string.Toolbar)" explainText="$(string.Toolbar_Help)" key="Software\Policies\SystemBanner" valueName="OfficeToolbar">
+      <parentCategory ref="SystemBannerOffice" />
+      <supportedOn ref="SUPPORTED_SystemBannerOffice" />
+      <enabledValue><decimal value="1" /></enabledValue>
+      <disabledValue><decimal value="0" /></disabledValue>
+    </policy>
+    <policy name="Language" class="Machine" displayName="$(string.Language)" explainText="$(string.Language_Help)" presentation="$(presentation.Language)" key="Software\Policies\SystemBanner">
+      <parentCategory ref="SystemBannerOffice" />
+      <supportedOn ref="SUPPORTED_SystemBannerOffice" />
+      <elements>
+        <enum id="Language" valueName="OfficeLanguage" required="true">
+          <item displayName="$(string.Language_en)"><value><string>en</string></value></item>
+          <item displayName="$(string.Language_fr)"><value><string>fr</string></value></item>
+          <item displayName="$(string.Language_de)"><value><string>de</string></value></item>
+        </enum>
+      </elements>
+    </policy>
+  </policies>
+</policyDefinitions>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <displayName>SystemBanner Office add-in</displayName>
+  <description>Settings of the SystemBanner Office add-in. The classification of the computer (Simple) is set by the SystemBanner template.</description>
+  <resources>
+    <stringTable>
+      <string id="SystemBannerOffice">SystemBanner Office add-in</string>
+      <string id="SystemBannerOffice_Help">Settings of the SystemBanner Office add-in. The classification of the computer (Simple) is set by the SystemBanner template.</string>
+      <string id="SUPPORTED_SystemBannerOffice">Office 2000 to 2024 and Microsoft 365, with the SystemBanner Office add-in</string>
+      <string id="RequireClassification">Require a classification to save and print</string>
+      <string id="RequireClassification_Help">Enabled: a document with no classification cannot be saved or printed in Word and Excel; the add-in asks to classify it first.&#xD;&#xA;&#xD;&#xA;Disabled or not configured: documents are saved and printed as they are.</string>
+      <string id="SpellOut">Spell control markings out in IC banner lines</string>
+      <string id="SpellOut_Help">Enabled: IC banner lines spell control markings out (TALENT KEYHOLE) instead of using their abbreviations (TK).&#xD;&#xA;&#xD;&#xA;Disabled or not configured: abbreviations, as most IC documents use them.</string>
+      <string id="AnalyticProducts">Documents are disseminated analytic products</string>
+      <string id="AnalyticProducts_Help">Enabled: every classified IC portion must carry a foreign disclosure and release marking (ICD 710 E.5); the roll-up reports the portions without one.&#xD;&#xA;&#xD;&#xA;Disabled or not configured: the marking is not required.</string>
+      <string id="BannerBackground">IC banner lines on a colored background</string>
+      <string id="BannerBackground_Help">Enabled: IC banner lines on the colored background of SystemBanner, as on screen, with white or black text.&#xD;&#xA;&#xD;&#xA;Disabled or not configured: bold text in the color of the level, with no background, readable in black and white printing. The IC Markings System Register sets no color.</string>
+      <string id="Toolbar">Show the toolbar in Office 2007 and later</string>
+      <string id="Toolbar_Help">Enabled: the SystemBanner toolbar of Office 2000 to 2003 also shows in Office 2007 and later (Add-ins tab), besides the ribbon tab.&#xD;&#xA;&#xD;&#xA;Disabled or not configured: the Classification ribbon tab only.</string>
+      <string id="Language">Language of the add-in</string>
+      <string id="Language_Help">Enabled: the dialogs, buttons and messages of the add-in in the chosen language. The markings themselves are never translated.&#xD;&#xA;&#xD;&#xA;Disabled or not configured: the language of the Office user interface (English, French or German, else English). A user may also set OfficeLanguage in HKEY_CURRENT_USER\Software\SystemBanner.</string>
+      <string id="Language_en">English</string>
+      <string id="Language_fr">French</string>
+      <string id="Language_de">German</string>
+    </stringTable>
+    <presentationTable>
+      <presentation id="Language">
+        <dropdownList refId="Language" noSort="true" defaultItem="0">Language:</dropdownList>
+      </presentation>
+    </presentationTable>
+  </resources>
+</policyDefinitionResources>
