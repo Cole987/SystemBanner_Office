@@ -13,7 +13,7 @@ Roadmap
 >
 > Where: the presets of SystemBanner (classification system "European Union"), its ADM and ADMX/ADML templates (the `Simple` dropdown), and its README. Colors used here, a choice of this project: EU blue (0, 51, 153) with white text, for the four levels. The texts set no color (Council Decision 2013/488/EU, Annex III point 13). The same table is in `Code/MarkingEngine/Presets.cs`.
 
-Tested by hand on 24 October 2026: Office 2000, XP, 2003, 2007, 2010, 2013 and Microsoft 365.
+Tested by hand on 24 October 2026: Office 2000, XP, 2003, 2007, 2010, 2013, 2016, 2024 and Microsoft 365. Not yet: 2019 and 2021.
 
 Plan for the next working session, 25 October 2026. Order: the two bugs first (they block the tests on the VMs), then the German interface, then EU markings.
 

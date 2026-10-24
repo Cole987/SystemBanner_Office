@@ -59,8 +59,10 @@ REQUIREMENTS
 | 2007 (Windows XP) | Yes: ribbon, Word, Excel, PowerPoint |
 | 2010 (Windows 7) | Yes: ribbon, Word, Excel, PowerPoint |
 | 2013 | Yes: ribbon, Word, Excel, PowerPoint |
+| 2016 (Windows 10) | Yes: ribbon, Word, Excel, PowerPoint |
+| 2024 | Yes: ribbon, Word, Excel, PowerPoint |
 | Microsoft 365, version 16, 64 bit (Windows 10) | Yes: ribbon, Word, Excel, PowerPoint, and every automated check |
-| 2016, 2019, 2021, 2024 | Not on their own: they are version 16, the version of Microsoft 365, and load the add-in the same way |
+| 2019, 2021 | Not on their own: they are version 16, like 2016, 2024 and Microsoft 365, and load the add-in the same way |
 
 ------------
 INSTALLATION
@@ -203,7 +205,7 @@ LIMITS
 - **Appendices A, B and C** of the Manual (non-US, NATO and UN values) and the Register annexes of trigraph and tetragraph codes are not published with it: country codes are checked for their form (3 or 4 letters), not against a list, and only the NAC activity of the Manual's own example (ISAF, `NIS`) has a portion mark.
 - Where the Manual leaves room or contradicts itself, the roll-up reports its choice in its message: unclassified caveated portions in a classified document are handled as RELIDO (the Manual's `(U//FISA)` example), JOINT co-owners are added to the FGI list of a US banner (the rule, where the Manual's example leaves GBR out), foreign RESTRICTED rolls up to a US banner as CONFIDENTIAL.
 - Portion marks are read at the start of paragraphs of the Word body and of PowerPoint text boxes; footnotes, text boxes in Word, PowerPoint notes and table cells in PowerPoint are not read. Excel workbooks are marked as a whole.
-- Tested by hand on Office 2000, XP, 2003, 2007, 2010, 2013 and Microsoft 365, and through automation on Microsoft 365 (see below); the standalone Office 2016 to 2024 still have to be tested on their own versions, see `TESTING.md`.
+- Tested by hand on Office 2000, XP, 2003, 2007, 2010, 2013, 2016, 2024 and Microsoft 365, and through automation on Microsoft 365 (see below); Office 2019 and 2021 still have to be tested on their own versions, see `TESTING.md`.
 
 -------------------
 BUILDING AND TESTING
@@ -235,7 +237,7 @@ In Office, from Office 2000 to Microsoft 365 (the orange or yellow bar at the ve
 | ![Excel 2000 toolbar](Docs/Images/Excel2000_Toolbar.png) | |
 | **Office 2007: ribbon in French** | **Excel 2010: print preview** |
 | ![Word 2007 ribbon in French](Docs/Images/Word2007_Ribbon-French.png) | ![Excel 2010 print preview](Docs/Images/Excel2010_IC_Secret.png) |
-| **Microsoft 365: saving an unclassified document** | **Microsoft 365: the COM add-in loaded** |
+| **Office 2016: saving an unclassified document** | **Office 2016: the COM add-in loaded** |
 | ![Save blocked](Docs/Images/Word2016_SaveBlocked.png) | ![COM add-ins](Docs/Images/Word2016_ComAddins.png) |
 
 The ribbon of Office 2007 in [English](Docs/Images/Word2007_Ribbon-English.png), [French](Docs/Images/Word2007_Ribbon-French.png) and [German](Docs/Images/Word2007_Ribbon-German.png).
