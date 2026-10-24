@@ -35,6 +35,10 @@ namespace SystemBannerOffice.Check
                 Console.WriteLine(failures == 0 ? "add-in loaded" : "add-in did not load");
                 return failures == 0 ? 0 : 1;
             }
+            if (args.Length > 0 && args[0] == "screenshots")
+            {
+                return Screenshots.Run(args.Length > 1 ? args[1] : "Docs/Images");
+            }
             if (args.Length > 0 && args[0] == "dialogs")
             {
                 Dialogs();
@@ -328,7 +332,12 @@ namespace SystemBannerOffice.Check
                 if (Convert.ToString(Late.Get(shape, "Name")) != DocumentHost.AuthorityBookmark) continue;
                 boxes++;
                 boxText = Text(Late.Get(Late.Get(shape, "TextFrame"), "TextRange"));
-                Check(Convert.ToSingle(Late.Get(shape, "Left")) == -999996f && Convert.ToSingle(Late.Get(shape, "Top")) == -999995f, "Word authority box at the bottom right of the margins (" + Late.Get(shape, "Left") + ", " + Late.Get(shape, "Top") + ")");
+                object setup = Late.Get(Late.Item(Late.Get(document, "Sections"), 1), "PageSetup");
+                float right = Convert.ToSingle(Late.Get(setup, "PageWidth")) - Convert.ToSingle(Late.Get(setup, "RightMargin"));
+                float bottom = Convert.ToSingle(Late.Get(setup, "PageHeight")) - Convert.ToSingle(Late.Get(setup, "BottomMargin"));
+                float boxRight = Convert.ToSingle(Late.Get(shape, "Left")) + Convert.ToSingle(Late.Get(shape, "Width"));
+                float boxBottom = Convert.ToSingle(Late.Get(shape, "Top")) + Convert.ToSingle(Late.Get(shape, "Height"));
+                Check(Math.Abs(boxRight - right) < 1 && Math.Abs(boxBottom - bottom) < 1 && Convert.ToInt32(Late.Get(shape, "RelativeVerticalPosition")) == 1, "Word authority box in the bottom right corner of the margins (" + boxRight + " / " + right + ", " + boxBottom + " / " + bottom + ")");
             }
             all = Convert.ToString(Late.Get(Late.Get(document, "Content"), "Text"));
             Check(boxes == 1 && boxText.Contains("Declassify On: 20470101") && all.IndexOf("Declassify On") < 0, "Word authority box written once, the block at the cursor removed: " + Show(boxText));

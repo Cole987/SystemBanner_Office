@@ -124,6 +124,14 @@ Like SystemBanner (`Docs/Images`), the README shows what the add-in looks like.
 - **Where:** `Docs/Images`, named `<Office>_<system>_<what>.png` (for example `Word2016_France_Secret.png`), example content only, shown in the README under each system.
 - **Done when:** the README shows the dialogs and one marked page of each system.
 
+**Done on 24 October 2026:** `OfficeCheck.exe screenshots` writes 42 pictures in `Docs/Images`: the 12 dialogs in English, French and German, a Word 2016 page of each system and a PowerPoint 2016 slide, shown in the README. Still to capture by hand, on the VMs, with the add-in installed (names to keep):
+- `Word2000_Toolbar.png`, `Excel2000_Toolbar.png`, `PowerPoint2000_Toolbar.png`: the SystemBanner toolbar with its 5 buttons.
+- `Word2007_Ribbon.png`, `Word2010_Ribbon.png`, `Word2016_Ribbon.png`: the Classification tab, with the Downgrade icon; one of them in French and one in German.
+- `Excel2010_IC_Secret.png`: the print preview of a classified sheet, header and footer in color (Excel 2007 and later).
+- `Word2000_IC_Secret.png`: a classified page in Word 2000, to show the oldest version.
+- `Word2016_SaveBlocked.png`: the message when saving an unclassified document with `OfficeRequireClassification` = 1.
+- `Word2016_ComAddins.png`: the COM add-ins dialog with SystemBanner loaded.
+
 ------------------
 Still open, later
 ------------------

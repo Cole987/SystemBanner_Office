@@ -136,7 +136,7 @@ namespace SystemBannerOffice
                 AddLabel(Markings.Text.T("services, states or organisations allowed, or special classification (7.1.1.3 b)", "services, États ou organisations autorisés, ou classification spéciale (7.1.1.3 b)", "zugelassene Stellen, Staaten oder Organisationen, oder Sondereinstufung (7.1.1.3 b)"), 160, y - 4, 330).ForeColor = SystemColors.GrayText;
                 y += 18;
                 bound = new CheckBox();
-                bound.Text = Markings.Text.T("Bound document: cover stamp at the bottom of the first page", "Document relié : timbre de couverture en bas de la première page", "Gebundenes Dokument: Deckblattstempel unten auf Seite 1");
+                bound.Text = Markings.Text.T("Bound document: cover stamp on page 1", "Document relié : timbre de couverture p. 1", "Gebunden: Deckblattstempel auf Seite 1");
                 bound.SetBounds(160, y, 330, 20);
                 bound.Enabled = coverAvailable;
                 bound.CheckedChanged += OnChange;
@@ -260,7 +260,7 @@ namespace SystemBannerOffice
                 y += 24;
                 withReview = Radio(Markings.Text.T("Re-evaluate on", "À réévaluer le", "Überprüfung am"), 160, y);
                 reevaluation = AddDate(300, y, OnChange);
-                AddLabel(Markings.Text.T("(by exception, 20 years at most)", "(à titre exceptionnel, 20 ans au plus)", "(ausnahmsweise, höchstens 20 Jahre)"), 415, y, 90).ForeColor = SystemColors.GrayText;
+                AddLabel(Markings.Text.T("(20 years max.)", "(20 ans max.)", "(max. 20 Jahre)"), 415, y, 90).ForeColor = SystemColors.GrayText;
                 y += 24;
                 without = Radio(Markings.Text.T("No deadline (NRBC weapons, 7.6.1)", "Aucune échéance (armes NRBC, 7.6.1)", "Keine Frist (ABC-Waffen, 7.6.1)"), 160, y);
                 without.Width = 330;
@@ -382,7 +382,7 @@ namespace SystemBannerOffice
             AddLabel(Markings.Text.T("of", "du", "vom"), 10, y, 150);
             decisionDate = AddDate(160, y, OnChange);
             y += 30;
-            AddFooter(ref y, Markings.Text.T("Apply", "Appliquer", "Übernehmen"));
+            AddFooter(ref y, Markings.Text.T("Apply", "Appliquer", "Ändern"));
             if (lower.Enabled) lower.Checked = true; else if (raise.Enabled) raise.Checked = true; else lift.Checked = true;
             OnChange(null, EventArgs.Empty);
         }
@@ -469,7 +469,7 @@ namespace SystemBannerOffice
             {
                 case DocumentHost.FrenchSystem: return Markings.Text.T("France - IGI 1300 (SECRET, TRÈS SECRET, DIFFUSION RESTREINTE)", "France - IGI 1300 (SECRET, TRÈS SECRET, DIFFUSION RESTREINTE)", "Frankreich - IGI 1300 (SECRET, TRÈS SECRET, DIFFUSION RESTREINTE)");
                 case DocumentHost.GermanSystem: return Markings.Text.T("Germany - VS-Anweisung (VS-NfD, VS-VERTRAULICH, GEHEIM, STRENG GEHEIM)", "Allemagne - VS-Anweisung (VS-NfD, VS-VERTRAULICH, GEHEIM, STRENG GEHEIM)", "Deutschland - VS-Anweisung (VS-NfD, VS-VERTRAULICH, GEHEIM, STRENG GEHEIM)");
-                case DocumentHost.EuSystem: return Markings.Text.T("European Union - EUCI (RESTREINT UE/EU RESTRICTED to TRÈS SECRET UE/EU TOP SECRET)", "Union européenne - ICUE (RESTREINT UE/EU RESTRICTED à TRÈS SECRET UE/EU TOP SECRET)", "Europäische Union - EU-VS (RESTREINT UE/EU RESTRICTED bis TRÈS SECRET UE/EU TOP SECRET)");
+                case DocumentHost.EuSystem: return Markings.Text.T("European Union - EUCI (RESTREINT UE to TRÈS SECRET UE)", "Union européenne - ICUE (RESTREINT UE à TRÈS SECRET UE)", "Europäische Union - EU-VS (RESTREINT UE bis TRÈS SECRET UE)");
                 case DocumentHost.BritishSystem: return Markings.Text.T("United Kingdom - GSCP (OFFICIAL, OFFICIAL-SENSITIVE, SECRET, TOP SECRET)", "Royaume-Uni - GSCP (OFFICIAL, OFFICIAL-SENSITIVE, SECRET, TOP SECRET)", "Vereinigtes Königreich - GSCP (OFFICIAL, OFFICIAL-SENSITIVE, SECRET, TOP SECRET)");
                 default: return Markings.Text.T("United States - IC Markings System (TOP SECRET//SI//NOFORN...)", "États-Unis - IC Markings System (TOP SECRET//SI//NOFORN...)", "Vereinigte Staaten - IC Markings System (TOP SECRET//SI//NOFORN...)");
             }

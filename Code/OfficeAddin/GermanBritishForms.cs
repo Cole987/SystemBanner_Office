@@ -24,7 +24,7 @@ namespace SystemBannerOffice
             this.portionMode = portionMode;
             this.settings = settings;
             int y = 10;
-            AddLabel(Markings.Text.T("Level (Geheimhaltungsgrad)", "Niveau (Geheimhaltungsgrad)", "Geheimhaltungsgrad"), 10, y, 150);
+            AddLabel(Markings.Text.T("Level", "Niveau", "Geheimhaltungsgrad"), 10, y, 150);
             List<GermanLevel> choices = new List<GermanLevel>();
             if (portionMode) choices.Add(GermanLevel.Offen);
             choices.AddRange(new GermanLevel[] { GermanLevel.VsNfd, GermanLevel.VsVertraulich, GermanLevel.Geheim, GermanLevel.StrengGeheim });
@@ -53,14 +53,14 @@ namespace SystemBannerOffice
                 Controls.Add(vermerke);
                 y += 106;
                 weitergabe = AddText(Markings.Text.T("Weitergabe an / intern", "Weitergabe an / intern", "Weitergabe an / intern"), ref y, OnChange);
-                AddLabel(Markings.Text.T("e.g. \"Weitergabe an Referat X\" or \"BMI intern\" (Anlage IV § 1.3.2)", "ex. « Weitergabe an Referat X » ou « BMI intern » (Anlage IV § 1.3.2)", "z. B. \"Weitergabe an Referat X\" oder \"BMI intern\" (Anlage IV § 1.3.2)"), 160, y - 4, 330).ForeColor = SystemColors.GrayText;
+                AddLabel(Markings.Text.T("e.g. \"Weitergabe an Referat X\", \"BMI intern\" (Anl. IV § 1.3.2)", "ex. « Weitergabe an Referat X », « BMI intern » (Anl. IV § 1.3.2)", "z. B. \"Weitergabe an Referat X\", \"BMI intern\" (Anl. IV § 1.3.2)"), 160, y - 4, 330).ForeColor = SystemColors.GrayText;
                 y += 18;
             }
             preview = new Label();
             preview.Font = new Font("Arial", 11f, FontStyle.Bold);
-            preview.SetBounds(160, y, 330, 40);
+            preview.SetBounds(160, y, 330, 58);
             Controls.Add(preview);
-            y += 46;
+            y += 64;
             AddFooter(ref y, portionMode ? Markings.Text.T("Insert", "Insérer", "Einfügen") : Markings.Text.T("Classify", "Classifier", "Einstufen"));
             GermanMarking start = initial ?? new GermanMarking();
             if (!portionMode && start.Level == GermanLevel.Offen) start.Level = GermanLevel.VsNfd;
@@ -230,7 +230,7 @@ namespace SystemBannerOffice
             stelle = AddText(Markings.Text.T("Decided by (Stelle)", "Décidé par (Stelle)", "Entscheidende Stelle"), ref y, OnChange);
             AddLabel(Markings.Text.T("The VSA asks for a visible note of the change and of who decided it; the wording is a choice of this project.", "La VSA demande une mention visible du changement et de qui l'a décidé ; la formulation est un choix du projet.", "Die VSA fordert einen sichtbaren Vermerk über Änderung und entscheidende Stelle; der Wortlaut ist projekteigen."), 160, y - 4, 330).ForeColor = SystemColors.GrayText;
             y += 32;
-            AddFooter(ref y, Markings.Text.T("Apply", "Appliquer", "Übernehmen"));
+            AddFooter(ref y, Markings.Text.T("Apply", "Appliquer", "Ändern"));
             OnChange(null, EventArgs.Empty);
         }
 
@@ -298,7 +298,7 @@ namespace SystemBannerOffice
             Controls.Add(handling);
             y += 26;
             organisation = AddText(Markings.Text.T("Organisation(s)", "Organisation(s)", "Organisation(en)"), ref y, OnChange);
-            embargo = AddText(Markings.Text.T("Embargo: date, then handling", "Embargo : date, puis traitement", "Embargo: Datum, Behandl."), ref y, OnChange);
+            embargo = AddText(Markings.Text.T("Embargo: date, then handling", "Embargo : date, suite", "Embargo: Datum, Behandl."), ref y, OnChange);
             codeword = AddText("Codeword", ref y, OnChange);
             AddLabel(Markings.Text.T("Descriptors", "Descripteurs", "Deskriptoren"), 10, y, 150);
             descriptors = List(UkRegister.Descriptors, y, 96);

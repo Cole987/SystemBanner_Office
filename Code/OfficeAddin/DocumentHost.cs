@@ -996,10 +996,6 @@ namespace SystemBannerOffice
             Late.Set(box, "Name", AuthorityBookmark);
             Late.TrySet(box, "LockAnchor", true);
             Late.TrySet(Late.Get(box, "WrapFormat"), "Type", 0); //wdWrapSquare: the text flows around the box
-            Late.TrySet(box, "RelativeHorizontalPosition", 0); //wdRelativeHorizontalPositionMargin
-            Late.TrySet(box, "RelativeVerticalPosition", 0); //wdRelativeVerticalPositionMargin
-            Late.Set(box, "Left", -999996); //wdShapeRight
-            Late.Set(box, "Top", -999995); //wdShapeBottom
             object line = Late.Get(box, "Line");
             Late.TrySet(line, "Weight", 0.75f);
             Late.TrySet(Late.Get(line, "ForeColor"), "RGB", 0);
@@ -1017,6 +1013,17 @@ namespace SystemBannerOffice
             Late.TrySet(Late.Get(text, "ParagraphFormat"), "SpaceAfter", 0);
             Late.TrySet(Late.Get(text, "ParagraphFormat"), "SpaceBefore", 0);
             Late.TrySet(frame, "AutoSize", -1); //Word 2007 and later: the box fits its lines
+            //in the corner of the margins, from the page edges: the wdShapeRight and wdShapeBottom positions follow the anchor
+            //paragraph in some Word versions, the box then sits in the middle of the page
+            object setup = Late.Get(Late.Item(Late.Get(Document, "Sections"), 1), "PageSetup");
+            float pageWidth = Convert.ToSingle(Late.Get(setup, "PageWidth"));
+            float pageHeight = Convert.ToSingle(Late.Get(setup, "PageHeight"));
+            float right = Convert.ToSingle(Late.Get(setup, "RightMargin"));
+            float bottom = Convert.ToSingle(Late.Get(setup, "BottomMargin"));
+            Late.TrySet(box, "RelativeHorizontalPosition", 1); //wdRelativeHorizontalPositionPage
+            Late.TrySet(box, "RelativeVerticalPosition", 1); //wdRelativeVerticalPositionPage
+            Late.Set(box, "Left", pageWidth - right - Convert.ToSingle(Late.Get(box, "Width")));
+            Late.Set(box, "Top", pageHeight - bottom - Convert.ToSingle(Late.Get(box, "Height")));
         }
     }
 

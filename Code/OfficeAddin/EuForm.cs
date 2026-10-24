@@ -38,8 +38,8 @@ namespace SystemBannerOffice
             if (!portionMode)
             {
                 reference = AddText(Markings.Text.T("Reference number", "Numéro de référence", "Aktenzeichen"), ref y, OnChange);
-                copy = AddText(Markings.Text.T("Copy number (SECRET and above)", "N° d'exemplaire (SECRET et plus)", "Ausfertigung Nr. (ab SECRET)"), ref y, OnChange);
-                AddLabel(Markings.Text.T("Additional markings", "Marquages additionnels", "Zusätzliche Kennzeichnungen"), 10, y, 150);
+                copy = AddText(Markings.Text.T("Copy number", "N° d'exemplaire", "Ausfertigung Nr."), ref y, OnChange);
+                AddLabel(Markings.Text.T("Additional markings", "Marquages additionnels", "Zusatzvermerke"), 10, y, 150);
                 additional = new TextBox();
                 additional.Multiline = true;
                 additional.ScrollBars = ScrollBars.Vertical;
@@ -97,6 +97,8 @@ namespace SystemBannerOffice
                 {
                     m.Copy = number;
                 }
+                copy.Enabled = m.Level >= EuLevel.Secret; //CSR Annex III pt 13(e): SECRET UE/EU SECRET and above
+                if (!copy.Enabled) m.Copy = 0;
                 foreach (string line in additional.Lines)
                 {
                     if (line.Trim().Length > 0) m.Additional.Add(line.Trim().ToUpperInvariant());

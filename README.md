@@ -1,13 +1,15 @@
 SystemBanner Office
 ===================
 
-A Microsoft Office add-in that marks documents with their classification, from the same settings as [SystemBanner](https://github.com/Cole987/SystemBanner_XP): banner lines at the top and bottom of every page, portion marks, roll-up of the portion marks into the banner line, and the classification authority block. One build loads in Office 2000 to 2010 (Word, Excel, PowerPoint), like the Windows versions of SystemBanner.
+A Microsoft Office add-in that marks documents with their classification, from the same settings as [SystemBanner for Windows 2000 to 7](https://github.com/Cole987/SystemBanner_XP), the fork of the [original SystemBanner](https://github.com/awawrzyniak10/SystemBanner): banner lines at the top and bottom of every page, portion marks, roll-up of the portion marks into the banner line, and the classification authority block. One build loads in Office 2000 to 2010 (Word, Excel, PowerPoint), like the Windows versions of SystemBanner.
 
-It follows the *Intelligence Community Markings System Register and Manual* (ODNI, effective 31 December 2016, released under FOIA in 2021) for United States markings, the *Instruction générale interministérielle n° 1300* (SGDSN, 9 August 2021) for French markings, the *Verschlusssachenanweisung* (BMI, 13 March 2023) for German markings, the *Government Security Classifications Policy* (Cabinet Office) for British markings, and the stock classifications of SystemBanner for NATO and the United Nations.
+It follows the *Intelligence Community Markings System Register and Manual* (ODNI, effective 31 December 2016, released under FOIA in 2021) for United States markings, the *Instruction générale interministérielle n° 1300* (SGDSN, 9 August 2021) for French markings, the *Verschlusssachenanweisung* (BMI, 13 March 2023) for German markings, the *Government Security Classifications Policy* (Cabinet Office) for British markings, Council Decision 2013/488/EU and Commission Decision 2015/444 for EU classified information, and the stock classifications of SystemBanner for NATO and the United Nations.
 
 The add-in speaks English, French and German: its dialogs, buttons and messages follow the language of Office, or the `OfficeLanguage` setting. The markings themselves are never translated.
 
 Like SystemBanner, this is a retro computing and preservation project, shared as is. It has not been evaluated or certified for computers that handle real classified or sensitive information.
+
+> **Disclaimer.** This is an independent project. It is not approved, accredited or endorsed by, nor affiliated with, the Office of the Director of National Intelligence, the Information Security Oversight Office, the SGDSN, the German Federal Ministry of the Interior or the BSI, the UK Cabinet Office, or the institutions of the European Union. It helps write markings; it does not decide them. The classification of a document and its markings remain the responsibility of its author and of the security officer, under the rules that apply to them. Where the texts leave the form of a marking open, this project made choices, listed under each system below: check them against your own security instructions before any real use. The software is provided under the MIT License, without warranty of any kind.
 
 - [Features](#features)
 - [Requirements](#requirements)
@@ -17,9 +19,12 @@ Like SystemBanner, this is a retro computing and preservation project, shared as
 - [French markings](#french-markings)
 - [German markings](#german-markings)
 - [British markings](#british-markings)
+- [EU classified information](#eu-classified-information)
 - [What the add-in checks](#what-the-add-in-checks)
 - [Limits](#limits)
 - [Building and testing](#building-and-testing)
+- [Screenshots](#screenshots)
+- [References](#references)
 - [Roadmap](ROADMAP.md)
 
 --------
@@ -189,14 +194,78 @@ BUILDING AND TESTING
 - `SystemBannerOffice.Markings.dll`: the marking engine (model, parser, formatter, roll-up, validator, authority block), with no Office dependency.
 - `SystemBannerOffice.dll`: the add-in, every Office call late bound, so it needs no primary interop assembly.
 - `SystemBannerOffice.Tests.exe`: the tests of the engine, built on the examples of the Manual (section J and the notional pages of the marking templates).
-- `OfficeCheck.exe [word] [excel] [powerpoint]`: drives the installed Office through automation with the add-in's document code, without installing the add-in: banners, portion marks, roll-up, authority block, document properties, save events.
+- `OfficeCheck.exe [word] [excel] [powerpoint]`: drives the installed Office through automation with the add-in's document code, without installing the add-in: banners, portion marks, roll-up, authority block, document properties, save events. Its other modes: `dialogs` opens every dialog filled with an example, `toolbar` checks the Office 2000-2003 toolbar on any version, `screenshots` writes the pictures of this README, `diag` and `load` help when the add-in does not start (see TESTING.md).
 - `OfficeCheck.exe load [word|excel|powerpoint]`: Office itself loads the installed add-in, as the COM add-ins dialog does, and shows the end of its log.
 - `OfficeCheck.exe diag`: what Windows and Office see of the installation, written to `SystemBannerOffice_diag.txt` on the Desktop.
 
 The add-in logs each start and every error to `%TEMP%\SystemBannerOffice.log`.
 
+-----------
+SCREENSHOTS
+-----------
+
+Example content only. These pictures are made by `build\OfficeCheck.exe screenshots`, from the add-in's own code, so they follow each build; they show Word and PowerPoint 2016.
+
+A page of each system, in Word:
+
+| United States (IC) | France (IGI 1300) | Germany (VSA) |
+|---|---|---|
+| ![IC page](Docs/Images/Word2016_IC_Secret.png) | ![French page](Docs/Images/Word2016_France_SecretSpecialFrance.png) | ![German page](Docs/Images/Word2016_Germany_Geheim.png) |
+| **United Kingdom (GSCP)** | **European Union** | **PowerPoint (IC)** |
+| ![British page](Docs/Images/Word2016_UK_OfficialSensitive.png) | ![EU page](Docs/Images/Word2016_EU_Secret.png) | ![PowerPoint slide](Docs/Images/PowerPoint2016_IC_Secret.png) |
+
+The dialogs, in English, with the same dialog in French and German:
+
+| Dialog | English | Other languages |
+|---|---|---|
+| Choice of the system | ![Choice of the system](Docs/Images/Dialog_System_en.png) | [French](Docs/Images/Dialog_System_fr.png), [German](Docs/Images/Dialog_System_de.png) |
+| IC: classify | ![IC: classify](Docs/Images/Dialog_IC_Classify_en.png) | [French](Docs/Images/Dialog_IC_Classify_fr.png), [German](Docs/Images/Dialog_IC_Classify_de.png) |
+| IC: portion mark | ![IC: portion mark](Docs/Images/Dialog_IC_PortionMark_en.png) | [French](Docs/Images/Dialog_IC_PortionMark_fr.png), [German](Docs/Images/Dialog_IC_PortionMark_de.png) |
+| IC: authority block | ![IC: authority block](Docs/Images/Dialog_IC_AuthorityBlock_en.png) | [French](Docs/Images/Dialog_IC_AuthorityBlock_fr.png), [German](Docs/Images/Dialog_IC_AuthorityBlock_de.png) |
+| France: classify | ![France: classify](Docs/Images/Dialog_France_Classify_en.png) | [French](Docs/Images/Dialog_France_Classify_fr.png), [German](Docs/Images/Dialog_France_Classify_de.png) |
+| France: first page | ![France: first page](Docs/Images/Dialog_France_Identification_en.png) | [French](Docs/Images/Dialog_France_Identification_fr.png), [German](Docs/Images/Dialog_France_Identification_de.png) |
+| France: downgrade (annexe 38) | ![France: downgrade (annexe 38)](Docs/Images/Dialog_France_Downgrade_en.png) | [French](Docs/Images/Dialog_France_Downgrade_fr.png), [German](Docs/Images/Dialog_France_Downgrade_de.png) |
+| Germany: classify | ![Germany: classify](Docs/Images/Dialog_Germany_Classify_en.png) | [French](Docs/Images/Dialog_Germany_Classify_fr.png), [German](Docs/Images/Dialog_Germany_Classify_de.png) |
+| Germany: first page | ![Germany: first page](Docs/Images/Dialog_Germany_FirstPage_en.png) | [French](Docs/Images/Dialog_Germany_FirstPage_fr.png), [German](Docs/Images/Dialog_Germany_FirstPage_de.png) |
+| Germany: downgrade | ![Germany: downgrade](Docs/Images/Dialog_Germany_Downgrade_en.png) | [French](Docs/Images/Dialog_Germany_Downgrade_fr.png), [German](Docs/Images/Dialog_Germany_Downgrade_de.png) |
+| United Kingdom: classify | ![United Kingdom: classify](Docs/Images/Dialog_UK_Classify_en.png) | [French](Docs/Images/Dialog_UK_Classify_fr.png), [German](Docs/Images/Dialog_UK_Classify_de.png) |
+| EU: classify | ![EU: classify](Docs/Images/Dialog_EU_Classify_en.png) | [French](Docs/Images/Dialog_EU_Classify_fr.png), [German](Docs/Images/Dialog_EU_Classify_de.png) |
+
+----------
+REFERENCES
+----------
+
+The texts the add-in follows, in the versions read for it. Check the version in force before relying on them.
+
+United States
+- *Intelligence Community Markings System Register and Manual*, ODNI, effective 31 December 2016, released under FOIA on 7 July 2021 (case DF-2019-00061), [copy published by the Federation of American Scientists](https://sgp.fas.org/othergov/intel/ic_markings_2016.pdf). It is the latest version made public; the IC uses newer, unpublished versions.
+- Executive Order 13526, *Classified National Security Information*, 29 December 2009, [National Archives](https://www.archives.gov/isoo/policy-documents/cnsi-eo.html): classification levels, reasons (section 1.4) and the authority block, as cited by the Register.
+- 32 CFR Part 2001, ISOO Implementing Directive, [eCFR](https://www.ecfr.gov/current/title-32/subtitle-B/chapter-XX/part-2001): marking of classified national security information, as cited by the Register.
+- Intelligence Community Directive 710, *Classification Management and Control Markings System*, [ODNI](https://www.dni.gov/files/documents/ICD/ICD-710.pdf).
+
+France
+- *Instruction générale interministérielle n° 1300 sur la protection du secret de la défense nationale*, SGDSN, approved by the arrêté of 9 August 2021, [ANSSI page with the text](https://cyber.gouv.fr/reglementation/cybersecurite-systemes-dinformation/protection-du-secret/instruction-generale-interministerielle-n1300/): section 7.1 and annexes 1, 36, 37 and 38.
+
+Germany
+- *Allgemeine Verwaltungsvorschrift zum materiellen Geheimschutz* (Verschlusssachenanweisung, VSA), Federal Ministry of the Interior, 13 March 2023, GMBl. 2023 Nr. 26-29, p. 542: § 16, § 18 to § 20 and Anlage IV. No official online copy was found; the federal VSA does not apply to the Länder, which have their own.
+
+United Kingdom
+- *Government Security Classifications Policy*, Cabinet Office, [gov.uk collection](https://www.gov.uk/government/publications/government-security-classifications) ([June 2023 PDF](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1166145/Government_Security_Classifications_Policy_June_2023.pdf), HTML version updated 5 August 2024).
+
+European Union (every rule and its point in [Docs/EU-marking-rules.md](Docs/EU-marking-rules.md))
+- Council Decision 2013/488/EU of 23 September 2013 on the security rules for protecting EU classified information, [EUR-Lex](https://eur-lex.europa.eu/eli/dec/2013/488/oj), amended by Decisions 2014/233/EU, (EU) 2019/2247, (EU) 2021/1075 and (EU) 2025/1540 (appendices only).
+- Commission Decision (EU, Euratom) 2015/444 of 13 March 2015 on the security rules for protecting EU classified information, [EUR-Lex](https://eur-lex.europa.eu/eli/dec/2015/444/oj).
+- Commission Decision (EU, Euratom) 2015/443 of 13 March 2015 on Security in the Commission, [EUR-Lex](https://eur-lex.europa.eu/eli/dec/2015/443/oj): sensitive non-classified information, out of scope.
+- Proposal for a Regulation on information security in the institutions, bodies, offices and agencies of the Union, COM(2022) 119: not adopted when read; to check.
+
+Software
+- [SystemBanner for Windows 2000 to 7](https://github.com/Cole987/SystemBanner_XP), by Cole: the settings (`Simple`, presets and colors) this add-in reads, and its roadmap.
+- [SystemBanner](https://github.com/awawrzyniak10/SystemBanner), by Aaron Wawrzyniak: the original classification banner.
+- [classification-banner](https://github.com/fcaviggia/classification-banner), by Frank Caviggia: the classification banner for Linux, and the GSA form colors of the classification levels.
+- [Fortra guide on implementing the DoD marking standard with classification software](https://www.fortra.com/resources/guides/easily-implement-new-dod-marking-standard-classification-software): ideas of use only (classification at save and print, document properties for mail guards); no code or text taken.
+
 -------
 CREDITS
 -------
 
-SystemBanner was created by Aaron Wawrzyniak, the Windows 2000 to 7 and Mac fork is by Cole. Stock classification colors are based on the GSA form color information collected by Frank Caviggia. Released under the MIT License.
+SystemBanner was created by [Aaron Wawrzyniak](https://github.com/awawrzyniak10/SystemBanner), the [Windows 2000 to 7 and Mac fork](https://github.com/Cole987/SystemBanner_XP) is by Cole. Stock classification colors are based on the GSA form color information collected by [Frank Caviggia](https://github.com/fcaviggia/classification-banner). Released under the MIT License.

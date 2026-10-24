@@ -117,7 +117,7 @@ namespace SystemBannerOffice
             level.SelectedIndexChanged += UpdatePreview;
             Controls.Add(level);
             y += 26;
-            ownerCodes = AddText(Markings.Text.T("Owners / NAC activity", "Propriétaires / activité NAC", "Eigentümer / NAC"), Markings.Text.T("non-US: GBR, or CAN GBR; JOINT: CAN GBR USA; NATO: ISAF", "non US : GBR, ou CAN GBR ; JOINT : CAN GBR USA ; OTAN : ISAF", "Nicht-US: GBR oder CAN GBR; JOINT: CAN GBR USA; NATO: ISAF"));
+            ownerCodes = AddText(Markings.Text.T("Owners / NAC activity", "Propriétaires / NAC", "Eigentümer / NAC"), Markings.Text.T("GBR; JOINT: CAN GBR USA; NATO: ISAF", "GBR ; JOINT : CAN GBR USA ; OTAN : ISAF", "GBR; JOINT: CAN GBR USA; NATO: ISAF"));
             sci = AddText("SCI", "SI-G ABCD/TK-BLFH/123");
             sap = AddText("SAP", Markings.Text.T("BP-123/CA-XYZ (without SAR-)", "BP-123/CA-XYZ (sans SAR-)", "BP-123/CA-XYZ (ohne SAR-)"));
 
