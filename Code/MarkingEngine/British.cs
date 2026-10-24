@@ -135,32 +135,32 @@ namespace SystemBannerOffice.Markings
             int tier = UkRegister.Tier(m);
             if (m.Sensitive && m.Level != UkLevel.Official)
             {
-                errors.Add(Text.T("-SENSITIVE marks OFFICIAL information only.", "-SENSITIVE ne s'applique qu'à de l'information OFFICIAL."));
+                errors.Add(Text.T("-SENSITIVE marks OFFICIAL information only.", "-SENSITIVE ne s'applique qu'à de l'information OFFICIAL.", "-SENSITIVE kennzeichnet nur OFFICIAL-Informationen."));
             }
             if (m.Caveats.Count > 0 && m.Level == UkLevel.Official)
             {
-                errors.Add(Text.T("National caveats (UK EYES ONLY...) can only be applied to SECRET and TOP SECRET.", "Les caveats nationaux (UK EYES ONLY...) ne s'appliquent qu'à SECRET et TOP SECRET."));
+                errors.Add(Text.T("National caveats (UK EYES ONLY...) can only be applied to SECRET and TOP SECRET.", "Les caveats nationaux (UK EYES ONLY...) ne s'appliquent qu'à SECRET et TOP SECRET.", "Nationale Warnvermerke (UK EYES ONLY...) sind nur bei SECRET und TOP SECRET zulässig."));
             }
             if (!string.IsNullOrEmpty(m.HandlingInstruction))
             {
                 if (!UkRegister.Allowed(m.HandlingInstruction, tier))
                 {
-                    errors.Add(Text.T(UkFormatter.HandlingInstruction(m) + " cannot be applied to " + UkFormatter.Classification(m) + ".", UkFormatter.HandlingInstruction(m) + " ne s'applique pas à " + UkFormatter.Classification(m) + "."));
+                    errors.Add(Text.T(UkFormatter.HandlingInstruction(m) + " cannot be applied to " + UkFormatter.Classification(m) + ".", UkFormatter.HandlingInstruction(m) + " ne s'applique pas à " + UkFormatter.Classification(m) + ".", UkFormatter.HandlingInstruction(m) + " ist bei " + UkFormatter.Classification(m) + " nicht zulässig."));
                 }
                 if (m.HandlingInstruction == UkRegister.OrganisationUseOnly && string.IsNullOrEmpty(m.Organisation))
                 {
-                    errors.Add(Text.T("[ORGANISATION] USE ONLY names the organisation(s).", "[ORGANISATION] USE ONLY nomme la ou les organisations."));
+                    errors.Add(Text.T("[ORGANISATION] USE ONLY names the organisation(s).", "[ORGANISATION] USE ONLY nomme la ou les organisations.", "[ORGANISATION] USE ONLY nennt die Organisation(en)."));
                 }
                 if (m.HandlingInstruction == UkRegister.Embargoed && string.IsNullOrEmpty(m.Embargo))
                 {
-                    errors.Add(Text.T("EMBARGOED: the time and date, and the handling after it, are shown as close as possible to the classification.", "EMBARGOED : l'heure et la date, et le traitement ensuite, figurent au plus près de la classification."));
+                    errors.Add(Text.T("EMBARGOED: the time and date, and the handling after it, are shown as close as possible to the classification.", "EMBARGOED : l'heure et la date, et le traitement ensuite, figurent au plus près de la classification.", "EMBARGOED: Uhrzeit und Datum sowie die anschließende Behandlung stehen möglichst nah am Geheimhaltungsgrad."));
                 }
             }
             foreach (string descriptor in m.Descriptors)
             {
                 if (!UkRegister.Allowed(descriptor, tier))
                 {
-                    errors.Add(Text.T(descriptor + " cannot be applied to " + UkFormatter.Classification(m) + ".", descriptor + " ne s'applique pas à " + UkFormatter.Classification(m) + "."));
+                    errors.Add(Text.T(descriptor + " cannot be applied to " + UkFormatter.Classification(m) + ".", descriptor + " ne s'applique pas à " + UkFormatter.Classification(m) + ".", descriptor + " ist bei " + UkFormatter.Classification(m) + " nicht zulässig."));
                 }
             }
             if (!string.IsNullOrEmpty(m.Codeword))
@@ -169,14 +169,14 @@ namespace SystemBannerOffice.Markings
                 {
                     if (c < 'A' || c > 'Z')
                     {
-                        errors.Add(Text.T("A codeword is a single word in capital letters.", "Un codeword est un seul mot en majuscules."));
+                        errors.Add(Text.T("A codeword is a single word in capital letters.", "Un codeword est un seul mot en majuscules.", "Ein Codeword ist ein einzelnes Wort in Großbuchstaben."));
                         break;
                     }
                 }
             }
             if (m.RelEu && !m.UkPrefix)
             {
-                errors.Add(Text.T("REL EU goes with the UK prefix.", "REL EU s'accompagne du préfixe UK."));
+                errors.Add(Text.T("REL EU goes with the UK prefix.", "REL EU s'accompagne du préfixe UK.", "REL EU steht zusammen mit dem Präfix UK."));
             }
             return errors;
         }
@@ -197,13 +197,15 @@ namespace SystemBannerOffice.Markings
             if (!Available(settings))
             {
                 return Text.T("This computer is set to the " + settings.Ceiling.ClassificationSystem + " system (" + settings.Ceiling.Text + "): British markings are not offered.",
-                    "Ce poste est réglé sur le système " + settings.Ceiling.ClassificationSystem + " (" + settings.Ceiling.Text + ") : les marquages britanniques n'y sont pas proposés.");
+                    "Ce poste est réglé sur le système " + settings.Ceiling.ClassificationSystem + " (" + settings.Ceiling.Text + ") : les marquages britanniques n'y sont pas proposés.",
+                    "Dieser Rechner ist auf das System " + settings.Ceiling.ClassificationSystem + " eingestellt (" + settings.Ceiling.Text + "): Britische Kennzeichnungen werden nicht angeboten.");
             }
             //presets 31 to 34: OFFICIAL rank 0, OFFICIAL-SENSITIVE 1, SECRET 2, TOP SECRET 3
             if (settings.Ceiling != null && UkRegister.Tier(marking) > settings.Ceiling.Rank)
             {
                 return Text.T("This computer is set to " + settings.Ceiling.Text + ": a " + UkFormatter.Classification(marking) + " document cannot be written on it.",
-                    "Ce poste est réglé au niveau " + settings.Ceiling.Text + " : un document " + UkFormatter.Classification(marking) + " ne peut pas y être rédigé.");
+                    "Ce poste est réglé au niveau " + settings.Ceiling.Text + " : un document " + UkFormatter.Classification(marking) + " ne peut pas y être rédigé.",
+                    "Dieser Rechner ist auf " + settings.Ceiling.Text + " eingestellt: Ein Dokument " + UkFormatter.Classification(marking) + " kann hier nicht erstellt werden.");
             }
             return null;
         }

@@ -66,7 +66,7 @@ namespace SystemBannerOffice.Markings
             }
             if (string.IsNullOrEmpty(Herausgeber))
             {
-                errors.Add(Text.T("The issuer (Herausgeber) is marked on the document (VSA § 20 Abs. 2 Nr. 2).", "L'émetteur (Herausgeber) figure sur le document (VSA § 20 al. 2 n° 2)."));
+                errors.Add(Text.T("The issuer (Herausgeber) is marked on the document (VSA § 20 Abs. 2 Nr. 2).", "L'émetteur (Herausgeber) figure sur le document (VSA § 20 al. 2 n° 2).", "Der Herausgeber ist auf dem Dokument angegeben (VSA § 20 Abs. 2 Nr. 2)."));
             }
             int lastYear = Datum.Year + MaximumYears;
             if (marking.Level == GermanLevel.VsNfd)
@@ -74,25 +74,25 @@ namespace SystemBannerOffice.Markings
                 //VS-NfD: 30 years unless the issuer sets a shorter time, never longer (§ 16 Abs. 1, § 17 Abs. 1)
                 if (EinstufungEndet != 0 && (EinstufungEndet < Datum.Year || EinstufungEndet > lastYear))
                 {
-                    errors.Add(Text.T("A VS-NfD classification ends within 30 years (VSA § 16 Abs. 1): " + Datum.Year + " to " + lastYear + ".", "Une classification VS-NfD prend fin dans les 30 ans (VSA § 16 al. 1) : de " + Datum.Year + " à " + lastYear + "."));
+                    errors.Add(Text.T("A VS-NfD classification ends within 30 years (VSA § 16 Abs. 1): " + Datum.Year + " to " + lastYear + ".", "Une classification VS-NfD prend fin dans les 30 ans (VSA § 16 al. 1) : de " + Datum.Year + " à " + lastYear + ".", "Eine Einstufung als VS-NfD endet innerhalb von 30 Jahren (VSA § 16 Abs. 1): " + Datum.Year + " bis " + lastYear + "."));
                 }
                 return errors;
             }
             if (EinstufungEndet == 0)
             {
-                errors.Add(Text.T("From VS-VERTRAULICH up, the issuer sets when the classification ends: \"Die Einstufung endet mit Ablauf des Jahres …\" (VSA § 20 Abs. 2 Nr. 5).", "À partir de VS-VERTRAULICH, l'émetteur fixe la fin de la classification : « Die Einstufung endet mit Ablauf des Jahres … » (VSA § 20 al. 2 n° 5)."));
+                errors.Add(Text.T("From VS-VERTRAULICH up, the issuer sets when the classification ends: \"Die Einstufung endet mit Ablauf des Jahres …\" (VSA § 20 Abs. 2 Nr. 5).", "À partir de VS-VERTRAULICH, l'émetteur fixe la fin de la classification : « Die Einstufung endet mit Ablauf des Jahres … » (VSA § 20 al. 2 n° 5).", "Ab VS-VERTRAULICH legt der Herausgeber fest, wann die Einstufung endet: \"Die Einstufung endet mit Ablauf des Jahres …\" (VSA § 20 Abs. 2 Nr. 5)."));
             }
             else if (EinstufungEndet < Datum.Year || EinstufungEndet > lastYear)
             {
-                errors.Add(Text.T("The classification should not last more than 30 years (VSA § 16 Abs. 2): " + Datum.Year + " to " + lastYear + "; a longer time is an extension under § 17.", "La classification ne devrait pas dépasser 30 ans (VSA § 16 al. 2) : de " + Datum.Year + " à " + lastYear + " ; au-delà, c'est une prolongation selon le § 17."));
+                errors.Add(Text.T("The classification should not last more than 30 years (VSA § 16 Abs. 2): " + Datum.Year + " to " + lastYear + "; a longer time is an extension under § 17.", "La classification ne devrait pas dépasser 30 ans (VSA § 16 al. 2) : de " + Datum.Year + " à " + lastYear + " ; au-delà, c'est une prolongation selon le § 17.", "Die Einstufung sollte nicht länger als 30 Jahre dauern (VSA § 16 Abs. 2): " + Datum.Year + " bis " + lastYear + "; eine längere Dauer ist eine Verlängerung nach § 17."));
             }
             if (string.IsNullOrEmpty(Kennzeichen))
             {
-                errors.Add(Text.T("From VS-VERTRAULICH up, the document carries an individual reference, such as the Geschäftszeichen and Tagebuchnummer (VSA § 20 Abs. 2 Nr. 6).", "À partir de VS-VERTRAULICH, le document porte une référence individuelle, par exemple le Geschäftszeichen et la Tagebuchnummer (VSA § 20 al. 2 n° 6)."));
+                errors.Add(Text.T("From VS-VERTRAULICH up, the document carries an individual reference, such as the Geschäftszeichen and Tagebuchnummer (VSA § 20 Abs. 2 Nr. 6).", "À partir de VS-VERTRAULICH, le document porte une référence individuelle, par exemple le Geschäftszeichen et la Tagebuchnummer (VSA § 20 al. 2 n° 6).", "Ab VS-VERTRAULICH trägt das Dokument ein individuelles Kennzeichen, etwa Geschäftszeichen und Tagebuchnummer (VSA § 20 Abs. 2 Nr. 6)."));
             }
             if (Ausfertigung <= 0 || string.IsNullOrEmpty(Empfaenger))
             {
-                errors.Add(Text.T("From VS-VERTRAULICH up, each copy carries its number and its recipient (VSA § 20 Abs. 2 Nr. 7).", "À partir de VS-VERTRAULICH, chaque exemplaire porte son numéro et son destinataire (VSA § 20 al. 2 n° 7)."));
+                errors.Add(Text.T("From VS-VERTRAULICH up, each copy carries its number and its recipient (VSA § 20 Abs. 2 Nr. 7).", "À partir de VS-VERTRAULICH, chaque exemplaire porte son numéro et son destinataire (VSA § 20 al. 2 n° 7).", "Ab VS-VERTRAULICH trägt jede Ausfertigung ihre Nummer und ihren Empfänger (VSA § 20 Abs. 2 Nr. 7)."));
             }
             return errors;
         }
@@ -237,13 +237,15 @@ namespace SystemBannerOffice.Markings
             if (!Available(settings))
             {
                 return Text.T("This computer is set to the " + settings.Ceiling.ClassificationSystem + " system (" + settings.Ceiling.Text + "): German markings are not offered.",
-                    "Ce poste est réglé sur le système " + settings.Ceiling.ClassificationSystem + " (" + settings.Ceiling.Text + ") : les marquages allemands n'y sont pas proposés.");
+                    "Ce poste est réglé sur le système " + settings.Ceiling.ClassificationSystem + " (" + settings.Ceiling.Text + ") : les marquages allemands n'y sont pas proposés.",
+                    "Dieser Rechner ist auf das System " + settings.Ceiling.ClassificationSystem + " eingestellt (" + settings.Ceiling.Text + "): Deutsche Kennzeichnungen werden nicht angeboten.");
             }
             //presets 21 to 24: VS-NfD rank 0 to STRENG GEHEIM rank 3
             if (settings.Ceiling != null && marking.IsClassified && (int)marking.Level - 1 > settings.Ceiling.Rank)
             {
                 return Text.T("This computer is set to " + settings.Ceiling.Text + ": a " + marking + " document cannot be written on it.",
-                    "Ce poste est réglé au niveau " + settings.Ceiling.Text + " : un document " + marking + " ne peut pas y être rédigé.");
+                    "Ce poste est réglé au niveau " + settings.Ceiling.Text + " : un document " + marking + " ne peut pas y être rédigé.",
+                    "Dieser Rechner ist auf " + settings.Ceiling.Text + " eingestellt: Ein Dokument " + marking + " kann hier nicht erstellt werden.");
             }
             return null;
         }

@@ -50,7 +50,7 @@ namespace SystemBannerOffice.Markings
             result.Banner = banner;
             if (portions.Count == 0)
             {
-                result.Errors.Add(Text.T("The document has no portion marks to roll up.", "Le document ne comporte aucune marque de portion à consolider."));
+                result.Errors.Add(Text.T("The document has no portion marks to roll up.", "Le document ne comporte aucune marque de portion à consolider.", "Das Dokument enthält keine Teil-Kennzeichnungen, die zusammengeführt werden können."));
                 return result;
             }
             List<Marking> resolved = Resolve(portions, options.PreviousBanner, result);
@@ -63,7 +63,7 @@ namespace SystemBannerOffice.Markings
             ApplyForeignDisclosure(banner, fdr);
             if (banner.Owner == Owner.Joint && !banner.HasDissem("REL"))
             {
-                result.Errors.Add(Text.T("JOINT information must be releasable to all its co-owners (REL TO), it cannot roll up to " + (banner.HasDissem("NF") ? "NOFORN" : "no FD&R marking") + ".", "Une information JOINT doit être diffusable à tous ses copropriétaires (REL TO) : elle ne peut pas aboutir à " + (banner.HasDissem("NF") ? "NOFORN" : "une absence de marquage FD&R") + "."));
+                result.Errors.Add(Text.T("JOINT information must be releasable to all its co-owners (REL TO), it cannot roll up to " + (banner.HasDissem("NF") ? "NOFORN" : "no FD&R marking") + ".", "Une information JOINT doit être diffusable à tous ses copropriétaires (REL TO) : elle ne peut pas aboutir à " + (banner.HasDissem("NF") ? "NOFORN" : "une absence de marquage FD&R") + ".", "JOINT-Informationen müssen für alle Miteigentümer freigegeben sein (REL TO), sie können nicht zu " + (banner.HasDissem("NF") ? "NOFORN" : "keiner FD&R-Kennzeichnung") + " zusammengeführt werden."));
             }
             return result;
         }
@@ -99,7 +99,7 @@ namespace SystemBannerOffice.Markings
             }
             if (missing)
             {
-                result.Errors.Add(Text.T("A portion is marked \"REL\" but the document has no REL TO list yet: write the countries in that portion.", "Une portion est marquée « REL », mais le document n'a pas encore de liste REL TO : indiquer les pays dans cette portion."));
+                result.Errors.Add(Text.T("A portion is marked \"REL\" but the document has no REL TO list yet: write the countries in that portion.", "Une portion est marquée « REL », mais le document n'a pas encore de liste REL TO : indiquer les pays dans cette portion.", "Ein Abschnitt ist mit \"REL\" gekennzeichnet, aber das Dokument hat noch keine REL TO-Liste: Tragen Sie die Länder in diesem Abschnitt ein."));
             }
             return resolved;
         }
@@ -157,7 +157,7 @@ namespace SystemBannerOffice.Markings
                 {
                     //the United States has no RESTRICTED level: foreign RESTRICTED information is protected at least as CONFIDENTIAL
                     level = Level.Confidential;
-                    result.Notes.Add(Text.T("Foreign RESTRICTED portions roll up to a US banner as CONFIDENTIAL; check the handling agreed with the source country.", "Les portions RESTRICTED étrangères se consolident en CONFIDENTIAL dans un bandeau américain ; vérifier le traitement convenu avec le pays d'origine."));
+                    result.Notes.Add(Text.T("Foreign RESTRICTED portions roll up to a US banner as CONFIDENTIAL; check the handling agreed with the source country.", "Les portions RESTRICTED étrangères se consolident en CONFIDENTIAL dans un bandeau américain ; vérifier le traitement convenu avec le pays d'origine.", "Ausländische RESTRICTED-Abschnitte werden in einer US-Bannerzeile zu CONFIDENTIAL zusammengeführt; prüfen Sie die mit dem Herkunftsland vereinbarte Behandlung."));
                 }
             }
             banner.Level = level;
@@ -424,7 +424,7 @@ namespace SystemBannerOffice.Markings
                 {
                     if (options.DisseminatedAnalyticProduct)
                     {
-                        result.Errors.Add(Text.T("Portion (" + MarkingFormatter.Portion(p) + ") has no FD&R marking: every classified portion of a disseminated analytic product needs NOFORN, REL TO, RELIDO or DISPLAY ONLY.", "La portion (" + MarkingFormatter.Portion(p) + ") n'a pas de marquage FD&R : toute portion classifiée d'un produit analytique diffusé exige NOFORN, REL TO, RELIDO ou DISPLAY ONLY."));
+                        result.Errors.Add(Text.T("Portion (" + MarkingFormatter.Portion(p) + ") has no FD&R marking: every classified portion of a disseminated analytic product needs NOFORN, REL TO, RELIDO or DISPLAY ONLY.", "La portion (" + MarkingFormatter.Portion(p) + ") n'a pas de marquage FD&R : toute portion classifiée d'un produit analytique diffusé exige NOFORN, REL TO, RELIDO ou DISPLAY ONLY.", "Abschnitt (" + MarkingFormatter.Portion(p) + ") hat keine FD&R-Kennzeichnung: Jeder eingestufte Abschnitt eines verteilten Analyseprodukts benötigt NOFORN, REL TO, RELIDO oder DISPLAY ONLY."));
                     }
                     //Table 2: FGI and caveated information as NOFORN, uncaveated information as RELIDO since 28 June 2010
                     if (IsForeign(p) || IsCaveated(p) || options.DateOfOrigin < RelidoDefaultDate)
@@ -458,11 +458,11 @@ namespace SystemBannerOffice.Markings
             }
             if (assumedNoForn)
             {
-                result.Notes.Add(Text.T("Portions with no FD&R marking were handled as NOFORN (FGI, caveated or older than 28 June 2010 information, Table 2).", "Les portions sans marquage FD&R ont été traitées comme NOFORN (informations FGI, avec caveat ou antérieures au 28 juin 2010, Table 2)."));
+                result.Notes.Add(Text.T("Portions with no FD&R marking were handled as NOFORN (FGI, caveated or older than 28 June 2010 information, Table 2).", "Les portions sans marquage FD&R ont été traitées comme NOFORN (informations FGI, avec caveat ou antérieures au 28 juin 2010, Table 2).", "Abschnitte ohne FD&R-Kennzeichnung wurden als NOFORN behandelt (FGI, Informationen mit Warnvermerk oder vor dem 28. Juni 2010, Table 2)."));
             }
             if (assumedRelido)
             {
-                result.Notes.Add(Text.T("Portions with no FD&R marking were handled as RELIDO (uncaveated information since 28 June 2010, Table 2).", "Les portions sans marquage FD&R ont été traitées comme RELIDO (informations sans caveat depuis le 28 juin 2010, Table 2)."));
+                result.Notes.Add(Text.T("Portions with no FD&R marking were handled as RELIDO (uncaveated information since 28 June 2010, Table 2).", "Les portions sans marquage FD&R ont été traitées comme RELIDO (informations sans caveat depuis le 28 juin 2010, Table 2).", "Abschnitte ohne FD&R-Kennzeichnung wurden als RELIDO behandelt (Informationen ohne Warnvermerk seit dem 28. Juni 2010, Table 2)."));
             }
             if (releases.Count == 0)
             {

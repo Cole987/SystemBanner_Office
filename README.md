@@ -5,7 +5,7 @@ A Microsoft Office add-in that marks documents with their classification, from t
 
 It follows the *Intelligence Community Markings System Register and Manual* (ODNI, effective 31 December 2016, released under FOIA in 2021) for United States markings, the *Instruction générale interministérielle n° 1300* (SGDSN, 9 August 2021) for French markings, the *Verschlusssachenanweisung* (BMI, 13 March 2023) for German markings, the *Government Security Classifications Policy* (Cabinet Office) for British markings, and the stock classifications of SystemBanner for NATO and the United Nations.
 
-The add-in speaks English and French: its dialogs, buttons and messages follow the language of Office, or the `OfficeLanguage` setting. The markings themselves are never translated.
+The add-in speaks English, French and German: its dialogs, buttons and messages follow the language of Office, or the `OfficeLanguage` setting. The markings themselves are never translated.
 
 Like SystemBanner, this is a retro computing and preservation project, shared as is. It has not been evaluated or certified for computers that handle real classified or sensitive information.
 
@@ -35,7 +35,7 @@ FEATURES
 - **French markings (IGI 1300).** SECRET, TRÈS SECRET and DIFFUSION RESTREINTE stamps, Spécial France, paragraph marks `[S]`, first page identification, declassification, see [French markings](#french-markings).
 - **German markings (VS-Anweisung).** VS-NUR FÜR DEN DIENSTGEBRAUCH, VS-VERTRAULICH, GEHEIM and STRENG GEHEIM stamps, "amtlich geheim gehalten", Warn- und Sperrvermerke, part marks `[Geh.]`, first page, downgrading, see [German markings](#german-markings).
 - **British markings (GSCP).** OFFICIAL, OFFICIAL-SENSITIVE, SECRET and TOP SECRET with handling instructions, descriptors, codewords, the UK prefix, REL EU and national caveats, see [British markings](#british-markings).
-- **English and French.** Dialogs, buttons and messages in the language of Office, or the one set by `OfficeLanguage`.
+- **English, French and German.** Dialogs, buttons and messages in the language of Office, or the one set by `OfficeLanguage`. The German texts are a first translation, to be reviewed by a German-speaking security officer.
 - **The computer's classification is the ceiling.** A document cannot be marked above the `Simple` level of the computer; SCI needs a TOP SECRET//SCI computer. With no `Simple` value, the classifier chooses the system of each document: IC, France, Germany or the United Kingdom. A computer set to one of these countries offers that system only, up to its level; a computer set to NATO or the UN offers the stock levels of SystemBanner. The add-in claims no equivalence between the levels of two systems.
 - **No saving or printing unclassified documents**, when the administrator asks for it (Word and Excel).
 
@@ -66,7 +66,7 @@ The add-in reads the SystemBanner key, `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Sys
 | `OfficeRequireClassification` | DWORD | 1: a document with no classification cannot be saved or printed. |
 | `OfficeSpellOut` | DWORD | 1: banner lines spell control markings out (`TALENT KEYHOLE`) instead of using their abbreviations (`TK`). |
 | `OfficeAnalyticProducts` | DWORD | 1: documents are disseminated analytic products, every classified portion must carry an FD&R marking (ICD 710 E.5). |
-| `OfficeLanguage` | String | `en` or `fr`: the language of the add-in. Without it, the language of the Office user interface. A user may also set it in `HKEY_CURRENT_USER\Software\SystemBanner`. |
+| `OfficeLanguage` | String | `en`, `fr` or `de`: the language of the add-in. Without it, the language of the Office user interface. A user may also set it in `HKEY_CURRENT_USER\Software\SystemBanner`. |
 | `OfficeToolbar` | DWORD | 1: the SystemBanner toolbar in Office 2007 and later too (Add-ins tab), besides the ribbon. A user may also set it in `HKEY_CURRENT_USER\Software\SystemBanner`. |
 
 ---
@@ -78,7 +78,7 @@ The **Classification** tab (Office 2007 and later) or the **SystemBanner** toolb
 - **Classify**: picks the classification of a document with no portion marks, or of an Excel workbook. The dialog shows the banner line and the portion mark as they are typed, and the reasons a combination is refused.
 - **Portion mark**: marks the paragraph at the cursor, then rolls up the banner line.
 - **Roll up**: rebuilds the banner line from every portion mark of the document, and reports unmarked paragraphs and the choices it made.
-- **Authority block**: writes the classification authority block at the cursor in Word, and stores it in the document properties; for a French or German document, the first page.
+- **Authority block**: writes the classification authority block in a framed box at the bottom right of the first page in Word (the Register allows it anywhere on the first page or cover, section 8), in place of the box written before, and stores it in the document properties; for a French or German document, the first page.
 - **Downgrade**: for a French document, lowers, raises or lifts the classification (IGI 1300, annexe 38); for a German document, downgrades or lifts it (VSA § 18, § 19).
 
 ---------------

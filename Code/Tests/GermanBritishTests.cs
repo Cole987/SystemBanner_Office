@@ -106,6 +106,30 @@ namespace SystemBannerOffice.Tests
                 Text.French = saved;
             }
         }
+
+        public static void German()
+        {
+            Language saved = Text.Current;
+            try
+            {
+                Text.Current = Language.German;
+                string german = MarkingValidator.Validate(MarkingParser.Parse("SECRET//FOUO").Marking)[0];
+                Text.Current = Language.English;
+                string english = MarkingValidator.Validate(MarkingParser.Parse("SECRET//FOUO").Marking)[0];
+                Assert.IsTrue(english != german && german.Contains("FOUO"), "the same rule in German, the marking untranslated: " + german);
+                Text.Current = Language.German;
+                Assert.AreEqual("Ja", Text.T("Yes", "Oui", "Ja"));
+                Assert.IsTrue(Text.T("Yes", "Oui") == "Yes", "a message without German text shows in English");
+                Text.Choose(0x0407); //German (Germany)
+                Assert.IsTrue(Text.German, "a German Office speaks German (unless OfficeLanguage is set on this computer)");
+                Text.Choose(0x0C07); //German (Austria)
+                Assert.IsTrue(Text.German, "any German Office speaks German");
+            }
+            finally
+            {
+                Text.Current = saved;
+            }
+        }
     }
 
     //Government Security Classifications Policy

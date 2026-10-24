@@ -558,7 +558,7 @@ namespace SystemBannerOffice
                     }
                     else if (Regex.IsMatch(french.Groups[1].Value, @"^(NP|DR|S|TS|CD|SD|TSD)\b"))
                     {
-                        scan.Errors.Add("[" + french.Groups[1].Value + "] " + Text.T(": not a valid paragraph mark; the marks are [NP], [DR], [S] and [TS], followed by SF for Spécial France (Confidentiel Défense no longer exists since 1 July 2021).", ": marque de paragraphe non valide ; les marques sont [NP], [DR], [S] et [TS], suivies de SF pour Spécial France (Confidentiel Défense n'existe plus depuis le 1er juillet 2021)."));
+                        scan.Errors.Add("[" + french.Groups[1].Value + "] " + Text.T(": not a valid paragraph mark; the marks are [NP], [DR], [S] and [TS], followed by SF for Spécial France (Confidentiel Défense no longer exists since 1 July 2021).", ": marque de paragraphe non valide ; les marques sont [NP], [DR], [S] et [TS], suivies de SF pour Spécial France (Confidentiel Défense n'existe plus depuis le 1er juillet 2021).", ": keine gültige Absatzkennzeichnung; die Kennzeichnungen sind [NP], [DR], [S] und [TS], gefolgt von SF für Spécial France (Confidentiel Défense gibt es seit dem 1. Juli 2021 nicht mehr)."));
                     }
                     else
                     {
@@ -603,6 +603,13 @@ namespace SystemBannerOffice
         //writes lines at the cursor, or in place of the block written before under the same bookmark (Word only);
         //"{NUMPAGES}" in a line becomes the page count field
         public virtual void WriteBlock(string bookmark, string[] lines)
+        {
+            throw new NotSupportedException();
+        }
+
+        //writes the IC classification authority block in a framed box at the bottom right of the first page (Word only),
+        //in place of the box or the block written before; the Register allows it anywhere on the first page or cover
+        public virtual void WriteAuthorityBox(string[] lines)
         {
             throw new NotSupportedException();
         }
@@ -882,6 +889,54 @@ namespace SystemBannerOffice
             }
             Late.Call(bookmarks, "Add", bookmark, range);
         }
+
+        public override void WriteAuthorityBox(string[] lines)
+        {
+            //the box written before, and the block of earlier versions written at the cursor
+            object shapes = Late.Get(Document, "Shapes");
+            for (int i = Late.Count(shapes); i >= 1; i--)
+            {
+                object shape = Late.Item(shapes, i);
+                if (Convert.ToString(Late.TryGet(shape, "Name")) == AuthorityBookmark)
+                {
+                    Late.Call(shape, "Delete");
+                }
+            }
+            object bookmarks = Late.Get(Document, "Bookmarks");
+            if (Convert.ToBoolean(Late.Call(bookmarks, "Exists", AuthorityBookmark)))
+            {
+                object old = Late.Get(Late.Item(bookmarks, AuthorityBookmark), "Range");
+                Late.Call(Late.Get(Late.Item(Late.Get(old, "Paragraphs"), 1), "Range"), "Delete");
+            }
+            //anchored to the first paragraph, so it stays on the first page
+            object anchor = Late.Get(Late.Item(Late.Get(Document, "Paragraphs"), 1), "Range");
+            float height = lines.Length * 10f + 10f;
+            object box = Late.Call(shapes, "AddTextbox", 1, 0, 0, 216, height, anchor); //msoTextOrientationHorizontal, 7.6 cm wide
+            Late.Set(box, "Name", AuthorityBookmark);
+            Late.TrySet(box, "LockAnchor", true);
+            Late.TrySet(Late.Get(box, "WrapFormat"), "Type", 0); //wdWrapSquare: the text flows around the box
+            Late.TrySet(box, "RelativeHorizontalPosition", 0); //wdRelativeHorizontalPositionMargin
+            Late.TrySet(box, "RelativeVerticalPosition", 0); //wdRelativeVerticalPositionMargin
+            Late.Set(box, "Left", -999996); //wdShapeRight
+            Late.Set(box, "Top", -999995); //wdShapeBottom
+            object line = Late.Get(box, "Line");
+            Late.TrySet(line, "Weight", 0.75f);
+            Late.TrySet(Late.Get(line, "ForeColor"), "RGB", 0);
+            object frame = Late.Get(box, "TextFrame");
+            foreach (string margin in new string[] { "MarginLeft", "MarginRight", "MarginTop", "MarginBottom" })
+            {
+                Late.TrySet(frame, margin, 4f);
+            }
+            object text = Late.Get(frame, "TextRange");
+            Late.Set(text, "Text", string.Join("\r", lines).Replace("{NUMPAGES}", ""));
+            object font = Late.Get(text, "Font");
+            Late.Set(font, "Name", "Arial");
+            Late.Set(font, "Size", 8);
+            Late.TrySet(font, "Bold", 0);
+            Late.TrySet(Late.Get(text, "ParagraphFormat"), "SpaceAfter", 0);
+            Late.TrySet(Late.Get(text, "ParagraphFormat"), "SpaceBefore", 0);
+            Late.TrySet(frame, "AutoSize", -1); //Word 2007 and later: the box fits its lines
+        }
     }
 
     public class ExcelHost : DocumentHost
@@ -1058,7 +1113,7 @@ namespace SystemBannerOffice
             object selection = Late.Get(Late.Get(Application, "ActiveWindow"), "Selection");
             if (Convert.ToInt32(Late.Get(selection, "Type")) != 3) //ppSelectionText
             {
-                throw new InvalidOperationException(Text.T("Put the cursor in the text that the portion mark applies to.", "Placer le curseur dans le texte auquel la marque s'applique."));
+                throw new InvalidOperationException(Text.T("Put the cursor in the text that the portion mark applies to.", "Placer le curseur dans le texte auquel la marque s'applique.", "Setzen Sie den Cursor in den Text, für den die Teilkennzeichnung gilt."));
             }
             object paragraph = Late.Call(Late.Get(selection, "TextRange"), "Paragraphs", 1, 1);
             string text = Convert.ToString(Late.Get(paragraph, "Text"));

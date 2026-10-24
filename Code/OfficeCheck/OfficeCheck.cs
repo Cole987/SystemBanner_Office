@@ -289,6 +289,23 @@ namespace SystemBannerOffice.Check
             Check(all.Contains("Declassify On: 20460101") && all.IndexOf("20450101") < 0, "Word authority block replaced");
             host.StoreAuthorityBlock(block);
             Check(host.StoredAuthorityBlock().DeclassifyOn == "20460101", "Word authority block stored");
+            //the box at the bottom right of the first page replaces the block of earlier versions, then itself
+            host.WriteAuthorityBox(block.Lines());
+            block.DeclassifyOn = "20470101";
+            host.WriteAuthorityBox(block.Lines());
+            object shapes = Late.Get(document, "Shapes");
+            int boxes = 0;
+            string boxText = "";
+            for (int i = 1; i <= Late.Count(shapes); i++)
+            {
+                object shape = Late.Item(shapes, i);
+                if (Convert.ToString(Late.Get(shape, "Name")) != DocumentHost.AuthorityBookmark) continue;
+                boxes++;
+                boxText = Text(Late.Get(Late.Get(shape, "TextFrame"), "TextRange"));
+                Check(Convert.ToSingle(Late.Get(shape, "Left")) == -999996f && Convert.ToSingle(Late.Get(shape, "Top")) == -999995f, "Word authority box at the bottom right of the margins (" + Late.Get(shape, "Left") + ", " + Late.Get(shape, "Top") + ")");
+            }
+            all = Convert.ToString(Late.Get(Late.Get(document, "Content"), "Text"));
+            Check(boxes == 1 && boxText.Contains("Declassify On: 20470101") && all.IndexOf("Declassify On") < 0, "Word authority box written once, the block at the cursor removed: " + Show(boxText));
             //save event: the recorder cancels the save
             WordRecorder recorder = new WordRecorder();
             using (new ComEventLink(word, typeof(WordApplicationEvents).GUID, recorder))

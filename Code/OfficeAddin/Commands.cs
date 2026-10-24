@@ -95,7 +95,7 @@ namespace SystemBannerOffice
             DocumentHost host = DocumentHost.Active(application);
             if (host == null)
             {
-                Show(Text.T("Open a document first.", "Ouvrir d'abord un document."), MessageBoxIcon.Information);
+                Show(Text.T("Open a document first.", "Ouvrir d'abord un document.", "Öffnen Sie zuerst ein Dokument."), MessageBoxIcon.Information);
             }
             return host;
         }
@@ -133,7 +133,7 @@ namespace SystemBannerOffice
             {
                 Exception inner = ex is System.Reflection.TargetInvocationException && ex.InnerException != null ? ex.InnerException : ex;
                 Log.Error(command, ex);
-                Show(Text.T("The command failed: ", "La commande a échoué : ") + inner.Message + Environment.NewLine + Environment.NewLine + Text.T("Details are in ", "Le détail est dans ") + Log.FilePath, MessageBoxIcon.Error);
+                Show(Text.T("The command failed: ", "La commande a échoué : ", "Der Befehl ist fehlgeschlagen: ") + inner.Message + Environment.NewLine + Environment.NewLine + Text.T("Details are in ", "Le détail est dans ", "Einzelheiten stehen in ") + Log.FilePath, MessageBoxIcon.Error);
             }
         }
 
@@ -193,7 +193,8 @@ namespace SystemBannerOffice
                 return false;
             }
             if (Ask(Text.T("This document has portion marks: its classification is rolled up from them.\n\nRoll up the portion marks now?",
-                "Ce document comporte des marques de paragraphe : sa classification en est déduite.\n\nCalculer la classification maintenant ?")))
+                "Ce document comporte des marques de paragraphe : sa classification en est déduite.\n\nCalculer la classification maintenant ?",
+                "Dieses Dokument enthält Teilkennzeichnungen: Seine Einstufung wird daraus abgeleitet.\n\nEinstufung jetzt aus den Teilkennzeichnungen ableiten?")))
             {
                 RollUpDocument(true);
             }
@@ -248,7 +249,8 @@ namespace SystemBannerOffice
             host.Mark(marking, id, bound);
             if (host is WordHost && id.Validate(marking).Count > 0
                 && Ask(Text.T("A " + marking.ToString() + " document is identified on its first page (issuing authority, date, registration number" + (marking.IsClassified ? ", classification deadline" : "") + ").\n\nWrite the identification now?",
-                    "Un document " + marking.ToString() + " est identifié dès sa première page (autorité émettrice, date, numéro d'enregistrement" + (marking.IsClassified ? ", échéance de classification" : "") + ").\n\nÉcrire l'identification maintenant ?")))
+                    "Un document " + marking.ToString() + " est identifié dès sa première page (autorité émettrice, date, numéro d'enregistrement" + (marking.IsClassified ? ", échéance de classification" : "") + ").\n\nÉcrire l'identification maintenant ?",
+                    "Ein Dokument " + marking.ToString() + " wird auf seiner ersten Seite gekennzeichnet (ausstellende Stelle, Datum, Registriernummer" + (marking.IsClassified ? ", Ablauf der Einstufung" : "") + ").\n\nKennzeichnung jetzt schreiben?")))
             {
                 WriteIdentification(host, marking);
             }
@@ -259,7 +261,8 @@ namespace SystemBannerOffice
             host.Mark(marking);
             if (askIdentification && host is WordHost && marking.IsClassified && host.StoredGermanIdentification().Validate(marking).Count > 0
                 && Ask(Text.T("A " + GermanFormatter.Stamp(marking.Level) + " document carries its issuer, date and page count" + (marking.AmtlichGeheimGehalten ? ", end of classification, reference and copy number" : "") + " (VSA § 20 Abs. 2).\n\nWrite them now?",
-                    "Un document " + GermanFormatter.Stamp(marking.Level) + " porte son émetteur, sa date et son nombre de pages" + (marking.AmtlichGeheimGehalten ? ", la fin de classification, sa référence et son numéro d'exemplaire" : "") + " (VSA § 20 al. 2).\n\nLes écrire maintenant ?")))
+                    "Un document " + GermanFormatter.Stamp(marking.Level) + " porte son émetteur, sa date et son nombre de pages" + (marking.AmtlichGeheimGehalten ? ", la fin de classification, sa référence et son numéro d'exemplaire" : "") + " (VSA § 20 al. 2).\n\nLes écrire maintenant ?",
+                    "Ein Dokument " + GermanFormatter.Stamp(marking.Level) + " trägt Herausgeber, Datum und Seitenzahl" + (marking.AmtlichGeheimGehalten ? ", Ende der Einstufung, Geschäftszeichen und Ausfertigungsnummer" : "") + " (VSA § 20 Abs. 2).\n\nJetzt schreiben?")))
             {
                 WriteGermanIdentification(host, marking);
             }
@@ -271,7 +274,7 @@ namespace SystemBannerOffice
             if (host == null) return;
             if (!host.SupportsPortions)
             {
-                Show(Text.T("Excel workbooks are marked as a whole: use Classify.", "Les classeurs Excel sont marqués en entier : utiliser Classify."), MessageBoxIcon.Information);
+                Show(Text.T("Excel workbooks are marked as a whole: use Classify.", "Les classeurs Excel sont marqués en entier : utiliser Classify.", "Excel-Arbeitsmappen werden als Ganzes gekennzeichnet: Verwenden Sie Einstufen."), MessageBoxIcon.Information);
                 return;
             }
             SystemSettings settings = SystemSettings.Read();
@@ -282,12 +285,14 @@ namespace SystemBannerOffice
                     if (AvailableSystems(settings).Count == 0)
                     {
                         Show(Text.T("Portion marks belong to the IC, French and German systems; this computer uses the " + settings.Ceiling.ClassificationSystem + " system.",
-                            "Les marques de paragraphe existent dans les systèmes IC, français et allemand ; ce poste utilise le système " + settings.Ceiling.ClassificationSystem + "."), MessageBoxIcon.Information);
+                            "Les marques de paragraphe existent dans les systèmes IC, français et allemand ; ce poste utilise le système " + settings.Ceiling.ClassificationSystem + ".",
+                            "Teilkennzeichnungen gibt es im IC-, im französischen und im deutschen System; dieser Rechner verwendet das System " + settings.Ceiling.ClassificationSystem + "."), MessageBoxIcon.Information);
                     }
                     return;
                 case DocumentHost.BritishSystem:
                     Show(Text.T("The Government Security Classifications Policy has no portion marking: classify the document as a whole.",
-                        "La Government Security Classifications Policy ne prévoit pas de marquage par paragraphe : classifier le document en entier."), MessageBoxIcon.Information);
+                        "La Government Security Classifications Policy ne prévoit pas de marquage par paragraphe : classifier le document en entier.",
+                        "Die Government Security Classifications Policy kennt keine Teilkennzeichnung: Stufen Sie das Dokument als Ganzes ein."), MessageBoxIcon.Information);
                     return;
                 case DocumentHost.FrenchSystem:
                     {
@@ -335,20 +340,21 @@ namespace SystemBannerOffice
             PortionScan scan = host.ScanPortions();
             if (scan.Errors.Count > 0)
             {
-                Show(Text.T("Some portion marks are not valid, fix them first:\n\n", "Des marques de paragraphe ne sont pas valides, les corriger d'abord :\n\n") + string.Join("\n", scan.Errors.ToArray()), MessageBoxIcon.Warning);
+                Show(Text.T("Some portion marks are not valid, fix them first:\n\n", "Des marques de paragraphe ne sont pas valides, les corriger d'abord :\n\n", "Einige Teilkennzeichnungen sind ungültig, korrigieren Sie sie zuerst:\n\n") + string.Join("\n", scan.Errors.ToArray()), MessageBoxIcon.Warning);
                 return false;
             }
             if (scan.Systems > 1)
             {
                 Show(Text.T("This document mixes the marks of several systems (IC \"(S//NF)\", French \"[S]\", German \"[Geh.]\"): a document belongs to one system, and their levels are not equivalent.",
-                    "Ce document mélange les marques de plusieurs systèmes (IC « (S//NF) », français « [S] », allemand « [Geh.] ») : un document relève d'un seul système, sans équivalence entre leurs niveaux."), MessageBoxIcon.Warning);
+                    "Ce document mélange les marques de plusieurs systèmes (IC « (S//NF) », français « [S] », allemand « [Geh.] ») : un document relève d'un seul système, sans équivalence entre leurs niveaux.",
+                    "Dieses Dokument mischt die Kennzeichnungen mehrerer Systeme (IC „(S//NF)“, französisch „[S]“, deutsch „[Geh.]“): Ein Dokument gehört zu einem System, und ihre Geheimhaltungsgrade sind nicht gleichwertig."), MessageBoxIcon.Warning);
                 return false;
             }
             if (scan.FrenchMarks.Count > 0) return RollUpFrench(host, settings, scan, verbose);
             if (scan.GermanMarks.Count > 0) return RollUpGerman(host, settings, scan, verbose);
             if (scan.Marks.Count == 0)
             {
-                if (verbose) Show(Text.T("The document has no portion marks yet: use Portion mark on each paragraph.", "Le document n'a pas encore de marques de paragraphe : utiliser Portion mark sur chaque paragraphe."), MessageBoxIcon.Information);
+                if (verbose) Show(Text.T("The document has no portion marks yet: use Portion mark on each paragraph.", "Le document n'a pas encore de marques de paragraphe : utiliser Portion mark sur chaque paragraphe.", "Das Dokument hat noch keine Teilkennzeichnungen: Verwenden Sie Teilkennzeichnung für jeden Absatz."), MessageBoxIcon.Information);
                 return false;
             }
             RollUpOptions options = new RollUpOptions();
@@ -362,15 +368,15 @@ namespace SystemBannerOffice
             if (ceiling != null) problems.Add(ceiling);
             if (problems.Count > 0)
             {
-                Show(Text.T("The banner line cannot be set:\n\n", "La ligne de bannière ne peut pas être fixée :\n\n") + string.Join("\n", problems.ToArray()), MessageBoxIcon.Warning);
+                Show(Text.T("The banner line cannot be set:\n\n", "La ligne de bannière ne peut pas être fixée :\n\n", "Die Bannerzeile kann nicht gesetzt werden:\n\n") + string.Join("\n", problems.ToArray()), MessageBoxIcon.Warning);
                 return false;
             }
             host.Mark(result.Banner);
             StringBuilder report = new StringBuilder();
-            report.Append(Text.T("Banner line: ", "Ligne de bannière : ")).Append(MarkingFormatter.Banner(result.Banner)).Append('\n');
+            report.Append(Text.T("Banner line: ", "Ligne de bannière : ", "Bannerzeile: ")).Append(MarkingFormatter.Banner(result.Banner)).Append('\n');
             if (scan.Unmarked > 0 && result.Banner.HasControls | result.Banner.Level > Level.Unclassified)
             {
-                report.Append('\n').Append(scan.Unmarked).Append(Text.T(" paragraph(s) have no portion mark: every portion of a classified or controlled document must be marked.\n", " paragraphe(s) sans marque : chaque partie d'un document classifié ou contrôlé doit être marquée.\n"));
+                report.Append('\n').Append(scan.Unmarked).Append(Text.T(" paragraph(s) have no portion mark: every portion of a classified or controlled document must be marked.\n", " paragraphe(s) sans marque : chaque partie d'un document classifié ou contrôlé doit être marquée.\n", " Absatz/Absätze ohne Teilkennzeichnung: Jeder Teil eines eingestuften oder kontrollierten Dokuments muss gekennzeichnet sein.\n"));
             }
             foreach (string note in result.Notes)
             {
@@ -389,7 +395,8 @@ namespace SystemBannerOffice
             if (!string.IsNullOrEmpty(host.StoredDeclassification()))
             {
                 Show(Text.T("This document was declassified (" + host.StoredDeclassification() + "): its paragraph marks do not classify it again. To classify it again, use Classify.",
-                    "Ce document a été déclassifié (" + host.StoredDeclassification() + ") : ses marques de paragraphe ne le reclassifient pas. Pour le classifier à nouveau, utiliser Classify."), MessageBoxIcon.Information);
+                    "Ce document a été déclassifié (" + host.StoredDeclassification() + ") : ses marques de paragraphe ne le reclassifient pas. Pour le classifier à nouveau, utiliser Classify.",
+                    "Die Einstufung dieses Dokuments wurde aufgehoben (" + host.StoredDeclassification() + "): Seine Absatzkennzeichnungen stufen es nicht erneut ein. Um es erneut einzustufen, verwenden Sie Einstufen."), MessageBoxIcon.Information);
                 return false;
             }
             FrenchRollUpResult result = FrenchRollUp.Compute(scan.FrenchMarks);
@@ -398,7 +405,7 @@ namespace SystemBannerOffice
             if (ceiling != null) problems.Add(ceiling);
             if (problems.Count > 0)
             {
-                Show(Text.T("The level of the document cannot be set:\n\n", "Le niveau du document ne peut pas être fixé :\n\n") + string.Join("\n", problems.ToArray()), MessageBoxIcon.Warning);
+                Show(Text.T("The level of the document cannot be set:\n\n", "Le niveau du document ne peut pas être fixé :\n\n", "Der Geheimhaltungsgrad des Dokuments kann nicht gesetzt werden:\n\n") + string.Join("\n", problems.ToArray()), MessageBoxIcon.Warning);
                 return false;
             }
             FrenchMarking stored = host.StoredFrenchMarking();
@@ -408,21 +415,21 @@ namespace SystemBannerOffice
             }
             if (result.Document.Level == FrenchLevel.NonProtege)
             {
-                Show(Text.T("Every paragraph is [NP]: the document is neither classified nor protected, no stamp is applied.", "Tous les paragraphes sont [NP] : le document n'est ni classifié ni protégé, aucun timbre n'est apposé."), MessageBoxIcon.Information);
+                Show(Text.T("Every paragraph is [NP]: the document is neither classified nor protected, no stamp is applied.", "Tous les paragraphes sont [NP] : le document n'est ni classifié ni protégé, aucun timbre n'est apposé.", "Alle Absätze sind [NP]: Das Dokument ist weder eingestuft noch geschützt, es wird kein Stempel angebracht."), MessageBoxIcon.Information);
             }
             host.Mark(result.Document, host.StoredFrenchIdentification(), host.StoredBound());
             StringBuilder report = new StringBuilder();
-            report.Append(Text.T("Level of the document: ", "Niveau du document : ")).Append(result.Document.ToString()).Append('\n');
+            report.Append(Text.T("Level of the document: ", "Niveau du document : ", "Geheimhaltungsgrad des Dokuments: ")).Append(result.Document.ToString()).Append('\n');
             if (scan.Unmarked > 0 && result.Document.Level > FrenchLevel.NonProtege)
             {
-                report.Append('\n').Append(scan.Unmarked).Append(Text.T(" paragraph(s) without a mark: the IGI 1300 recommends marking the level in the margin of each part (7.1.1.2 a).\n", " paragraphe(s) sans marque : l'IGI 1300 recommande de préciser le niveau en marge de chaque partie (7.1.1.2 a).\n"));
+                report.Append('\n').Append(scan.Unmarked).Append(Text.T(" paragraph(s) without a mark: the IGI 1300 recommends marking the level in the margin of each part (7.1.1.2 a).\n", " paragraphe(s) sans marque : l'IGI 1300 recommande de préciser le niveau en marge de chaque partie (7.1.1.2 a).\n", " Absatz/Absätze ohne Kennzeichnung: Die IGI 1300 empfiehlt, den Geheimhaltungsgrad am Rand jedes Teils anzugeben (7.1.1.2 a).\n"));
             }
             if (verbose || scan.Unmarked > 0)
             {
                 Show(report.ToString(), MessageBoxIcon.Information);
             }
             if (host is WordHost && host.StoredFrenchIdentification().Validate(result.Document).Count > 0 && verbose
-                && Ask(Text.T("The first page identification is incomplete. Write it now?", "L'identification de première page est incomplète. L'écrire maintenant ?")))
+                && Ask(Text.T("The first page identification is incomplete. Write it now?", "L'identification de première page est incomplète. L'écrire maintenant ?", "Die Kennzeichnung der ersten Seite ist unvollständig. Jetzt schreiben?")))
             {
                 WriteIdentification(host, result.Document);
             }
@@ -445,10 +452,10 @@ namespace SystemBannerOffice
             }
             MarkGerman(host, document, verbose);
             StringBuilder report = new StringBuilder();
-            report.Append(Text.T("Level of the document: ", "Niveau du document : ")).Append(document.IsClassified ? GermanFormatter.Stamp(document.Level) : Text.T("not classified", "non classifié")).Append('\n');
+            report.Append(Text.T("Level of the document: ", "Niveau du document : ", "Geheimhaltungsgrad des Dokuments: ")).Append(document.IsClassified ? GermanFormatter.Stamp(document.Level) : Text.T("not classified", "non classifié", "nicht eingestuft")).Append('\n');
             if (scan.Unmarked > 0 && document.IsClassified)
             {
-                report.Append('\n').Append(scan.Unmarked).Append(Text.T(" paragraph(s) without a mark: the start and end of each part with its own level must be recognisable (VSA § 20 Abs. 6).\n", " paragraphe(s) sans marque : le début et la fin de chaque partie de niveau propre doivent être reconnaissables (VSA § 20 al. 6).\n"));
+                report.Append('\n').Append(scan.Unmarked).Append(Text.T(" paragraph(s) without a mark: the start and end of each part with its own level must be recognisable (VSA § 20 Abs. 6).\n", " paragraphe(s) sans marque : le début et la fin de chaque partie de niveau propre doivent être reconnaissables (VSA § 20 al. 6).\n", " Absatz/Absätze ohne Kennzeichnung: Anfang und Ende jedes Teils mit eigenem Geheimhaltungsgrad müssen erkennbar sein (VSA § 20 Abs. 6).\n"));
             }
             if (verbose || scan.Unmarked > 0)
             {
@@ -465,7 +472,7 @@ namespace SystemBannerOffice
             }
             if (host.StoredAuthorityBlock().Validate(banner).Count > 0 && host is WordHost)
             {
-                if (Ask(Text.T("A classified document carries a classification authority block. Write it now?", "Un document classifié porte un bloc d'autorité de classification. L'écrire maintenant ?")))
+                if (Ask(Text.T("A classified document carries a classification authority block. Write it now?", "Un document classifié porte un bloc d'autorité de classification. L'écrire maintenant ?", "Ein eingestuftes Dokument trägt einen Einstufungsvermerk (Classification Authority Block). Jetzt schreiben?")))
                 {
                     WriteAuthorityBlock();
                 }
@@ -483,7 +490,7 @@ namespace SystemBannerOffice
                 FrenchMarking marking = host.StoredFrenchMarking();
                 if (marking == null || marking.Level == FrenchLevel.NonProtege)
                 {
-                    Show(Text.T("Classify the document first.", "Classifier d'abord le document."), MessageBoxIcon.Information);
+                    Show(Text.T("Classify the document first.", "Classifier d'abord le document.", "Stufen Sie das Dokument zuerst ein."), MessageBoxIcon.Information);
                     return;
                 }
                 WriteIdentification(host, marking);
@@ -494,7 +501,7 @@ namespace SystemBannerOffice
                 GermanMarking marking = host.StoredGermanMarking();
                 if (marking == null || !marking.IsClassified)
                 {
-                    Show(Text.T("Classify the document first.", "Classifier d'abord le document."), MessageBoxIcon.Information);
+                    Show(Text.T("Classify the document first.", "Classifier d'abord le document.", "Stufen Sie das Dokument zuerst ein."), MessageBoxIcon.Information);
                     return;
                 }
                 WriteGermanIdentification(host, marking);
@@ -503,13 +510,14 @@ namespace SystemBannerOffice
             if (system == DocumentHost.BritishSystem)
             {
                 Show(Text.T("The Government Security Classifications Policy has no authority block: the markings at the top and bottom of each page are the whole marking.",
-                    "La Government Security Classifications Policy ne prévoit pas de bloc d'autorité : les marquages en haut et en bas de chaque page suffisent."), MessageBoxIcon.Information);
+                    "La Government Security Classifications Policy ne prévoit pas de bloc d'autorité : les marquages en haut et en bas de chaque page suffisent.",
+                    "Die Government Security Classifications Policy kennt keinen Einstufungsvermerk: Die Kennzeichnungen oben und unten auf jeder Seite sind die gesamte Kennzeichnung."), MessageBoxIcon.Information);
                 return;
             }
             Marking banner = host.StoredBanner();
             if (banner == null)
             {
-                Show(Text.T("Classify the document first.", "Classifier d'abord le document."), MessageBoxIcon.Information);
+                Show(Text.T("Classify the document first.", "Classifier d'abord le document.", "Stufen Sie das Dokument zuerst ein."), MessageBoxIcon.Information);
                 return;
             }
             AuthorityForm form = new AuthorityForm(host.StoredAuthorityBlock(), banner);
@@ -520,7 +528,7 @@ namespace SystemBannerOffice
             host.StoreAuthorityBlock(form.Result);
             if (host is WordHost)
             {
-                host.WriteBlock(DocumentHost.AuthorityBookmark, form.Result.Lines());
+                host.WriteAuthorityBox(form.Result.Lines());
             }
         }
 
@@ -568,7 +576,8 @@ namespace SystemBannerOffice
             if (marking == null || !marking.IsClassified)
             {
                 Show(Text.T("Downgrade works on French documents classified Secret or Très Secret (IGI 1300, annexe 38) and German classified documents (VSA § 18, § 19).",
-                    "Le déclassement concerne les documents français classifiés Secret ou Très Secret (IGI 1300, annexe 38) et les documents allemands classifiés (VSA § 18, § 19)."), MessageBoxIcon.Information);
+                    "Le déclassement concerne les documents français classifiés Secret ou Très Secret (IGI 1300, annexe 38) et les documents allemands classifiés (VSA § 18, § 19).",
+                    "Herabstufen gilt für französische Dokumente, die als Secret oder Très Secret eingestuft sind (IGI 1300, annexe 38), und für deutsche Verschlusssachen (VSA § 18, § 19)."), MessageBoxIcon.Information);
                 return;
             }
             SystemSettings settings = SystemSettings.Read();
@@ -604,7 +613,7 @@ namespace SystemBannerOffice
             }
             if (form.Result != ChangeForm.Change.Declassification && host.SupportsPortions && host.ScanPortions().FrenchMarks.Count > 0)
             {
-                Show(Text.T("The [TS] or [S] paragraph marks of the document still need updating: the roll-up follows them.", "Les marques de paragraphe [TS] ou [S] du document restent à mettre à jour : le calcul du niveau les suit."), MessageBoxIcon.Information);
+                Show(Text.T("The [TS] or [S] paragraph marks of the document still need updating: the roll-up follows them.", "Les marques de paragraphe [TS] ou [S] du document restent à mettre à jour : le calcul du niveau les suit.", "Die Absatzkennzeichnungen [TS] oder [S] des Dokuments müssen noch aktualisiert werden: Die Ableitung richtet sich nach ihnen."), MessageBoxIcon.Information);
             }
         }
 
@@ -613,7 +622,7 @@ namespace SystemBannerOffice
             GermanMarking marking = host.StoredGermanMarking();
             if (marking == null || !marking.IsClassified)
             {
-                Show(Text.T("The document is not classified.", "Le document n'est pas classifié."), MessageBoxIcon.Information);
+                Show(Text.T("The document is not classified.", "Le document n'est pas classifié.", "Das Dokument ist nicht eingestuft."), MessageBoxIcon.Information);
                 return;
             }
             GermanChangeForm form = new GermanChangeForm(marking);
@@ -632,7 +641,7 @@ namespace SystemBannerOffice
             }
             if (host.SupportsPortions && host.ScanPortions().GermanMarks.Count > 0)
             {
-                Show(Text.T("The part marks of the document still need updating: the roll-up follows them.", "Les marques de partie du document restent à mettre à jour : le calcul du niveau les suit."), MessageBoxIcon.Information);
+                Show(Text.T("The part marks of the document still need updating: the roll-up follows them.", "Les marques de partie du document restent à mettre à jour : le calcul du niveau les suit.", "Die Teilkennzeichnungen des Dokuments müssen noch aktualisiert werden: Die Ableitung richtet sich nach ihnen."), MessageBoxIcon.Information);
             }
         }
 
@@ -652,9 +661,10 @@ namespace SystemBannerOffice
                     return false;
                 }
                 ChooseLanguage();
-                string what = action == "printed" ? Text.T("printed", "imprimé") : Text.T("saved", "enregistré");
+                string what = action == "printed" ? Text.T("printed", "imprimé", "gedruckt") : Text.T("saved", "enregistré", "gespeichert");
                 if (MessageBox.Show(new OfficeWindow(), Text.T("This document has no classification. It must be classified before it is " + what + ".\n\nClassify it now?",
-                    "Ce document n'a pas de classification. Il doit être classifié avant d'être " + what + ".\n\nLe classifier maintenant ?"),
+                    "Ce document n'a pas de classification. Il doit être classifié avant d'être " + what + ".\n\nLe classifier maintenant ?",
+                    "Dieses Dokument ist nicht eingestuft. Es muss eingestuft werden, bevor es " + what + " wird.\n\nJetzt einstufen?"),
                     Title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                 {
                     Classify();

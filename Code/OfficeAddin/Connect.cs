@@ -65,11 +65,11 @@ namespace SystemBannerOffice
         {
             return new string[][]
             {
-                new string[] { "Classify", Markings.Text.T("Classify", "Classifier"), Markings.Text.T("Set the classification of the document", "Fixer la classification du document") },
-                new string[] { "PortionMark", Markings.Text.T("Portion mark", "Marque de paragraphe"), Markings.Text.T("Mark the paragraph at the cursor", "Marquer le paragraphe du curseur") },
-                new string[] { "RollUp", Markings.Text.T("Roll up", "Calculer"), Markings.Text.T("Build the classification from the portion marks", "Déduire la classification des marques de paragraphe") },
-                new string[] { "AuthorityBlock", Markings.Text.T("Authority block", "Bloc d'autorité"), Markings.Text.T("IC classification authority block; French and German first page", "Bloc d'autorité IC ; première page française et allemande") },
-                new string[] { "Downgrade", Markings.Text.T("Downgrade", "Déclasser"), Markings.Text.T("Lower, raise or lift the classification of French and German documents", "Déclasser, reclasser ou déclassifier un document français ou allemand") }
+                new string[] { "Classify", Markings.Text.T("Classify", "Classifier", "Einstufen"), Markings.Text.T("Set the classification of the document", "Fixer la classification du document", "Geheimhaltungsgrad des Dokuments festlegen") },
+                new string[] { "PortionMark", Markings.Text.T("Portion mark", "Marque de paragraphe", "Teilkennzeichnung"), Markings.Text.T("Mark the paragraph at the cursor", "Marquer le paragraphe du curseur", "Absatz an der Cursorposition kennzeichnen") },
+                new string[] { "RollUp", Markings.Text.T("Roll up", "Calculer", "Ableiten"), Markings.Text.T("Build the classification from the portion marks", "Déduire la classification des marques de paragraphe", "Einstufung aus den Teilkennzeichnungen ableiten") },
+                new string[] { "AuthorityBlock", Markings.Text.T("Authority block", "Bloc d'autorité", "Einstufungsvermerk"), Markings.Text.T("IC classification authority block; French and German first page", "Bloc d'autorité IC ; première page française et allemande", "IC-Einstufungsvermerk; französische und deutsche erste Seite") },
+                new string[] { "Downgrade", Markings.Text.T("Downgrade", "Déclasser", "Herabstufen"), Markings.Text.T("Lower, raise or lift the classification of French and German documents", "Déclasser, reclasser ou déclassifier un document français ou allemand", "Einstufung französischer und deutscher Dokumente herabstufen, hochstufen oder aufheben") }
             };
         }
 
@@ -282,21 +282,39 @@ namespace SystemBannerOffice
             foreach (string[] button in Buttons())
             {
                 xml.Append("<button id=\"").Append(button[0]).Append("\" label=\"").Append(button[1]).Append("\" screentip=\"").Append(button[2])
-                    .Append("\" size=\"large\" imageMso=\"").Append(Icon(button[0])).Append("\" onAction=\"On").Append(button[0]).Append("\"/>");
+                    .Append("\" size=\"large\" ").Append(Icon(button[0])).Append(" onAction=\"On").Append(button[0]).Append("\"/>");
             }
             xml.Append("</group></tab></tabs></ribbon></customUI>");
             return xml.ToString();
         }
 
+        //an Office image by name, or an image the add-in draws (getImage)
         private static string Icon(string command)
         {
             switch (command)
             {
-                case "Classify": return "Lock";
-                case "PortionMark": return "ParagraphMarks";
-                case "RollUp": return "RefreshAll";
-                case "Downgrade": return "SetPertCalculationsAutomatic";
-                default: return "SignatureLineInsert";
+                case "Classify": return "imageMso=\"Lock\"";
+                case "PortionMark": return "imageMso=\"ParagraphMarks\"";
+                case "RollUp": return "imageMso=\"RefreshAll\"";
+                case "Downgrade": return "getImage=\"GetDowngradeImage\"";
+                default: return "imageMso=\"SignatureLineInsert\"";
+            }
+        }
+
+        //getImage callback of the Downgrade button: a document with a red arrow down
+        public object GetDowngradeImage(object control)
+        {
+            try
+            {
+                using (System.Drawing.Bitmap image = RibbonImages.Downgrade(32))
+                {
+                    return RibbonImages.Picture(image);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error("GetDowngradeImage", ex);
+                return null;
             }
         }
 

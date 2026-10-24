@@ -50,13 +50,13 @@ namespace SystemBannerOffice.Markings
             //RESTRICTED is a non-US and NATO level only; JOINT levels follow the US ones
             if (m.Level == Level.Restricted && (m.Owner == Owner.UnitedStates || m.Owner == Owner.Joint))
             {
-                errors.Add(Text.T("RESTRICTED is not a US classification level.", "RESTRICTED n'est pas un niveau de classification américain."));
+                errors.Add(Text.T("RESTRICTED is not a US classification level.", "RESTRICTED n'est pas un niveau de classification américain.", "RESTRICTED ist kein US-amerikanischer Geheimhaltungsgrad."));
             }
             int level = 1 << (int)(m.Level == Level.Restricted ? Level.Confidential : m.Level);
             bool unclassified = m.Level == Level.Unclassified;
             if (unclassified && (m.Sci.Count > 0 || m.Sap.Count > 0 || m.SapProgramsHidden))
             {
-                errors.Add(Text.T("SCI and SAP markings only apply to classified information.", "Les marquages SCI et SAP ne s'appliquent qu'aux informations classifiées."));
+                errors.Add(Text.T("SCI and SAP markings only apply to classified information.", "Les marquages SCI et SAP ne s'appliquent qu'aux informations classifiées.", "SCI- und SAP-Kennzeichnungen gelten nur für eingestufte Informationen."));
             }
             CheckSci(m, level, errors);
             CheckAea(m, level, errors);
@@ -79,7 +79,7 @@ namespace SystemBannerOffice.Markings
         {
             if ((allowed & level) == 0)
             {
-                errors.Add(Text.T(marking + " is only used with " + LevelsText(allowed) + ".", marking + " : uniquement avec " + LevelsText(allowed) + "."));
+                errors.Add(Text.T(marking + " is only used with " + LevelsText(allowed) + ".", marking + " : uniquement avec " + LevelsText(allowed) + ".", marking + ": nur mit " + LevelsText(allowed) + "."));
             }
         }
 
@@ -106,20 +106,20 @@ namespace SystemBannerOffice.Markings
                 {
                     if (other != system && other.Name == system.Name)
                     {
-                        errors.Add(Text.T("SCI control system " + system.Name + " appears twice: list each value once.", "Le système de contrôle SCI " + system.Name + " figure deux fois : citer chaque valeur une seule fois."));
+                        errors.Add(Text.T("SCI control system " + system.Name + " appears twice: list each value once.", "Le système de contrôle SCI " + system.Name + " figure deux fois : citer chaque valeur une seule fois.", "Das SCI-Kontrollsystem " + system.Name + " kommt zweimal vor: Führen Sie jeden Wert nur einmal auf."));
                     }
                 }
                 foreach (Compartment compartment in system.Compartments)
                 {
                     if (compartment.Name == "ECI")
                     {
-                        errors.Add(Text.T("\"ECI\" is an SCI type indicator, not a compartment: write SI-ABC, not SI-ECI ABC.", "« ECI » est un indicateur de type SCI, pas un compartiment : écrire SI-ABC, et non SI-ECI ABC."));
+                        errors.Add(Text.T("\"ECI\" is an SCI type indicator, not a compartment: write SI-ABC, not SI-ECI ABC.", "« ECI » est un indicateur de type SCI, pas un compartiment : écrire SI-ABC, et non SI-ECI ABC.", "\"ECI\" ist ein SCI-Typkennzeichen, kein Compartment: Schreiben Sie SI-ABC, nicht SI-ECI ABC."));
                     }
                 }
             }
             if (m.Owner == Owner.Joint && FindSystem(m, "HCS") != null)
             {
-                errors.Add(Text.T("HCS markings may not be used on JOINT information.", "Les marquages HCS ne s'emploient pas sur une information JOINT."));
+                errors.Add(Text.T("HCS markings may not be used on JOINT information.", "Les marquages HCS ne s'emploient pas sur une information JOINT.", "HCS-Kennzeichnungen dürfen nicht für JOINT-Informationen verwendet werden."));
             }
             ControlSystem hcs = FindSystem(m, "HCS");
             if (hcs != null)
@@ -127,26 +127,26 @@ namespace SystemBannerOffice.Markings
                 CheckLevel("HCS", Classified, level, errors);
                 if (hcs.Compartments.Count == 0)
                 {
-                    errors.Add(Text.T("HCS requires its compartment, HCS-O or HCS-P; HCS alone is a legacy marking to re-mark when reused.", "HCS exige son compartiment, HCS-O ou HCS-P ; HCS seul est un marquage ancien, à reprendre en cas de réutilisation."));
+                    errors.Add(Text.T("HCS requires its compartment, HCS-O or HCS-P; HCS alone is a legacy marking to re-mark when reused.", "HCS exige son compartiment, HCS-O ou HCS-P ; HCS seul est un marquage ancien, à reprendre en cas de réutilisation.", "HCS erfordert sein Compartment, HCS-O oder HCS-P; HCS allein ist eine Altkennzeichnung, die bei Wiederverwendung neu zu kennzeichnen ist."));
                 }
                 Compartment o = hcs.FindCompartment("O");
                 Compartment p = hcs.FindCompartment("P");
                 if (o != null)
                 {
                     CheckLevel("HCS-O", TS | S, level, errors);
-                    if (!orcon || !noforn) errors.Add(Text.T("HCS-O requires ORCON and NOFORN.", "HCS-O exige ORCON et NOFORN."));
-                    if (usgov) errors.Add(Text.T("HCS-O may not be used with ORCON-USGOV.", "HCS-O ne s'emploie pas avec ORCON-USGOV."));
+                    if (!orcon || !noforn) errors.Add(Text.T("HCS-O requires ORCON and NOFORN.", "HCS-O exige ORCON et NOFORN.", "HCS-O erfordert ORCON und NOFORN."));
+                    if (usgov) errors.Add(Text.T("HCS-O may not be used with ORCON-USGOV.", "HCS-O ne s'emploie pas avec ORCON-USGOV.", "HCS-O darf nicht mit ORCON-USGOV verwendet werden."));
                 }
                 if (p != null)
                 {
                     CheckLevel("HCS-P", TS | S, level, errors);
-                    if (!noforn) errors.Add(Text.T("HCS-P requires NOFORN.", "HCS-P exige NOFORN."));
+                    if (!noforn) errors.Add(Text.T("HCS-P requires NOFORN.", "HCS-P exige NOFORN.", "HCS-P erfordert NOFORN."));
                     if (p.SubCompartments.Count > 0)
                     {
-                        CheckLevel(Text.T("HCS-P sub-compartments", "Sous-compartiments HCS-P"), TS, level, errors);
-                        if (!orcon) errors.Add(Text.T("HCS-P sub-compartments require ORCON.", "Les sous-compartiments HCS-P exigent ORCON."));
-                        if (usgov) errors.Add(Text.T("HCS-P sub-compartments may not be used with ORCON-USGOV.", "Les sous-compartiments HCS-P ne s'emploient pas avec ORCON-USGOV."));
-                        CheckLength(p.SubCompartments, 1, 6, false, Text.T("HCS-P sub-compartments", "Sous-compartiments HCS-P"), errors);
+                        CheckLevel(Text.T("HCS-P sub-compartments", "Sous-compartiments HCS-P", "HCS-P-Sub-Compartments"), TS, level, errors);
+                        if (!orcon) errors.Add(Text.T("HCS-P sub-compartments require ORCON.", "Les sous-compartiments HCS-P exigent ORCON.", "HCS-P-Sub-Compartments erfordern ORCON."));
+                        if (usgov) errors.Add(Text.T("HCS-P sub-compartments may not be used with ORCON-USGOV.", "Les sous-compartiments HCS-P ne s'emploient pas avec ORCON-USGOV.", "HCS-P-Sub-Compartments dürfen nicht mit ORCON-USGOV verwendet werden."));
+                        CheckLength(p.SubCompartments, 1, 6, false, Text.T("HCS-P sub-compartments", "Sous-compartiments HCS-P", "HCS-P-Sub-Compartments"), errors);
                     }
                 }
             }
@@ -156,11 +156,11 @@ namespace SystemBannerOffice.Markings
                 CheckLevel("RESERVE", TS | S, level, errors);
                 if (rsv.Compartments.Count == 0)
                 {
-                    errors.Add(Text.T("RESERVE requires a compartment: RSV-[COMPARTMENT].", "RESERVE exige un compartiment : RSV-[COMPARTIMENT]."));
+                    errors.Add(Text.T("RESERVE requires a compartment: RSV-[COMPARTMENT].", "RESERVE exige un compartiment : RSV-[COMPARTIMENT].", "RESERVE erfordert ein Compartment: RSV-[COMPARTMENT]."));
                 }
                 foreach (Compartment compartment in rsv.Compartments)
                 {
-                    CheckLength(new List<string>(new string[] { compartment.Name }), 3, 3, false, Text.T("RESERVE compartments", "Compartiments RESERVE"), errors);
+                    CheckLength(new List<string>(new string[] { compartment.Name }), 3, 3, false, Text.T("RESERVE compartments", "Compartiments RESERVE", "RESERVE-Compartments"), errors);
                 }
             }
             ControlSystem si = FindSystem(m, "SI");
@@ -172,13 +172,13 @@ namespace SystemBannerOffice.Markings
                     CheckLevel("SI-" + compartment.Name, TS, level, errors);
                     if (compartment.Name == "G")
                     {
-                        if (!orcon) errors.Add(Text.T("SI-GAMMA requires ORCON.", "SI-GAMMA exige ORCON."));
-                        if (usgov) errors.Add(Text.T("SI-GAMMA may not be used with ORCON-USGOV.", "SI-GAMMA ne s'emploie pas avec ORCON-USGOV."));
-                        CheckLength(compartment.SubCompartments, 4, 4, true, Text.T("GAMMA sub-compartments", "Sous-compartiments GAMMA"), errors);
+                        if (!orcon) errors.Add(Text.T("SI-GAMMA requires ORCON.", "SI-GAMMA exige ORCON.", "SI-GAMMA erfordert ORCON."));
+                        if (usgov) errors.Add(Text.T("SI-GAMMA may not be used with ORCON-USGOV.", "SI-GAMMA ne s'emploie pas avec ORCON-USGOV.", "SI-GAMMA darf nicht mit ORCON-USGOV verwendet werden."));
+                        CheckLength(compartment.SubCompartments, 4, 4, true, Text.T("GAMMA sub-compartments", "Sous-compartiments GAMMA", "GAMMA-Sub-Compartments"), errors);
                     }
                     else if (compartment.Name != "EU" && compartment.Name != "NK")
                     {
-                        CheckLength(new List<string>(new string[] { compartment.Name }), 2, 3, true, Text.T("SI compartments", "Compartiments SI"), errors);
+                        CheckLength(new List<string>(new string[] { compartment.Name }), 2, 3, true, Text.T("SI compartments", "Compartiments SI", "SI-Compartments"), errors);
                     }
                 }
             }
@@ -189,8 +189,8 @@ namespace SystemBannerOffice.Markings
                 foreach (Compartment compartment in tk.Compartments)
                 {
                     CheckLevel("TK-" + compartment.Name, compartment.Name == "BLFH" ? TS : TS | S, level, errors);
-                    if (!noforn) errors.Add(Text.T("TK-" + compartment.Name + " requires NOFORN.", "TK-" + compartment.Name + " exige NOFORN."));
-                    CheckLength(compartment.SubCompartments, 1, 6, false, Text.T("TK-" + compartment.Name + " sub-compartments", "Sous-compartiments TK-" + compartment.Name), errors);
+                    if (!noforn) errors.Add(Text.T("TK-" + compartment.Name + " requires NOFORN.", "TK-" + compartment.Name + " exige NOFORN.", "TK-" + compartment.Name + " erfordert NOFORN."));
+                    CheckLength(compartment.SubCompartments, 1, 6, false, Text.T("TK-" + compartment.Name + " sub-compartments", "Sous-compartiments TK-" + compartment.Name, "TK-" + compartment.Name + "-Sub-Compartments"), errors);
                 }
             }
         }
@@ -208,7 +208,7 @@ namespace SystemBannerOffice.Markings
                 {
                     string length = min == max ? min + "" : (min == 1 ? "up to " + max : min + " to " + max);
                     string longueur = min == max ? min + "" : (min == 1 ? "jusqu'à " + max : "de " + min + " à " + max);
-                    errors.Add(Text.T(what + " are " + length + (lettersOnly ? " letters" : " letters or digits") + ": \"" + value + "\".", what + " : " + longueur + (lettersOnly ? " lettres" : " lettres ou chiffres") + ", « " + value + " »."));
+                    errors.Add(Text.T(what + " are " + length + (lettersOnly ? " letters" : " letters or digits") + ": \"" + value + "\".", what + " : " + longueur + (lettersOnly ? " lettres" : " lettres ou chiffres") + ", « " + value + " ».", what + ": " + (min == max ? min + "" : (min == 1 ? "bis zu " + max : min + " bis " + max)) + (lettersOnly ? " Buchstaben" : " Buchstaben oder Ziffern") + ", \"" + value + "\"."));
                 }
             }
         }
@@ -220,7 +220,7 @@ namespace SystemBannerOffice.Markings
             if (m.Tfni) CheckLevel("TFNI", Classified, level, errors);
             if (m.Cnwdi)
             {
-                if (!m.RestrictedData) errors.Add(Text.T("CNWDI requires RESTRICTED DATA: RD-CNWDI.", "CNWDI exige RESTRICTED DATA : RD-CNWDI."));
+                if (!m.RestrictedData) errors.Add(Text.T("CNWDI requires RESTRICTED DATA: RD-CNWDI.", "CNWDI exige RESTRICTED DATA : RD-CNWDI.", "CNWDI erfordert RESTRICTED DATA: RD-CNWDI."));
                 CheckLevel("CNWDI", TS | S, level, errors);
             }
             if (m.RdSigma.Count > 0 || m.FrdSigma.Count > 0)
@@ -230,19 +230,19 @@ namespace SystemBannerOffice.Markings
                 {
                     if (Array.IndexOf(ValidSigma, number) < 0)
                     {
-                        errors.Add(Text.T("SIGMA " + number + " is obsolete or not valid: SIGMA numbers are 14, 15, 18 and 20.", "SIGMA " + number + " est obsolète ou non valide : les numéros SIGMA sont 14, 15, 18 et 20."));
+                        errors.Add(Text.T("SIGMA " + number + " is obsolete or not valid: SIGMA numbers are 14, 15, 18 and 20.", "SIGMA " + number + " est obsolète ou non valide : les numéros SIGMA sont 14, 15, 18 et 20.", "SIGMA " + number + " ist veraltet oder ungültig: Die SIGMA-Nummern sind 14, 15, 18 und 20."));
                     }
                 }
                 if (m.HasDissem("REL"))
                 {
-                    errors.Add(Text.T("SIGMA information may not share a portion with REL TO unless an equivalent release decision exists.", "Une information SIGMA ne partage pas une portion avec REL TO, sauf décision de diffusion équivalente."));
+                    errors.Add(Text.T("SIGMA information may not share a portion with REL TO unless an equivalent release decision exists.", "Une information SIGMA ne partage pas une portion avec REL TO, sauf décision de diffusion équivalente.", "SIGMA-Informationen dürfen keinen Abschnitt mit REL TO teilen, außer es liegt eine gleichwertige Freigabeentscheidung vor."));
                 }
             }
             if (m.DodUcni) CheckLevel("DOD UCNI", U, level, errors);
             if (m.DoeUcni) CheckLevel("DOE UCNI", U, level, errors);
             if ((m.RestrictedData || m.FormerlyRestrictedData) && !m.HasDissem("NF"))
             {
-                errors.Add(Text.T("RD and FRD are used with NOFORN unless an Atomic Energy Act sharing agreement applies: check the release.", "RD et FRD s'emploient avec NOFORN, sauf accord de partage au titre de l'Atomic Energy Act : vérifier la diffusion."));
+                errors.Add(Text.T("RD and FRD are used with NOFORN unless an Atomic Energy Act sharing agreement applies: check the release.", "RD et FRD s'emploient avec NOFORN, sauf accord de partage au titre de l'Atomic Energy Act : vérifier la diffusion.", "RD und FRD werden mit NOFORN verwendet, sofern kein Austauschabkommen nach dem Atomic Energy Act gilt: Prüfen Sie die Freigabe."));
             }
         }
 
@@ -276,35 +276,35 @@ namespace SystemBannerOffice.Markings
             bool nf = m.HasDissem("NF");
             if (nf && (m.HasDissem("REL") || m.HasDissem("RELIDO") || m.HasDissem("EYES") || m.HasDissem("DISPLAYONLY")))
             {
-                errors.Add(Text.T("NOFORN may not be used with REL TO, RELIDO, EYES ONLY or DISPLAY ONLY.", "NOFORN ne s'emploie pas avec REL TO, RELIDO, EYES ONLY ou DISPLAY ONLY."));
+                errors.Add(Text.T("NOFORN may not be used with REL TO, RELIDO, EYES ONLY or DISPLAY ONLY.", "NOFORN ne s'emploie pas avec REL TO, RELIDO, EYES ONLY ou DISPLAY ONLY.", "NOFORN darf nicht mit REL TO, RELIDO, EYES ONLY oder DISPLAY ONLY verwendet werden."));
             }
             if (m.HasDissem("REL") && m.HasDissem("EYES"))
             {
-                errors.Add(Text.T("REL TO may not be used with EYES ONLY.", "REL TO ne s'emploie pas avec EYES ONLY."));
+                errors.Add(Text.T("REL TO may not be used with EYES ONLY.", "REL TO ne s'emploie pas avec EYES ONLY.", "REL TO darf nicht mit EYES ONLY verwendet werden."));
             }
             if (m.HasDissem("RELIDO") && m.HasDissem("DISPLAYONLY"))
             {
-                errors.Add(Text.T("RELIDO may not be used with DISPLAY ONLY.", "RELIDO ne s'emploie pas avec DISPLAY ONLY."));
+                errors.Add(Text.T("RELIDO may not be used with DISPLAY ONLY.", "RELIDO ne s'emploie pas avec DISPLAY ONLY.", "RELIDO darf nicht mit DISPLAY ONLY verwendet werden."));
             }
             if (m.HasDissem("OC") && m.HasDissem("OC-USGOV"))
             {
-                errors.Add(Text.T("ORCON and ORCON-USGOV may not be used together: ORCON supersedes ORCON-USGOV.", "ORCON et ORCON-USGOV ne s'emploient pas ensemble : ORCON l'emporte sur ORCON-USGOV."));
+                errors.Add(Text.T("ORCON and ORCON-USGOV may not be used together: ORCON supersedes ORCON-USGOV.", "ORCON et ORCON-USGOV ne s'emploient pas ensemble : ORCON l'emporte sur ORCON-USGOV.", "ORCON und ORCON-USGOV dürfen nicht zusammen verwendet werden: ORCON hat Vorrang vor ORCON-USGOV."));
             }
             if (m.HasDissem("RELIDO") && (m.HasDissem("OC") || m.HasDissem("OC-USGOV")))
             {
-                errors.Add(Text.T("RELIDO may not be used with ORCON or ORCON-USGOV.", "RELIDO ne s'emploie pas avec ORCON ou ORCON-USGOV."));
+                errors.Add(Text.T("RELIDO may not be used with ORCON or ORCON-USGOV.", "RELIDO ne s'emploie pas avec ORCON ou ORCON-USGOV.", "RELIDO darf nicht mit ORCON oder ORCON-USGOV verwendet werden."));
             }
             if (m.HasNonIcDissem("XD") && m.HasNonIcDissem("ND"))
             {
-                errors.Add(Text.T("EXDIS and NODIS may not be used together: NODIS supersedes EXDIS.", "EXDIS et NODIS ne s'emploient pas ensemble : NODIS l'emporte sur EXDIS."));
+                errors.Add(Text.T("EXDIS and NODIS may not be used together: NODIS supersedes EXDIS.", "EXDIS et NODIS ne s'emploient pas ensemble : NODIS l'emporte sur EXDIS.", "EXDIS und NODIS dürfen nicht zusammen verwendet werden: NODIS hat Vorrang vor EXDIS."));
             }
             if ((m.HasNonIcDissem("XD") || m.HasNonIcDissem("ND")) && !nf)
             {
-                errors.Add(Text.T("EXDIS and NODIS require NOFORN.", "EXDIS et NODIS exigent NOFORN."));
+                errors.Add(Text.T("EXDIS and NODIS require NOFORN.", "EXDIS et NODIS exigent NOFORN.", "EXDIS und NODIS erfordern NOFORN."));
             }
             if (m.HasNonIcDissem("DS") && m.HasDissem("FOUO"))
             {
-                errors.Add(Text.T("LIMDIS information may not be combined with FOUO information in a portion.", "Une information LIMDIS ne se combine pas avec une information FOUO dans une même portion."));
+                errors.Add(Text.T("LIMDIS information may not be combined with FOUO information in a portion.", "Une information LIMDIS ne se combine pas avec une information FOUO dans une même portion.", "LIMDIS-Informationen dürfen in einem Abschnitt nicht mit FOUO-Informationen kombiniert werden."));
             }
             if (m.HasDissem("REL"))
             {
@@ -315,7 +315,7 @@ namespace SystemBannerOffice.Markings
                 }
                 if (m.RelTo.Count > 0 && !other)
                 {
-                    errors.Add(Text.T("\"REL TO USA\" alone is not authorized: name at least one other country or organization.", "« REL TO USA » seul n'est pas autorisé : citer au moins un autre pays ou une autre organisation."));
+                    errors.Add(Text.T("\"REL TO USA\" alone is not authorized: name at least one other country or organization.", "« REL TO USA » seul n'est pas autorisé : citer au moins un autre pays ou une autre organisation.", "\"REL TO USA\" allein ist nicht zulässig: Nennen Sie mindestens ein weiteres Land oder eine weitere Organisation."));
                 }
             }
             if (m.HasDissem("EYES"))
@@ -324,13 +324,13 @@ namespace SystemBannerOffice.Markings
                 {
                     if (code != "USA" && code != "AUS" && code != "CAN" && code != "GBR" && code != "NZL")
                     {
-                        errors.Add(Text.T("EYES ONLY is only for Second Party partners (AUS, CAN, GBR, NZL): \"" + code + "\".", "EYES ONLY est réservé aux partenaires Second Party (AUS, CAN, GBR, NZL) : « " + code + " »."));
+                        errors.Add(Text.T("EYES ONLY is only for Second Party partners (AUS, CAN, GBR, NZL): \"" + code + "\".", "EYES ONLY est réservé aux partenaires Second Party (AUS, CAN, GBR, NZL) : « " + code + " ».", "EYES ONLY ist nur für Second-Party-Partner (AUS, CAN, GBR, NZL) zulässig: \"" + code + "\"."));
                     }
                 }
             }
             if (m.HasDissem("DISPLAYONLY") && m.DisplayOnly.Contains("USA"))
             {
-                errors.Add(Text.T("The DISPLAY ONLY list names foreign countries only, not USA.", "La liste DISPLAY ONLY ne cite que des pays étrangers, pas USA."));
+                errors.Add(Text.T("The DISPLAY ONLY list names foreign countries only, not USA.", "La liste DISPLAY ONLY ne cite que des pays étrangers, pas USA.", "Die DISPLAY ONLY-Liste nennt nur ausländische Staaten, nicht USA."));
             }
         }
 
@@ -342,11 +342,11 @@ namespace SystemBannerOffice.Markings
             }
             if (m.HasDissem("NF"))
             {
-                errors.Add(Text.T("JOINT information may not be NOFORN.", "Une information JOINT ne peut pas être NOFORN."));
+                errors.Add(Text.T("JOINT information may not be NOFORN.", "Une information JOINT ne peut pas être NOFORN.", "JOINT-Informationen dürfen nicht NOFORN sein."));
             }
             if (!m.HasDissem("REL"))
             {
-                errors.Add(Text.T("JOINT information requires REL TO, to at least all its co-owners.", "Une information JOINT exige REL TO, au moins vers tous ses copropriétaires."));
+                errors.Add(Text.T("JOINT information requires REL TO, to at least all its co-owners.", "Une information JOINT exige REL TO, au moins vers tous ses copropriétaires.", "JOINT-Informationen erfordern REL TO, mindestens an alle Miteigentümer."));
                 return;
             }
             if (m.RelTo.Count == 0)
@@ -358,7 +358,7 @@ namespace SystemBannerOffice.Markings
             {
                 if (!releasable.Contains(owner))
                 {
-                    errors.Add(Text.T("JOINT information must be releasable to its co-owner " + owner + ".", "Une information JOINT doit être diffusable à son copropriétaire " + owner + "."));
+                    errors.Add(Text.T("JOINT information must be releasable to its co-owner " + owner + ".", "Une information JOINT doit être diffusable à son copropriétaire " + owner + ".", "JOINT-Informationen müssen für ihren Miteigentümer " + owner + " freigegeben sein."));
                 }
             }
         }

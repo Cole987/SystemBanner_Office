@@ -53,28 +53,28 @@ namespace SystemBannerOffice.Markings
             }
             if (string.IsNullOrEmpty(ClassifiedBy))
             {
-                errors.Add(Text.T("Classified By is required: name and position, or personal identifier.", "La ligne Classified By est obligatoire : nom et fonction, ou identifiant personnel."));
+                errors.Add(Text.T("Classified By is required: name and position, or personal identifier.", "La ligne Classified By est obligatoire : nom et fonction, ou identifiant personnel.", "Classified By ist erforderlich: Name und Funktion oder persönliche Kennung."));
             }
             if (Original)
             {
                 if (string.IsNullOrEmpty(Reason))
                 {
-                    errors.Add(Text.T("Reason is required on an original classification: cite at least one category of EO 13526, section 1.4.", "La ligne Reason est obligatoire pour une classification originale : citer au moins une catégorie de l'EO 13526, section 1.4."));
+                    errors.Add(Text.T("Reason is required on an original classification: cite at least one category of EO 13526, section 1.4.", "La ligne Reason est obligatoire pour une classification originale : citer au moins une catégorie de l'EO 13526, section 1.4.", "Reason ist bei einer Ersteinstufung erforderlich: Nennen Sie mindestens eine Kategorie aus EO 13526, Abschnitt 1.4."));
                 }
                 else if (!Regex.IsMatch(Reason, @"1\.4\s*\(?[a-h]\)?", RegexOptions.IgnoreCase))
                 {
-                    errors.Add(Text.T("The Reason should cite a category of EO 13526, section 1.4, for example 1.4(c).", "La ligne Reason doit citer une catégorie de l'EO 13526, section 1.4, par exemple 1.4(c)."));
+                    errors.Add(Text.T("The Reason should cite a category of EO 13526, section 1.4, for example 1.4(c).", "La ligne Reason doit citer une catégorie de l'EO 13526, section 1.4, par exemple 1.4(c).", "Reason sollte eine Kategorie aus EO 13526, Abschnitt 1.4, nennen, zum Beispiel 1.4(c)."));
                 }
             }
             else
             {
                 if (string.IsNullOrEmpty(DerivedFrom))
                 {
-                    errors.Add(Text.T("Derived From is required on a derivative classification: the source document or classification guide, with its agency and date.", "La ligne Derived From est obligatoire pour une classification dérivée : document source ou guide de classification, avec son organisme et sa date."));
+                    errors.Add(Text.T("Derived From is required on a derivative classification: the source document or classification guide, with its agency and date.", "La ligne Derived From est obligatoire pour une classification dérivée : document source ou guide de classification, avec son organisme et sa date.", "Derived From ist bei einer abgeleiteten Einstufung erforderlich: das Quelldokument oder der Einstufungsleitfaden, mit Behörde und Datum."));
                 }
                 else if (DerivedFrom == MultipleSources && Sources.Count == 0)
                 {
-                    errors.Add(Text.T("\"Multiple Sources\" needs the list of all sources on or attached to the document.", "« Multiple Sources » exige la liste de toutes les sources, portée sur le document ou jointe à celui-ci."));
+                    errors.Add(Text.T("\"Multiple Sources\" needs the list of all sources on or attached to the document.", "« Multiple Sources » exige la liste de toutes les sources, portée sur le document ou jointe à celui-ci.", "\"Multiple Sources\" erfordert die Liste aller Quellen, auf dem Dokument oder als Anlage."));
                 }
             }
             string required = RequiredNotApplicable(banner);
@@ -82,7 +82,7 @@ namespace SystemBannerOffice.Markings
             {
                 if (DeclassifyOn != required)
                 {
-                    errors.Add(Text.T("This document commingles NSI with " + (required.Substring(7, required.IndexOf(" portions") - 7)) + " information: Declassify On must read \"" + required + "\", with the NSI source list.", "Ce document mêle des informations NSI et " + (required.Substring(7, required.IndexOf(" portions") - 7)) + " : la ligne Declassify On doit indiquer « " + required + " », avec la liste des sources NSI."));
+                    errors.Add(Text.T("This document commingles NSI with " + (required.Substring(7, required.IndexOf(" portions") - 7)) + " information: Declassify On must read \"" + required + "\", with the NSI source list.", "Ce document mêle des informations NSI et " + (required.Substring(7, required.IndexOf(" portions") - 7)) + " : la ligne Declassify On doit indiquer « " + required + " », avec la liste des sources NSI.", "Dieses Dokument vermischt NSI mit " + (required.Substring(7, required.IndexOf(" portions") - 7)) + "-Informationen: Declassify On muss \"" + required + "\" lauten, mit der Liste der NSI-Quellen."));
                 }
                 return errors;
             }
@@ -93,15 +93,15 @@ namespace SystemBannerOffice.Markings
             }
             else if (value.Kind == DeclassifyKind.Date && Original && value.Date > DateOfOrigin.AddYears(25))
             {
-                errors.Add(Text.T("An original declassification date may not be more than 25 years after the decision (" + DateOfOrigin.AddYears(25).ToString("yyyyMMdd") + ").", "Une date de déclassification originale ne peut pas dépasser 25 ans après la décision (" + DateOfOrigin.AddYears(25).ToString("yyyyMMdd") + ")."));
+                errors.Add(Text.T("An original declassification date may not be more than 25 years after the decision (" + DateOfOrigin.AddYears(25).ToString("yyyyMMdd") + ").", "Une date de déclassification originale ne peut pas dépasser 25 ans après la décision (" + DateOfOrigin.AddYears(25).ToString("yyyyMMdd") + ").", "Ein ursprüngliches Datum für die Aufhebung der Einstufung darf höchstens 25 Jahre nach der Entscheidung liegen (" + DateOfOrigin.AddYears(25).ToString("yyyyMMdd") + ")."));
             }
             else if (value.Kind == DeclassifyKind.Date && value.Date <= DateTime.Today)
             {
-                errors.Add(Text.T("The declassification date has passed: do not assume the information is unclassified, ask the originating agency.", "La date de déclassification est passée : ne pas considérer l'information comme non classifiée, interroger l'organisme d'origine."));
+                errors.Add(Text.T("The declassification date has passed: do not assume the information is unclassified, ask the originating agency.", "La date de déclassification est passée : ne pas considérer l'information comme non classifiée, interroger l'organisme d'origine.", "Das Datum für die Aufhebung der Einstufung ist überschritten: Gehen Sie nicht davon aus, dass die Information offen ist, fragen Sie die herausgebende Behörde."));
             }
             else if (value.Kind == DeclassifyKind.NotApplicable)
             {
-                errors.Add(Text.T("\"N/A to ... portions\" is only for documents with RD, FRD, TFNI or NATO portions.", "« N/A to ... portions » est réservé aux documents comportant des portions RD, FRD, TFNI ou NATO."));
+                errors.Add(Text.T("\"N/A to ... portions\" is only for documents with RD, FRD, TFNI or NATO portions.", "« N/A to ... portions » est réservé aux documents comportant des portions RD, FRD, TFNI ou NATO.", "\"N/A to ... portions\" gilt nur für Dokumente mit RD-, FRD-, TFNI- oder NATO-Abschnitten."));
             }
             return errors;
         }
@@ -162,14 +162,14 @@ namespace SystemBannerOffice.Markings
             string t = value.Text;
             if (t.Length == 0)
             {
-                value.Error = SystemBannerOffice.Markings.Text.T("Declassify On is required: a date (YYYYMMDD), an event, or an exemption.", "La ligne Declassify On est obligatoire : une date (AAAAMMJJ), un événement ou une exemption.");
+                value.Error = SystemBannerOffice.Markings.Text.T("Declassify On is required: a date (YYYYMMDD), an event, or an exemption.", "La ligne Declassify On est obligatoire : une date (AAAAMMJJ), un événement ou une exemption.", "Declassify On ist erforderlich: ein Datum (JJJJMMTT), ein Ereignis oder eine Ausnahme.");
                 return value;
             }
             string retired = RetiredReplacement(t);
             if (retired != null)
             {
                 value.Kind = DeclassifyKind.Retired;
-                value.Error = SystemBannerOffice.Markings.Text.T("\"" + t + "\" is retired or invalid: " + retired, "« " + t + " » est retiré ou non valide : " + retired);
+                value.Error = SystemBannerOffice.Markings.Text.T("\"" + t + "\" is retired or invalid: " + retired, "« " + t + " » est retiré ou non valide : " + retired, "\"" + t + "\" ist zurückgezogen oder ungültig:" + retired);
                 return value;
             }
             if (t.StartsWith("N/A to "))
@@ -198,7 +198,7 @@ namespace SystemBannerOffice.Markings
                 value.Kind = DeclassifyKind.Date;
                 if (!TryDate(t, out value.Date))
                 {
-                    value.Error = SystemBannerOffice.Markings.Text.T("\"" + t + "\" is not a valid date: use YYYYMMDD.", "« " + t + " » n'est pas une date valide : utiliser AAAAMMJJ.");
+                    value.Error = SystemBannerOffice.Markings.Text.T("\"" + t + "\" is not a valid date: use YYYYMMDD.", "« " + t + " » n'est pas une date valide : utiliser AAAAMMJJ.", "\"" + t + "\" ist kein gültiges Datum: Verwenden Sie JJJJMMTT.");
                 }
                 return value;
             }
@@ -217,7 +217,7 @@ namespace SystemBannerOffice.Markings
                     value.Kind = DeclassifyKind.Exemption50;
                     if (rest == null)
                     {
-                        value.Error = SystemBannerOffice.Markings.Text.T("\"" + t + "\" needs a date or an event: \"" + t + ", YYYYMMDD\".", "« " + t + " » exige une date ou un événement : « " + t + ", AAAAMMJJ ».");
+                        value.Error = SystemBannerOffice.Markings.Text.T("\"" + t + "\" needs a date or an event: \"" + t + ", YYYYMMDD\".", "« " + t + " » exige une date ou un événement : « " + t + ", AAAAMMJJ ».", "\"" + t + "\" erfordert ein Datum oder ein Ereignis: \"" + t + ", JJJJMMTT\".");
                     }
                 }
                 if (rest != null)
@@ -226,7 +226,7 @@ namespace SystemBannerOffice.Markings
                     {
                         if (!TryDate(rest, out value.Date))
                         {
-                            value.Error = SystemBannerOffice.Markings.Text.T("\"" + rest + "\" is not a valid date: use YYYYMMDD.", "« " + rest + " » n'est pas une date valide : utiliser AAAAMMJJ.");
+                            value.Error = SystemBannerOffice.Markings.Text.T("\"" + rest + "\" is not a valid date: use YYYYMMDD.", "« " + rest + " » n'est pas une date valide : utiliser AAAAMMJJ.", "\"" + rest + "\" ist kein gültiges Datum: Verwenden Sie JJJJMMTT.");
                         }
                     }
                     else
@@ -238,7 +238,7 @@ namespace SystemBannerOffice.Markings
             }
             if (Regex.IsMatch(t, @"^\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}$"))
             {
-                value.Error = SystemBannerOffice.Markings.Text.T("\"" + t + "\": dates are written YYYYMMDD.", "« " + t + " » : les dates s'écrivent AAAAMMJJ.");
+                value.Error = SystemBannerOffice.Markings.Text.T("\"" + t + "\": dates are written YYYYMMDD.", "« " + t + " » : les dates s'écrivent AAAAMMJJ.", "\"" + t + "\": Datumsangaben werden als JJJJMMTT geschrieben.");
                 return value;
             }
             //anything else is an event, which must be reasonably definite, foreseeable and less than 10 years away: the add-in cannot check that
@@ -260,23 +260,23 @@ namespace SystemBannerOffice.Markings
                 || t == "MR" || t.StartsWith("MANUAL REVIEW") || t.StartsWith("SOURCE MARKED MR")
                 || Regex.IsMatch(t, @"^(SOURCE MARKED )?X[1-8]\b"))
             {
-                return SystemBannerOffice.Markings.Text.T("use the date 25 years after the date of the source document, or 25 years from today when it is unknown.", "utiliser la date située 25 ans après la date du document source, ou 25 ans à compter d'aujourd'hui si elle est inconnue.");
+                return SystemBannerOffice.Markings.Text.T("use the date 25 years after the date of the source document, or 25 years from today when it is unknown.", "utiliser la date située 25 ans après la date du document source, ou 25 ans à compter d'aujourd'hui si elle est inconnue.", "verwenden Sie das Datum 25 Jahre nach dem Datum des Quelldokuments oder 25 Jahre ab heute, wenn es unbekannt ist.");
             }
             if (t == "DNI ONLY" || t == "DCI ONLY")
             {
-                return SystemBannerOffice.Markings.Text.T("use a date 25 years after the source document, or the 25X exemption of the source.", "utiliser une date située 25 ans après le document source, ou l'exemption 25X de la source.");
+                return SystemBannerOffice.Markings.Text.T("use a date 25 years after the source document, or the 25X exemption of the source.", "utiliser une date située 25 ans après le document source, ou l'exemption 25X de la source.", "verwenden Sie ein Datum 25 Jahre nach dem Quelldokument oder die Ausnahme 25X der Quelle.");
             }
             if (t.StartsWith("SUBJECT TO TREATY OR INTERNATIONAL AGREEMENT"))
             {
-                return SystemBannerOffice.Markings.Text.T("use the exemption set by OCA guidance, or the date 25 years after the source document.", "utiliser l'exemption fixée par les instructions de l'OCA, ou la date située 25 ans après le document source.");
+                return SystemBannerOffice.Markings.Text.T("use the exemption set by OCA guidance, or the date 25 years after the source document.", "utiliser l'exemption fixée par les instructions de l'OCA, ou la date située 25 ans après le document source.", "verwenden Sie die in den OCA-Vorgaben festgelegte Ausnahme oder das Datum 25 Jahre nach dem Quelldokument.");
             }
             if (t == "25X1-HUMAN")
             {
-                return SystemBannerOffice.Markings.Text.T("use \"50X1-HUM\".", "utiliser « 50X1-HUM ».");
+                return SystemBannerOffice.Markings.Text.T("use \"50X1-HUM\".", "utiliser « 50X1-HUM ».", "verwenden Sie \"50X1-HUM\".");
             }
             if (Regex.IsMatch(t, @"^SOURCE MARKED 25X[1-9]"))
             {
-                return SystemBannerOffice.Markings.Text.T("use the date 50 years after the date of the source document, or 50 years from today when it is unknown.", "utiliser la date située 50 ans après la date du document source, ou 50 ans à compter d'aujourd'hui si elle est inconnue.");
+                return SystemBannerOffice.Markings.Text.T("use the date 50 years after the date of the source document, or 50 years from today when it is unknown.", "utiliser la date située 50 ans après la date du document source, ou 50 ans à compter d'aujourd'hui si elle est inconnue.", "verwenden Sie das Datum 50 Jahre nach dem Datum des Quelldokuments oder 50 Jahre ab heute, wenn es unbekannt ist.");
             }
             return null;
         }

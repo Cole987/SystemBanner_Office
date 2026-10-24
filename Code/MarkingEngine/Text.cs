@@ -5,33 +5,55 @@ using Microsoft.Win32;
 
 namespace SystemBannerOffice.Markings
 {
-    //the add-in speaks English or French: every message is written in both, next to each other, T("...", "...");
+    public enum Language { English, French, German }
+
+    //the add-in speaks English, French or German: every message is written in the three, next to each other, T("...", "...", "...");
     //the markings themselves (SECRET, TRÈS SECRET, GEHEIM, OFFICIAL-SENSITIVE...) are never translated
     public static class Text
     {
-        public static bool French;
+        public static Language Current;
 
-        public static string T(string english, string french)
+        public static bool French
         {
-            return French ? french : english;
+            get { return Current == Language.French; }
+            set { Current = value ? Language.French : Language.English; }
         }
 
-        //OfficeLanguage = "fr" or "en" in HKLM\SOFTWARE\Policies\SystemBanner, then in HKCU\Software\SystemBanner;
+        public static bool German
+        {
+            get { return Current == Language.German; }
+            set { Current = value ? Language.German : Language.English; }
+        }
+
+        public static string T(string english, string french, string german)
+        {
+            return Current == Language.French ? french : (Current == Language.German ? german : english);
+        }
+
+        //a message not translated into German yet shows in English
+        public static string T(string english, string french)
+        {
+            return Current == Language.French ? french : english;
+        }
+
+        //OfficeLanguage = "fr", "de" or "en" in HKLM\SOFTWARE\Policies\SystemBanner, then in HKCU\Software\SystemBanner;
         //without it, the language of the Office user interface (an LCID, 0 when unknown), then the language of Windows
         public static void Choose(int officeLanguageId)
         {
             string setting = Setting(Registry.LocalMachine, SystemSettings.PolicyKey) ?? Setting(Registry.CurrentUser, @"Software\SystemBanner");
-            if (setting == "fr" || setting == "en")
+            if (setting == "fr" || setting == "de" || setting == "en")
             {
-                French = setting == "fr";
+                Current = setting == "fr" ? Language.French : (setting == "de" ? Language.German : Language.English);
             }
             else if (officeLanguageId > 0)
             {
-                French = (officeLanguageId & 0x3FF) == 0x0C; //LANG_FRENCH, any country
+                int primary = officeLanguageId & 0x3FF; //LANG_FRENCH 0x0C, LANG_GERMAN 0x07, any country
+                Current = primary == 0x0C ? Language.French : (primary == 0x07 ? Language.German : Language.English);
             }
             else
             {
-                French = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "fr";
+                string windows = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+                Current = windows == "fr" ? Language.French : (windows == "de" ? Language.German : Language.English);
             }
         }
 

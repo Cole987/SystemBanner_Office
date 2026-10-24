@@ -19,12 +19,12 @@ namespace SystemBannerOffice
         public GermanMarking Result;
 
         public GermanForm(bool portionMode, GermanMarking initial, SystemSettings settings)
-            : base(portionMode ? Markings.Text.T("Part mark (VS-Anweisung)", "Marque de partie (VS-Anweisung)") : Markings.Text.T("Classify the document (VS-Anweisung)", "Classifier le document (VS-Anweisung)"))
+            : base(portionMode ? Markings.Text.T("Part mark (VS-Anweisung)", "Marque de partie (VS-Anweisung)", "Teilkennzeichnung (VS-Anweisung)") : Markings.Text.T("Classify the document (VS-Anweisung)", "Classifier le document (VS-Anweisung)", "Dokument einstufen (VS-Anweisung)"))
         {
             this.portionMode = portionMode;
             this.settings = settings;
             int y = 10;
-            AddLabel(Markings.Text.T("Level (Geheimhaltungsgrad)", "Niveau (Geheimhaltungsgrad)"), 10, y, 150);
+            AddLabel(Markings.Text.T("Level (Geheimhaltungsgrad)", "Niveau (Geheimhaltungsgrad)", "Geheimhaltungsgrad"), 10, y, 150);
             List<GermanLevel> choices = new List<GermanLevel>();
             if (portionMode) choices.Add(GermanLevel.Offen);
             choices.AddRange(new GermanLevel[] { GermanLevel.VsNfd, GermanLevel.VsVertraulich, GermanLevel.Geheim, GermanLevel.StrengGeheim });
@@ -32,7 +32,7 @@ namespace SystemBannerOffice
             for (int i = 0; i < choices.Count; i++)
             {
                 RadioButton radio = new RadioButton();
-                radio.Text = (choices[i] == GermanLevel.Offen ? Markings.Text.T("not classified", "non classifié") : GermanFormatter.Stamp(choices[i])) + " [" + GermanFormatter.Abbreviation(choices[i]) + "]";
+                radio.Text = (choices[i] == GermanLevel.Offen ? Markings.Text.T("not classified", "non classifié", "nicht eingestuft") : GermanFormatter.Stamp(choices[i])) + " [" + GermanFormatter.Abbreviation(choices[i]) + "]";
                 radio.Tag = choices[i];
                 radio.SetBounds(160, y, 330, 20);
                 radio.CheckedChanged += OnChange;
@@ -43,7 +43,7 @@ namespace SystemBannerOffice
             if (!portionMode)
             {
                 y += 4;
-                AddLabel(Markings.Text.T("Warn- und Sperrvermerke", "Warn- und Sperrvermerke"), 10, y, 150);
+                AddLabel(Markings.Text.T("Warn- und Sperrvermerke", "Warn- und Sperrvermerke", "Warn- und Sperrvermerke"), 10, y, 150);
                 vermerke = new CheckedListBox();
                 vermerke.CheckOnClick = true;
                 vermerke.Items.AddRange(GermanVermerke.Sperrvermerke);
@@ -52,8 +52,8 @@ namespace SystemBannerOffice
                 vermerke.ItemCheck += delegate { ItemCheckUpdate.After(this, OnChange); };
                 Controls.Add(vermerke);
                 y += 106;
-                weitergabe = AddText(Markings.Text.T("Weitergabe an / intern", "Weitergabe an / intern"), ref y, OnChange);
-                AddLabel(Markings.Text.T("e.g. \"Weitergabe an Referat X\" or \"BMI intern\" (Anlage IV § 1.3.2)", "ex. « Weitergabe an Referat X » ou « BMI intern » (Anlage IV § 1.3.2)"), 160, y - 4, 330).ForeColor = SystemColors.GrayText;
+                weitergabe = AddText(Markings.Text.T("Weitergabe an / intern", "Weitergabe an / intern", "Weitergabe an / intern"), ref y, OnChange);
+                AddLabel(Markings.Text.T("e.g. \"Weitergabe an Referat X\" or \"BMI intern\" (Anlage IV § 1.3.2)", "ex. « Weitergabe an Referat X » ou « BMI intern » (Anlage IV § 1.3.2)", "z. B. \"Weitergabe an Referat X\" oder \"BMI intern\" (Anlage IV § 1.3.2)"), 160, y - 4, 330).ForeColor = SystemColors.GrayText;
                 y += 18;
             }
             preview = new Label();
@@ -61,7 +61,7 @@ namespace SystemBannerOffice
             preview.SetBounds(160, y, 330, 40);
             Controls.Add(preview);
             y += 46;
-            AddFooter(ref y, portionMode ? Markings.Text.T("Insert", "Insérer") : Markings.Text.T("Classify", "Classifier"));
+            AddFooter(ref y, portionMode ? Markings.Text.T("Insert", "Insérer", "Einfügen") : Markings.Text.T("Classify", "Classifier", "Einstufen"));
             GermanMarking start = initial ?? new GermanMarking();
             if (!portionMode && start.Level == GermanLevel.Offen) start.Level = GermanLevel.VsNfd;
             foreach (RadioButton radio in levels)
@@ -104,17 +104,17 @@ namespace SystemBannerOffice
             List<string> errors = new List<string>();
             string ceiling = GermanSettings.CheckCeiling(settings, m);
             if (ceiling != null) errors.Add(ceiling);
-            if (m.Vermerke.Count > 0 && !m.IsClassified) errors.Add(Markings.Text.T("Warn- und Sperrvermerke go with classified information.", "Les Warn- und Sperrvermerke accompagnent une information classifiée."));
+            if (m.Vermerke.Count > 0 && !m.IsClassified) errors.Add(Markings.Text.T("Warn- und Sperrvermerke go with classified information.", "Les Warn- und Sperrvermerke accompagnent une information classifiée.", "Warn- und Sperrvermerke setzen eine Einstufung voraus."));
             int[] rgb = GermanFormatter.Color(m.Level);
             preview.ForeColor = Color.FromArgb(rgb[0], rgb[1], rgb[2]);
             if (portionMode)
             {
-                preview.Text = GermanFormatter.Portion(m.Level) + " " + Markings.Text.T("text of the part", "texte de la partie");
+                preview.Text = GermanFormatter.Portion(m.Level) + " " + Markings.Text.T("text of the part", "texte de la partie", "Text des Teils");
             }
             else
             {
                 preview.Text = GermanFormatter.Stamp(m.Level) + (m.AmtlichGeheimGehalten ? "\n" + GermanFormatter.AmtlichGeheimGehalten : "")
-                    + "\n" + (GermanFormatter.AtBottom(m.Level) ? Markings.Text.T("(top and bottom of each page)", "(en haut et en bas de chaque page)") : Markings.Text.T("(top of each page)", "(en haut de chaque page)"));
+                    + "\n" + (GermanFormatter.AtBottom(m.Level) ? Markings.Text.T("(top and bottom of each page)", "(en haut et en bas de chaque page)", "(oben und unten auf jeder Seite)") : Markings.Text.T("(top of each page)", "(en haut de chaque page)", "(oben auf jeder Seite)"));
                 preview.Height = 52;
             }
             ShowProblems(errors);
@@ -131,7 +131,7 @@ namespace SystemBannerOffice
         public GermanIdentification Result;
 
         public GermanIdentificationForm(GermanIdentification initial, GermanMarking marking)
-            : base(Markings.Text.T("First page (VSA § 20 Abs. 2)", "Première page (VSA § 20 al. 2)"))
+            : base(Markings.Text.T("First page (VSA § 20 Abs. 2)", "Première page (VSA § 20 al. 2)", "Erste Seite (VSA § 20 Abs. 2)"))
         {
             this.marking = marking;
             int y = 10;
@@ -141,16 +141,16 @@ namespace SystemBannerOffice
             AddLabel("Datum", 10, y, 150);
             datum = AddDate(160, y, OnChange);
             y += 26;
-            endet = AddText(Markings.Text.T("Classification ends with the year", "Fin de classification (année)"), ref y, OnChange);
-            AddLabel(marking.Level == GermanLevel.VsNfd ? Markings.Text.T("empty: 30 years (§ 16 Abs. 1)", "vide : 30 ans (§ 16 al. 1)") : Markings.Text.T("30 years at most (§ 16 Abs. 2)", "30 ans au plus (§ 16 al. 2)"), 160, y - 4, 330).ForeColor = SystemColors.GrayText;
+            endet = AddText(Markings.Text.T("Classification ends with the year", "Fin de classification (année)", "Einstufung endet (Jahr)"), ref y, OnChange);
+            AddLabel(marking.Level == GermanLevel.VsNfd ? Markings.Text.T("empty: 30 years (§ 16 Abs. 1)", "vide : 30 ans (§ 16 al. 1)", "leer: 30 Jahre (§ 16 Abs. 1)") : Markings.Text.T("30 years at most (§ 16 Abs. 2)", "30 ans au plus (§ 16 al. 2)", "höchstens 30 Jahre (§ 16 Abs. 2)"), 160, y - 4, 330).ForeColor = SystemColors.GrayText;
             y += 18;
             if (marking.AmtlichGeheimGehalten)
             {
-                kennzeichen = AddText(Markings.Text.T("Reference (Tgb.-Nr.)", "Référence (Tgb.-Nr.)"), ref y, OnChange);
-                ausfertigung = AddText(Markings.Text.T("Copy number", "Numéro d'exemplaire"), ref y, OnChange);
-                empfaenger = AddText(Markings.Text.T("Recipient (Empfänger)", "Destinataire (Empfänger)"), ref y, OnChange);
+                kennzeichen = AddText(Markings.Text.T("Reference (Tgb.-Nr.)", "Référence (Tgb.-Nr.)", "Kennzeichen (Tgb.-Nr.)"), ref y, OnChange);
+                ausfertigung = AddText(Markings.Text.T("Copy number", "Numéro d'exemplaire", "Ausfertigung Nr."), ref y, OnChange);
+                empfaenger = AddText(Markings.Text.T("Recipient (Empfänger)", "Destinataire (Empfänger)", "Empfänger"), ref y, OnChange);
             }
-            AddFooter(ref y, Markings.Text.T("Write", "Écrire"));
+            AddFooter(ref y, Markings.Text.T("Write", "Écrire", "Schreiben"));
             GermanIdentification id = initial ?? new GermanIdentification();
             herausgeber.Text = id.Herausgeber ?? "";
             datum.Value = id.Datum;
@@ -177,7 +177,7 @@ namespace SystemBannerOffice
             List<string> errors = new List<string>();
             if (endet.Text.Trim().Length > 0 && !int.TryParse(endet.Text.Trim(), out number))
             {
-                errors.Add(Markings.Text.T("The end of the classification is a year.", "La fin de classification est une année."));
+                errors.Add(Markings.Text.T("The end of the classification is a year.", "La fin de classification est une année.", "Das Ende der Einstufung muss eine Jahreszahl sein."));
             }
             else if (int.TryParse(endet.Text.Trim(), out number))
             {
@@ -206,18 +206,18 @@ namespace SystemBannerOffice
         public string[] Lines;
 
         public GermanChangeForm(GermanMarking marking)
-            : base(Markings.Text.T("Downgrade or lift (VSA § 18, § 19)", "Déclasser ou lever (VSA § 18, § 19)"))
+            : base(Markings.Text.T("Downgrade or lift (VSA § 18, § 19)", "Déclasser ou lever (VSA § 18, § 19)", "Herabstufung oder Aufhebung (VSA § 18, § 19)"))
         {
             this.marking = marking;
             int y = 10;
             AddLabel(GermanFormatter.Stamp(marking.Level), 10, y, 480).Font = new Font("Tahoma", 8.25f, FontStyle.Bold);
             y += 24;
-            AddLabel(Markings.Text.T("New level", "Nouveau niveau"), 10, y, 150);
+            AddLabel(Markings.Text.T("New level", "Nouveau niveau", "Neue Einstufung"), 10, y, 150);
             newLevel = new ComboBox();
             newLevel.DropDownStyle = ComboBoxStyle.DropDownList;
             for (GermanLevel level = marking.Level - 1; level >= GermanLevel.Offen; level--)
             {
-                newLevel.Items.Add(level == GermanLevel.Offen ? Markings.Text.T("lifted (Aufhebung)", "levée (Aufhebung)") : GermanFormatter.Stamp(level));
+                newLevel.Items.Add(level == GermanLevel.Offen ? Markings.Text.T("lifted (Aufhebung)", "levée (Aufhebung)", "aufgehoben (Aufhebung)") : GermanFormatter.Stamp(level));
             }
             newLevel.SetBounds(160, y, 330, 20);
             newLevel.SelectedIndex = 0;
@@ -227,10 +227,10 @@ namespace SystemBannerOffice
             AddLabel("Datum", 10, y, 150);
             datum = AddDate(160, y, OnChange);
             y += 26;
-            stelle = AddText(Markings.Text.T("Decided by (Stelle)", "Décidé par (Stelle)"), ref y, OnChange);
-            AddLabel(Markings.Text.T("The VSA asks for a visible note of the change and of who decided it; the wording is a choice of this project.", "La VSA demande une mention visible du changement et de qui l'a décidé ; la formulation est un choix du projet."), 160, y - 4, 330).ForeColor = SystemColors.GrayText;
+            stelle = AddText(Markings.Text.T("Decided by (Stelle)", "Décidé par (Stelle)", "Entscheidende Stelle"), ref y, OnChange);
+            AddLabel(Markings.Text.T("The VSA asks for a visible note of the change and of who decided it; the wording is a choice of this project.", "La VSA demande une mention visible du changement et de qui l'a décidé ; la formulation est un choix du projet.", "Die VSA fordert einen sichtbaren Vermerk über Änderung und entscheidende Stelle; der Wortlaut ist projekteigen."), 160, y - 4, 330).ForeColor = SystemColors.GrayText;
             y += 32;
-            AddFooter(ref y, Markings.Text.T("Apply", "Appliquer"));
+            AddFooter(ref y, Markings.Text.T("Apply", "Appliquer", "Übernehmen"));
             OnChange(null, EventArgs.Empty);
         }
 
@@ -248,7 +248,7 @@ namespace SystemBannerOffice
                 ? new string[] { "Herabgestuft auf " + GermanFormatter.Stamp(changed.Level) + " am " + date + " durch " + stelle.Text.Trim() }
                 : new string[] { "VS-Einstufung aufgehoben am " + date + " durch " + stelle.Text.Trim() };
             List<string> errors = new List<string>();
-            if (stelle.Text.Trim().Length == 0) errors.Add(Markings.Text.T("Name who decided the change (VSA § 19 Abs. 1).", "Indiquer qui a décidé le changement (VSA § 19 al. 1)."));
+            if (stelle.Text.Trim().Length == 0) errors.Add(Markings.Text.T("Name who decided the change (VSA § 19 Abs. 1).", "Indiquer qui a décidé le changement (VSA § 19 al. 1).", "Geben Sie die entscheidende Stelle an (VSA § 19 Abs. 1)."));
             ShowProblems(errors);
             Result = errors.Count == 0 ? changed : null;
         }
@@ -267,28 +267,28 @@ namespace SystemBannerOffice
         public UkMarking Result;
 
         public BritishForm(UkMarking initial, SystemSettings settings)
-            : base(Markings.Text.T("Classify the document (GSCP)", "Classifier le document (GSCP)"))
+            : base(Markings.Text.T("Classify the document (GSCP)", "Classifier le document (GSCP)", "Dokument einstufen (GSCP)"))
         {
             this.settings = settings;
             int y = 10;
-            AddLabel(Markings.Text.T("Classification", "Classification"), 10, y, 150);
+            AddLabel(Markings.Text.T("Classification", "Classification", "Einstufung"), 10, y, 150);
             official = Radio("OFFICIAL", 160, y);
             secret = Radio("SECRET", 260, y);
             topSecret = Radio("TOP SECRET", 360, y);
             y += 24;
             sensitive = Check("-SENSITIVE (OFFICIAL-SENSITIVE)", 160, y);
             y += 24;
-            prefix = Check(Markings.Text.T("UK prefix (sent to a foreign government or organisation)", "Préfixe UK (envoi à un État ou une organisation étrangère)"), 160, y);
+            prefix = Check(Markings.Text.T("UK prefix (sent to a foreign government or organisation)", "Préfixe UK (envoi à un État ou une organisation étrangère)", "UK-Präfix (Versand an ausl. Regierung/Organisation)"), 160, y);
             y += 22;
             relEu = Check("REL EU", 160, y);
             y += 26;
-            AddLabel(Markings.Text.T("National caveats", "Caveats nationaux"), 10, y, 150);
+            AddLabel(Markings.Text.T("National caveats", "Caveats nationaux", "Nationale Caveats"), 10, y, 150);
             caveats = List(UkRegister.Caveats, y, 52);
             y += 58;
-            AddLabel(Markings.Text.T("Handling instruction", "Handling instruction"), 10, y, 150);
+            AddLabel(Markings.Text.T("Handling instruction", "Handling instruction", "Handling instruction"), 10, y, 150);
             handling = new ComboBox();
             handling.DropDownStyle = ComboBoxStyle.DropDownList;
-            handling.Items.Add(Markings.Text.T("(none)", "(aucune)"));
+            handling.Items.Add(Markings.Text.T("(none)", "(aucune)", "(keine)"));
             foreach (string instruction in UkRegister.HandlingInstructions)
             {
                 handling.Items.Add(instruction == UkRegister.OrganisationUseOnly ? "[ORGANISATION] USE ONLY" : instruction);
@@ -297,10 +297,10 @@ namespace SystemBannerOffice
             handling.SelectedIndexChanged += OnChange;
             Controls.Add(handling);
             y += 26;
-            organisation = AddText(Markings.Text.T("Organisation(s)", "Organisation(s)"), ref y, OnChange);
-            embargo = AddText(Markings.Text.T("Embargo: date, then handling", "Embargo : date, puis traitement"), ref y, OnChange);
+            organisation = AddText(Markings.Text.T("Organisation(s)", "Organisation(s)", "Organisation(en)"), ref y, OnChange);
+            embargo = AddText(Markings.Text.T("Embargo: date, then handling", "Embargo : date, puis traitement", "Embargo: Datum, Behandl."), ref y, OnChange);
             codeword = AddText("Codeword", ref y, OnChange);
-            AddLabel(Markings.Text.T("Descriptors", "Descripteurs"), 10, y, 150);
+            AddLabel(Markings.Text.T("Descriptors", "Descripteurs", "Deskriptoren"), 10, y, 150);
             descriptors = List(UkRegister.Descriptors, y, 96);
             y += 102;
             preview = new Label();
@@ -310,7 +310,7 @@ namespace SystemBannerOffice
             preview.SetBounds(10, y, 480, 34);
             Controls.Add(preview);
             y += 40;
-            AddFooter(ref y, Markings.Text.T("Classify", "Classifier"));
+            AddFooter(ref y, Markings.Text.T("Classify", "Classifier", "Einstufen"));
             UkMarking m = initial ?? new UkMarking();
             official.Checked = m.Level == UkLevel.Official;
             secret.Checked = m.Level == UkLevel.Secret;

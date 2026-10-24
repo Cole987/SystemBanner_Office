@@ -42,7 +42,7 @@ namespace SystemBannerOffice.Markings
         {
             if (!FrenchAvailable)
             {
-                return Text.T("This computer is set to the " + Ceiling.ClassificationSystem + " classification system (" + Ceiling.Text + "): French markings are not available.", "Ce poste est réglé sur le système " + Ceiling.ClassificationSystem + " (" + Ceiling.Text + ") : les marquages français n'y sont pas proposés.");
+                return Text.T("This computer is set to the " + Ceiling.ClassificationSystem + " classification system (" + Ceiling.Text + "): French markings are not available.", "Ce poste est réglé sur le système " + Ceiling.ClassificationSystem + " (" + Ceiling.Text + ") : les marquages français n'y sont pas proposés.", "Dieser Rechner ist auf das Einstufungssystem " + Ceiling.ClassificationSystem + " eingestellt (" + Ceiling.Text + "): Französische Kennzeichnungen sind nicht verfügbar.");
             }
             if (Ceiling == null || marking.Level == FrenchLevel.NonProtege)
             {
@@ -52,7 +52,7 @@ namespace SystemBannerOffice.Markings
             int rank = (int)marking.Level - 1;
             if (rank > Ceiling.Rank)
             {
-                return Text.T("This computer is set to " + Ceiling.Text + ": a " + FrenchFormatter.Stamp(marking) + " document cannot be written on it.", "Ce poste est réglé au niveau " + Ceiling.Text + " : un document " + FrenchFormatter.Stamp(marking) + " ne peut pas y être rédigé.");
+                return Text.T("This computer is set to " + Ceiling.Text + ": a " + FrenchFormatter.Stamp(marking) + " document cannot be written on it.", "Ce poste est réglé au niveau " + Ceiling.Text + " : un document " + FrenchFormatter.Stamp(marking) + " ne peut pas y être rédigé.", "Dieser Rechner ist auf " + Ceiling.Text + " eingestellt: Ein Dokument " + FrenchFormatter.Stamp(marking) + " kann hier nicht erstellt werden.");
             }
             return null;
         }
@@ -125,11 +125,11 @@ namespace SystemBannerOffice.Markings
             }
             if (!Ceiling.IsUnitedStates)
             {
-                return Text.T("This computer is set to the " + Ceiling.ClassificationSystem + " classification system (" + Ceiling.Text + "): IC markings are not available, use the " + Ceiling.ClassificationSystem + " levels.", "Ce poste est réglé sur le système de classification " + Ceiling.ClassificationSystem + " (" + Ceiling.Text + ") : les marquages IC n'y sont pas proposés, utiliser les niveaux " + Ceiling.ClassificationSystem + ".");
+                return Text.T("This computer is set to the " + Ceiling.ClassificationSystem + " classification system (" + Ceiling.Text + "): IC markings are not available, use the " + Ceiling.ClassificationSystem + " levels.", "Ce poste est réglé sur le système de classification " + Ceiling.ClassificationSystem + " (" + Ceiling.Text + ") : les marquages IC n'y sont pas proposés, utiliser les niveaux " + Ceiling.ClassificationSystem + ".", "Dieser Rechner ist auf das Einstufungssystem " + Ceiling.ClassificationSystem + " eingestellt (" + Ceiling.Text + "): IC-Kennzeichnungen sind nicht verfügbar, verwenden Sie die Geheimhaltungsgrade von " + Ceiling.ClassificationSystem + ".");
             }
             if (UnitedStatesRank(marking) > Ceiling.Rank)
             {
-                return Text.T("This computer is set to " + Ceiling.Text + ": a document marked " + MarkingFormatter.Banner(marking) + " cannot be written on it.", "Ce poste est réglé au niveau " + Ceiling.Text + " : un document marqué " + MarkingFormatter.Banner(marking) + " ne peut pas y être rédigé.");
+                return Text.T("This computer is set to " + Ceiling.Text + ": a document marked " + MarkingFormatter.Banner(marking) + " cannot be written on it.", "Ce poste est réglé au niveau " + Ceiling.Text + " : un document marqué " + MarkingFormatter.Banner(marking) + " ne peut pas y être rédigé.", "Dieser Rechner ist auf " + Ceiling.Text + " eingestellt: Ein als " + MarkingFormatter.Banner(marking) + " gekennzeichnetes Dokument kann hier nicht erstellt werden.");
             }
             return null;
         }

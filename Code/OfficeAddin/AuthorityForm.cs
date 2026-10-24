@@ -21,7 +21,7 @@ namespace SystemBannerOffice
         public AuthorityForm(AuthorityBlock initial, Marking banner)
         {
             this.banner = banner;
-            Text = "SystemBanner - " + Markings.Text.T("Classification authority block", "Bloc d'autorité de classification");
+            Text = "SystemBanner - " + Markings.Text.T("Classification authority block", "Bloc d'autorité de classification", "Einstufungsvermerk");
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
@@ -29,10 +29,10 @@ namespace SystemBannerOffice
             Font = new Font("Tahoma", 8.25f);
             int y = 10;
             original = new RadioButton();
-            original.Text = Markings.Text.T("Original classification (OCA)", "Classification originale (OCA)");
+            original.Text = Markings.Text.T("Original classification (OCA)", "Classification originale (OCA)", "Originäre Einstufung (OCA)");
             original.SetBounds(10, y, 200, 20);
             derivative = new RadioButton();
-            derivative.Text = Markings.Text.T("Derivative classification", "Classification dérivée");
+            derivative.Text = Markings.Text.T("Derivative classification", "Classification dérivée", "Abgeleitete Einstufung");
             derivative.SetBounds(220, y, 200, 20);
             derivative.Checked = true;
             original.CheckedChanged += UpdateChecks;
@@ -40,15 +40,15 @@ namespace SystemBannerOffice
             Controls.Add(derivative);
             y += 28;
             classifiedBy = AddText("Classified By", ref y, 1);
-            agency = AddText(Markings.Text.T("Agency and office", "Agence et bureau"), ref y, 1);
+            agency = AddText(Markings.Text.T("Agency and office", "Agence et bureau", "Behörde und Dienststelle"), ref y, 1);
             reason = AddText("Reason (EO 13526 1.4)", ref y, 1);
             derivedFrom = AddText("Derived From", ref y, 1);
-            sources = AddText(Markings.Text.T("Sources (one a line)", "Sources (une par ligne)"), ref y, 4);
+            sources = AddText(Markings.Text.T("Sources (one a line)", "Sources (une par ligne)", "Quellen (eine pro Zeile)"), ref y, 4);
             declassifyOn = AddText("Declassify On", ref y, 1);
-            dateOfOrigin = AddText(Markings.Text.T("Date of origin", "Date d'origine"), ref y, 1);
+            dateOfOrigin = AddText(Markings.Text.T("Date of origin", "Date d'origine", "Ursprungsdatum"), ref y, 1);
             string required = AuthorityBlock.RequiredNotApplicable(banner);
             Label hint = new Label();
-            hint.Text = required != null ? Markings.Text.T("This document must read: ", "Ce document doit porter : ") + required : Markings.Text.T("YYYYMMDD, an event, 25X#, YYYYMMDD, 50X1-HUM, 50X2-WMD...", "AAAAMMJJ, un événement, 25X#, AAAAMMJJ, 50X1-HUM, 50X2-WMD...");
+            hint.Text = required != null ? Markings.Text.T("This document must read: ", "Ce document doit porter : ", "Dieses Dokument muss lauten: ") + required : Markings.Text.T("YYYYMMDD, an event, 25X#, YYYYMMDD, 50X1-HUM, 50X2-WMD...", "AAAAMMJJ, un événement, 25X#, AAAAMMJJ, 50X1-HUM, 50X2-WMD...", "JJJJMMTT, ein Ereignis, 25X#, JJJJMMTT, 50X1-HUM, 50X2-WMD...");
             hint.ForeColor = SystemColors.GrayText;
             hint.SetBounds(150, y - 4, 400, 30);
             Controls.Add(hint);
@@ -60,12 +60,12 @@ namespace SystemBannerOffice
             Controls.Add(problems);
             y += 76;
             ok = new Button();
-            ok.Text = Markings.Text.T("Write", "Écrire");
+            ok.Text = Markings.Text.T("Write", "Écrire", "Schreiben");
             ok.SetBounds(390, y, 75, 24);
             ok.Click += delegate { DialogResult = DialogResult.OK; Close(); };
             Controls.Add(ok);
             Button cancel = new Button();
-            cancel.Text = Markings.Text.T("Cancel", "Annuler");
+            cancel.Text = Markings.Text.T("Cancel", "Annuler", "Abbrechen");
             cancel.SetBounds(475, y, 75, 24);
             cancel.DialogResult = DialogResult.Cancel;
             Controls.Add(cancel);
@@ -130,7 +130,7 @@ namespace SystemBannerOffice
             }
             else
             {
-                errors.Add(Markings.Text.T("The date of origin is written YYYYMMDD.", "La date d'origine s'écrit AAAAMMJJ."));
+                errors.Add(Markings.Text.T("The date of origin is written YYYYMMDD.", "La date d'origine s'écrit AAAAMMJJ.", "Das Ursprungsdatum wird JJJJMMTT geschrieben."));
             }
             errors.AddRange(block.Validate(banner));
             problems.Items.Clear();
