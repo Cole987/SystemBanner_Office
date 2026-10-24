@@ -231,6 +231,8 @@ In Office, from Office 2000 to Microsoft 365 (the orange or yellow bar at the ve
 | Office 2000: toolbar, Word | Office 2000: toolbar, PowerPoint |
 |---|---|
 | ![Word 2000 toolbar](Docs/Images/Word2000_Toolbar.png) | ![PowerPoint 2000 toolbar](Docs/Images/PowerPoint2000_Toolbar.png) |
+| **Office 2000: toolbar, Excel** | |
+| ![Excel 2000 toolbar](Docs/Images/Excel2000_Toolbar.png) | |
 | **Office 2007: ribbon in French** | **Excel 2010: print preview** |
 | ![Word 2007 ribbon in French](Docs/Images/Word2007_Ribbon-French.png) | ![Excel 2010 print preview](Docs/Images/Excel2010_IC_Secret.png) |
 | **Microsoft 365: saving an unclassified document** | **Microsoft 365: the COM add-in loaded** |
@@ -302,4 +304,4 @@ Software
 CREDITS
 -------
 
-SystemBanner was created by [Aaron Wawrzyniak](https://github.com/awawrzyniak10/SystemBanner), the [Windows 2000 to 7 and Mac fork](https://github.com/Cole987/SystemBanner_XP) is by Cole. Stock classification colors are based on the GSA form color information collected by [Frank Caviggia](https://github.com/fcaviggia/classification-banner). Released under the MIT License.
+SystemBanner Office, this add-in, is by Cole. SystemBanner was created by [Aaron Wawrzyniak](https://github.com/awawrzyniak10/SystemBanner), the [Windows 2000 to 7 and Mac fork](https://github.com/Cole987/SystemBanner_XP) is by Cole. Stock classification colors are based on the GSA form color information collected by [Frank Caviggia](https://github.com/fcaviggia/classification-banner). Released under the MIT License.
