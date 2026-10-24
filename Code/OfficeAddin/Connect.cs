@@ -282,7 +282,7 @@ namespace SystemBannerOffice
             foreach (string[] button in Buttons())
             {
                 xml.Append("<button id=\"").Append(button[0]).Append("\" label=\"").Append(button[1]).Append("\" screentip=\"").Append(button[2])
-                    .Append("\" size=\"large\" imageMso=\"").Append(Icon(button[0])).Append("\" onAction=\"OnAction\"/>");
+                    .Append("\" size=\"large\" imageMso=\"").Append(Icon(button[0])).Append("\" onAction=\"On").Append(button[0]).Append("\"/>");
             }
             xml.Append("</group></tab></tabs></ribbon></customUI>");
             return xml.ToString();
@@ -300,14 +300,20 @@ namespace SystemBannerOffice
             }
         }
 
-        //ribbon callback: Office passes the IRibbonControl, read late bound to need no interop assembly
-        public void OnAction(object control)
+        //ribbon callbacks, one per button: the command comes from the callback's name, the IRibbonControl is never read.
+        //Office 2007 refuses late bound reads of the control (0x800A01A8, object required), Office 2010 and later accept them.
+        public void OnClassify(object control) { OnAction("Classify"); }
+        public void OnPortionMark(object control) { OnAction("PortionMark"); }
+        public void OnRollUp(object control) { OnAction("RollUp"); }
+        public void OnAuthorityBlock(object control) { OnAction("AuthorityBlock"); }
+        public void OnDowngrade(object control) { OnAction("Downgrade"); }
+
+        private void OnAction(string command)
         {
             try
             {
-                string id = Convert.ToString(Late.Get(control, "Id"));
-                Log.Write("OnAction " + id); //no such line after a click: Office did not call the add-in
-                commands.Run(id);
+                Log.Write("OnAction " + command); //no such line after a click: Office did not call the add-in
+                commands.Run(command);
             }
             catch (Exception ex)
             {

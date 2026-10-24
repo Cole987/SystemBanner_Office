@@ -74,6 +74,12 @@ namespace SystemBannerOffice.Check
             {
                 Late.TrySet(application, "Visible", -1); //PowerPoint shows no command bar while hidden
             }
+            //PowerPoint runs one instance: the add-in installed on this computer may already be loaded in it, with its own toolbar
+            bool installedLoaded = FindToolbar(application) != null;
+            if (installedLoaded)
+            {
+                Console.WriteLine("note the installed add-in is loaded in this instance: its toolbar stays after the test");
+            }
             Connect addIn = new Connect();
             Array custom = new object[0];
             addIn.OnConnection(application, ext_ConnectMode.ext_cm_Startup, null, ref custom);
@@ -103,7 +109,10 @@ namespace SystemBannerOffice.Check
             bar = FindToolbar(application);
             Check(bar != null && Late.Count(Late.Get(bar, "Controls")) == 5, "deleted toolbar created again by the later check");
             addIn.OnDisconnection(ext_DisconnectMode.ext_dm_HostShutdown, ref custom);
-            Check(FindToolbar(application) == null, "toolbar removed when the add-in unloads");
+            if (!installedLoaded)
+            {
+                Check(FindToolbar(application) == null, "toolbar removed when the add-in unloads");
+            }
         }
 
         private static void Run(string progId, Scenario scenario)

@@ -26,6 +26,8 @@ Seen on the Windows 2000 VM: the SystemBanner toolbar shows in PowerPoint 2000, 
 
 **Fixed in the code on 24 October 2026, to check on the VM:** the toolbar is shown before its buttons are added, each button is added in its own `try` (a failing button no longer hides the whole toolbar), Word keeps the toolbar in Normal.dot without asking to save it, and the toolbar is checked again 2, 4 and 6 seconds after startup: shown again if hidden, created again if deleted (hypotheses A and B). `OfficeCheck.exe toolbar` passes on Office 2016. Hypothesis C (add-in not loaded) needs the diag of the VM.
 
+**VM log of 24 October 2026:** `OfficeCheck.exe toolbar` passes in Word and Excel 2000, but the log has no `[WINWORD]` or `[EXCEL]` line: Word and Excel 2000 never create the add-in (hypothesis C), PowerPoint 2000 does.
+
 **Done when:** the toolbar shows in Word, Excel and PowerPoint 2000, each of its 5 buttons opens its dialog, and the log has no error.
 
 ------------------------------------------------------
@@ -50,6 +52,8 @@ Seen on the Windows XP VM with Office 2007: the Classification tab shows, Classi
 | C | `ERROR in Classify` in the log | An exception in the command, shown in a message box that is itself hidden (see A). | Fix the error the log names. |
 
 **Fixed in the code on 24 October 2026, to check on the VM:** dialogs and messages are owned by the main Office window (class `OpusApp`, `XLMAIN` or `PP...FrameClass` of Office's thread), no longer by the foreground window, which can be a ribbon window in Office 2007 (hypothesis A). The log has a line for each ribbon click (`OnAction`) and each command (`command`), which separates hypothesis B from C.
+
+**Cause found on 24 October 2026 (VM log):** `ERROR in OnAction: 0x800A01A8` (object required) at each click: Office 2007 refuses the late bound read of `IRibbonControl.Id`. Fixed: one callback per button (`OnClassify`, `OnPortionMark`...), the control is never read. To check on the VM.
 
 **Done when:** on Office 2007, every button opens its dialog in front of Office, in Word, Excel and PowerPoint.
 
