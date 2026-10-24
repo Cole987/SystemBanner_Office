@@ -26,7 +26,7 @@ Like SystemBanner, this is a retro computing and preservation project, shared as
 FEATURES
 --------
 
-- **Banner lines.** Top and bottom of every page in Word (as their own paragraph in the header and footer, the rest of the header stays), every sheet in Excel, and the slide master in PowerPoint, with the colors of the SystemBanner presets.
+- **Banner lines.** Top and bottom of every page in Word (as their own paragraph in the header and footer, the rest of the header stays), every sheet in Excel, and the slide master in PowerPoint, in the color of the SystemBanner preset of their level: bold text in that color, with no background (a light color, the yellow of TOP SECRET//SCI, in black). The IC Markings System Register asks for a banner line placed "conspicuously" at the top and bottom of each page (section D) and sets no color: the colors are those of SystemBanner, a choice of this project. With no background, the banner stays readable in black and white, and no printer or PDF setting that leaves out backgrounds can make it disappear. `OfficeBannerBackground` = 1 brings back the colored background with white or black text.
 - **The whole IC Register.** US classifications, non-US (`//GBR SECRET`), NATO (`//COSMIC TOP SECRET`, NAC activities) and JOINT (`//JOINT SECRET CAN GBR USA`) markings, SCI control systems with compartments and sub-compartments, SAP programs, Atomic Energy Act markings (RD, CNWDI, SIGMA, FRD, DOD UCNI, DOE UCNI, TFNI), FGI, the 13 dissemination controls and the 8 non-IC dissemination controls, in Register order with its separators.
 - **Portion marks.** "Portion mark" puts `(S//REL TO USA, GBR)` at the start of the paragraph at the cursor, replacing the mark already there, in Word and PowerPoint.
 - **Roll-up.** The banner line is rebuilt from the portion marks: highest classification, every unique SCI, SAP and AEA value, FGI sources, the 27 FD&R precedence rules of Table 3 (NOFORN, REL TO list intersections with FVEY, ACGU and TEYE expansion, RELIDO, EYES ONLY, DISPLAY ONLY), and the supersession rules of each marking template (RD over FRD and TFNI, ORCON over ORCON-USGOV, NODIS over EXDIS, FOUO dropped from classified banners, SBU NOFORN and LES NOFORN...).
@@ -67,6 +67,7 @@ The add-in reads the SystemBanner key, `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Sys
 | `OfficeSpellOut` | DWORD | 1: banner lines spell control markings out (`TALENT KEYHOLE`) instead of using their abbreviations (`TK`). |
 | `OfficeAnalyticProducts` | DWORD | 1: documents are disseminated analytic products, every classified portion must carry an FD&R marking (ICD 710 E.5). |
 | `OfficeLanguage` | String | `en`, `fr` or `de`: the language of the add-in. Without it, the language of the Office user interface. A user may also set it in `HKEY_CURRENT_USER\Software\SystemBanner`. |
+| `OfficeBannerBackground` | DWORD | 1: IC banner lines on the colored background of SystemBanner, as on screen, instead of colored text. |
 | `OfficeToolbar` | DWORD | 1: the SystemBanner toolbar in Office 2007 and later too (Add-ins tab), besides the ribbon. A user may also set it in `HKEY_CURRENT_USER\Software\SystemBanner`. |
 
 ---

@@ -15,6 +15,7 @@ namespace SystemBannerOffice.Markings
         public bool RequireClassification; //OfficeRequireClassification = 1: no saving or printing of a document with no classification
         public bool SpellOut;              //OfficeSpellOut = 1: banner lines spell out control markings (TALENT KEYHOLE) instead of abbreviating them (TK)
         public bool AnalyticProducts;      //OfficeAnalyticProducts = 1: documents are disseminated analytic products, every classified portion needs FD&R
+        public bool BannerBackground;      //OfficeBannerBackground = 1: IC banner lines on their colored background, not in colored text
         public bool Toolbar;               //OfficeToolbar = 1: the Office 2000-2003 toolbar in Office 2007 and later too (Add-ins tab), besides the ribbon
 
         public const string France = "France";
@@ -74,6 +75,7 @@ namespace SystemBannerOffice.Markings
                         }
                         settings.CustomText = key.GetValue("Text") as string;
                         settings.RequireClassification = IsOne(key.GetValue("OfficeRequireClassification"));
+                        settings.BannerBackground = IsOne(key.GetValue("OfficeBannerBackground"));
                         settings.SpellOut = IsOne(key.GetValue("OfficeSpellOut"));
                         settings.AnalyticProducts = IsOne(key.GetValue("OfficeAnalyticProducts"));
                         settings.Toolbar = IsOne(key.GetValue("OfficeToolbar"));

@@ -40,7 +40,7 @@ namespace SystemBannerOffice
         }
     }
 
-    //what goes at the top and bottom of every page: the IC banner line on a colored background,
+    //what goes at the top and bottom of every page: the IC banner line in the color of its level,
     //or the IGI 1300 stamps, framed text in red, Spécial France in blue
     public class StampSet
     {
@@ -57,13 +57,26 @@ namespace SystemBannerOffice
         public const float PageFrame = 2.5f;   //annexe 37 § 2
         public const float CoverFrame = 3f;    //annexe 37 § 1
 
+        //OfficeBannerBackground = 1: the banner line on the colored background of SystemBanner, as on screen;
+        //by default its text in the color of the level, with no background: a background a printer or a PDF converter
+        //leaves out would leave white text, an invisible banner, and black and white printing turns it into a pale grey
+        public static bool BannerBackground;
+
         public static StampSet Banner(string text, int background, int foreground)
         {
             StampSet stamps = new StampSet();
-            stamps.Top.Add(new StampLine(text, foreground, 0, 0));
-            stamps.Bottom.Add(new StampLine(text, foreground, 0, 0));
-            stamps.Background = background;
+            int color = BannerBackground ? foreground : TextColor(background);
+            stamps.Top.Add(new StampLine(text, color, 0, 0));
+            stamps.Bottom.Add(new StampLine(text, color, 0, 0));
+            stamps.Background = BannerBackground ? background : -1;
             return stamps;
+        }
+
+        //the color of the level as a text color on white paper; a light one (the yellow of TOP SECRET//SCI) is written in black
+        public static int TextColor(int bgr)
+        {
+            int red = bgr & 0xFF, green = (bgr >> 8) & 0xFF, blue = (bgr >> 16) & 0xFF;
+            return red * 299 + green * 587 + blue * 114 > 160000 ? 0 : bgr;
         }
 
         //IGI 1300, 7.1.2.3 and annexes 1 and 37

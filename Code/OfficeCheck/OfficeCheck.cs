@@ -278,6 +278,24 @@ namespace SystemBannerOffice.Check
             header = Convert.ToString(Late.Get(Late.Get(primary, "Range"), "Text"));
             Check(header.StartsWith("SECRET//NOFORN\r") && header.IndexOf("TOP SECRET") < 0 && header.Contains("Company header"), "Word banner replaced: " + header.Replace("\r", " | "));
             Check(host.GetProperty(DocumentHost.BannerProperty) == "SECRET//NOFORN" && host.StoredClassification() == "SECRET", "Word document properties");
+            //the colors of SystemBanner: SECRET in red text with no background by default, white on red with OfficeBannerBackground = 1
+            int red = Late.Rgb(200, 16, 46), white = Late.Rgb(255, 255, 255), automatic = -16777216;
+            foreach (bool background in new bool[] { false, true })
+            {
+                StampSet.BannerBackground = background;
+                host.Mark(secret);
+                foreach (object story in new object[] { primary, footer })
+                {
+                    object paragraphs = Late.Get(Late.Get(story, "Range"), "Paragraphs");
+                    object line = Late.Get(story == primary ? Late.Get(paragraphs, "First") : Late.Get(paragraphs, "Last"), "Range");
+                    int shading = Convert.ToInt32(Late.Get(Late.Get(Late.Get(line, "ParagraphFormat"), "Shading"), "BackgroundPatternColor"));
+                    int color = Convert.ToInt32(Late.Get(Late.Get(line, "Font"), "Color"));
+                    bool expected = background ? shading == red && color == white : shading == automatic && color == red;
+                    Check(expected, "Word IC " + (story == primary ? "top" : "bottom") + " banner " + (background ? "white on red" : "red text, no background") + " (background " + shading + ", text " + color + ")");
+                }
+            }
+            StampSet.BannerBackground = false;
+            Check(StampSet.TextColor(Late.Rgb(247, 234, 72)) == 0, "the yellow of TOP SECRET//SCI is written in black on white paper");
             //portion mark at the cursor: replaces "(U) " on the second paragraph
             object second = Late.Get(Late.Item(Late.Get(document, "Paragraphs"), 2), "Range");
             Late.Call(Late.Get(word, "Selection"), "SetRange", Convert.ToInt32(Late.Get(second, "Start")) + 6, Convert.ToInt32(Late.Get(second, "Start")) + 6);

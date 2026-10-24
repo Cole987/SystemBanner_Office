@@ -121,6 +121,7 @@ namespace SystemBannerOffice
             {
                 Log.Write("command " + command + ", dialogs owned by window " + new OfficeWindow().Handle);
                 ChooseLanguage();
+                StampSet.BannerBackground = SystemSettings.Read().BannerBackground;
                 switch (command)
                 {
                     case "Classify": Classify(); break;

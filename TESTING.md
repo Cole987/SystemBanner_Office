@@ -50,7 +50,7 @@ Language
 - [ ] `OfficeRequireClassification` = 1: saving and printing an unclassified document asks to classify it first, in Word and Excel.
 
 Word
-- [ ] Classify an empty document SECRET//NOFORN: banner at the top and bottom of every page, red background, white text (Word 2000: text color may stay black, see README).
+- [ ] Classify an empty document SECRET//NOFORN: banner at the top and bottom of every page, in bold red text with no background (Word 2000: text color may stay black, see README); printed in black and white, it stays readable. `OfficeBannerBackground` = 1: white text on a red background.
 - [ ] A document with an existing header and page numbers keeps them under the banner.
 - [ ] Several sections, first page different, odd and even pages: every page shows the banner, none twice.
 - [ ] Portion mark on three paragraphs: (S//REL TO USA, GBR), (U), (TS//SI//NF). The banner becomes TOP SECRET//SI//NOFORN.
